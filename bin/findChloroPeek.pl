@@ -95,7 +95,7 @@ print("Loading data\n");
 $R->send(qq`data<-read.table("$opt_histo")`) ;
 print("Loading functions\n");
 $R->send(qq`source("$FindBin::Bin/../find_chloro_kmer_peek_ml/find_chloro_kmer_peek_ml.R")`) ;
-$R->send(q`parameters<-cbind(c(1000,1500,2000),c(5500,6000,6500),c(3000,4000,4500),c(300,500,1000))`) ;
+$R->send(q`parameters<-cbind(c(1000,1500,2000),c(8000,9000,9999),c(1000,5000,9999),c(300,500,1500))`) ;
 $R->send(q`opt<-optim(par=parameters[2,], fn=logLhistoMinus, histo=data, lower=parameters[1,], upper=parameters[3,], method="L-BFGS-B")`) ;
 my $pdf_file = "$prefix_dir"."/"."$prefix_name"."_fits.pdf";
 $R->send(qq`c(pdf("$pdf_file"),plotResult(opt[[1]], data),plotResultFull(opt[[1]], data),dev.off())`);
@@ -110,7 +110,7 @@ print('findChloroPeek.pl finished');
 
 =head2 get_prefix
 
-Returns a default prefix if none is specified by the user. Style: <reads_-_> (without .fq/.fastq)
+Returns a default prefix if none is specified by the user. Style: <histo_-_> (without .jf/.histo)
 
 =cut
 
