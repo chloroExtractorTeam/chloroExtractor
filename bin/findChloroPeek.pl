@@ -190,6 +190,11 @@ $R->startR ;
 print("Loading data\n");
 $R->send(qq`data<-read.table("$opt_histo")`) ;
 print("Loading functions\n");
+print("Constraints:\n");
+print("\tlower\tupper\tmean\tsd\n");
+print("l\t$opt_lower_l\t$opt_upper_l\t$opt_mean_l\t$opt_sd_l\n");
+print("s\t$opt_lower_s\t$opt_upper_s\t$opt_mean_s\t$opt_sd_s \n");
+print("u\t$opt_lower_u\t$opt_upper_u\t$opt_mean_u\t$opt_sd_u \n");
 $R->send(qq`source("$FindBin::Bin/../find_chloro_kmer_peek_ml/find_chloro_kmer_peek_ml.R")`) ;
 $R->send(qq`lowerConst<-c($opt_lower_l,$opt_upper_l,$opt_mean_l,$opt_sd_l)`) ;
 $R->send(qq`upperConst<-c($opt_lower_u,$opt_upper_u,$opt_mean_u,$opt_sd_u)`) ;
@@ -203,7 +208,7 @@ $R->send(qq`c(pdf("$pdf_file"),plotResult(opt[[1]], data),plotResultFull(opt[[1]
 $R->stopR() ;
 
 
-print('findChloroPeek.pl finished');
+print("findChloroPeek.pl finished\n");
 
 
 
