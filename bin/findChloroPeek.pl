@@ -44,6 +44,102 @@ prefix for the output files. Default is current directory and a prefix
 
 $options{'prefix=s'} = \(my $opt_prefix);
 
+=item [--lower_l=<INT>] 
+
+lower constraint on the "lower" argument (default:1000)
+
+=cut
+
+$options{'lower_l=i'} = \(my $opt_lower_l=1000);
+
+=item [--lower_s=<INT>] 
+
+start value of the "lower" argument (default:1500)
+
+=cut
+
+$options{'lower_s=i'} = \(my $opt_lower_s=1500);
+
+=item [--lower_u=<INT>] 
+
+upper constraint on the "lower" argument (default:2000)
+
+=cut
+
+$options{'lower_u=i'} = \(my $opt_lower_u=2000);
+
+=item [--upper_l=<INT>] 
+
+lower constraint on the "upper" argument (default:8000)
+
+=cut
+
+$options{'upper_l=i'} = \(my $opt_upper_l=8000);
+
+=item [--upper_s=<INT>] 
+
+start value of the "upper" argument (default:9000)
+
+=cut
+
+$options{'upper_s=i'} = \(my $opt_upper_s=9000);
+
+=item [--upper_u=<INT>] 
+
+upper constraint on the "upper" argument (default:9999)
+
+=cut
+
+$options{'upper_u=i'} = \(my $opt_upper_u=9999);
+
+=item [--mean_l=<INT>] 
+
+lower constraint on the "mean" argument (default:1000)
+
+=cut
+
+$options{'mean_l=i'} = \(my $opt_mean_l=1000);
+
+=item [--mean_s=<INT>] 
+
+start value of the "mean" argument (default:5000)
+
+=cut
+
+$options{'mean_s=i'} = \(my $opt_mean_s=5000);
+
+=item [--mean_u=<INT>] 
+
+upper constraint on the "mean" argument (default:9999)
+
+=cut
+
+$options{'mean_u=i'} = \(my $opt_mean_u=9999);
+
+
+=item [--sd_l=<INT>] 
+
+lower constraint on the "sd" argument (default:500)
+
+=cut
+
+$options{'sd_l=i'} = \(my $opt_sd_l=500);
+
+=item [--sd_s=<INT>] 
+
+start value of the "sd" argument (default:1000)
+
+=cut
+
+$options{'sd_s=i'} = \(my $opt_sd_s=1000);
+
+=item [--sd_u=<INT>] 
+
+upper constraint on the "sd" argument (default:1500)
+
+=cut
+
+$options{'sd_u=i'} = \(my $opt_sd_u=1500);
 
 =item [--[no]verbose] 
 
@@ -95,12 +191,15 @@ print("Loading data\n");
 $R->send(qq`data<-read.table("$opt_histo")`) ;
 print("Loading functions\n");
 $R->send(qq`source("$FindBin::Bin/../find_chloro_kmer_peek_ml/find_chloro_kmer_peek_ml.R")`) ;
-$R->send(q`parameters<-cbind(c(1000,1500,2000),c(8000,9000,9999),c(1000,5000,9999),c(300,500,1500))`) ;
-$R->send(q`opt<-optim(par=parameters[2,], fn=logLhistoMinus, histo=data, lower=parameters[1,], upper=parameters[3,], method="L-BFGS-B")`) ;
-my $pdf_file = "$prefix_dir"."/"."$prefix_name"."_fits.pdf";
-$R->send(qq`c(pdf("$pdf_file"),plotResult(opt[[1]], data),plotResultFull(opt[[1]], data),dev.off())`);
+$R->send(qq`lowerConst<-c($opt_lower_l,$opt_upper_l,$opt_mean_l,$opt_sd_l)`) ;
+$R->send(qq`upperConst<-c($opt_lower_u,$opt_upper_u,$opt_mean_u,$opt_sd_u)`) ;
+$R->send(qq`start<-c($opt_lower_s,$opt_upper_s,$opt_mean_s,$opt_sd_s)`) ;
+$R->send(q`opt<-optim(par=start, fn=logLhistoMinus, histo=data, lower=lowerConst, upper=upperConst, method="L-BFGS-B")`) ;
+$R->send(q`opt`) ;
 my $ret = $R->read ;
 print("$ret\n");
+my $pdf_file = "$prefix_dir"."/"."$prefix_name"."_fits.pdf";
+$R->send(qq`c(pdf("$pdf_file"),plotResult(opt[[1]], data),plotResultFull(opt[[1]], data),dev.off())`);
 $R->stopR() ;
 
 
