@@ -195,7 +195,7 @@ $R->send(q`print(xMax)`);
 my $ret = $R->read ;
 print("Max at:\n");
 print("$ret\n");
-$R->send(q`minLowess<-lowess(data$V1[data$V1<xMax],data2$V2[data$V1<xMax])`);
+$R->send(q`minLowess<-lowess(data$V1[data$V1<xMax],data$V2[data$V1<xMax])`);
 $R->send(q`xMin<-which(minLowess[[2]]==min(minLowess[[2]]))`);
 $R->send(q`print(xMin)`);
 print("Min at:\n");
