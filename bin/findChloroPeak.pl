@@ -13,15 +13,15 @@ my %options;
 
 =head1 NAME 
 
-findChloroPeek.pl
+findChloroPeak.pl
 
 =head1 DESCRIPTION
 
-Perl script that calls R with correct configuration to find the chloroplast peek in a kmer histogram.
+Perl script that calls R with correct configuration to find the chloroplast peak in a kmer histogram.
 
 =head1 USAGE
 
-  $ perl findChloroPeek.pl --histo=<FILE> [options]
+  $ perl findChloroPeak.pl --histo=<FILE> [options]
 
 =head1 OPTIONS
 
@@ -44,102 +44,6 @@ prefix for the output files. Default is current directory and a prefix
 
 $options{'prefix=s'} = \(my $opt_prefix);
 
-=item [--lower_l=<INT>] 
-
-lower constraint on the "lower" argument (default:1000)
-
-=cut
-
-$options{'lower_l=i'} = \(my $opt_lower_l=1000);
-
-=item [--lower_s=<INT>] 
-
-start value of the "lower" argument (default:1500)
-
-=cut
-
-$options{'lower_s=i'} = \(my $opt_lower_s=1500);
-
-=item [--lower_u=<INT>] 
-
-upper constraint on the "lower" argument (default:2000)
-
-=cut
-
-$options{'lower_u=i'} = \(my $opt_lower_u=2000);
-
-=item [--upper_l=<INT>] 
-
-lower constraint on the "upper" argument (default:8000)
-
-=cut
-
-$options{'upper_l=i'} = \(my $opt_upper_l=8000);
-
-=item [--upper_s=<INT>] 
-
-start value of the "upper" argument (default:9000)
-
-=cut
-
-$options{'upper_s=i'} = \(my $opt_upper_s=9000);
-
-=item [--upper_u=<INT>] 
-
-upper constraint on the "upper" argument (default:9999)
-
-=cut
-
-$options{'upper_u=i'} = \(my $opt_upper_u=9999);
-
-=item [--mean_l=<INT>] 
-
-lower constraint on the "mean" argument (default:1000)
-
-=cut
-
-$options{'mean_l=i'} = \(my $opt_mean_l=1000);
-
-=item [--mean_s=<INT>] 
-
-start value of the "mean" argument (default:5000)
-
-=cut
-
-$options{'mean_s=i'} = \(my $opt_mean_s=5000);
-
-=item [--mean_u=<INT>] 
-
-upper constraint on the "mean" argument (default:9999)
-
-=cut
-
-$options{'mean_u=i'} = \(my $opt_mean_u=9999);
-
-
-=item [--sd_l=<INT>] 
-
-lower constraint on the "sd" argument (default:500)
-
-=cut
-
-$options{'sd_l=i'} = \(my $opt_sd_l=500);
-
-=item [--sd_s=<INT>] 
-
-start value of the "sd" argument (default:1000)
-
-=cut
-
-$options{'sd_s=i'} = \(my $opt_sd_s=1000);
-
-=item [--sd_u=<INT>] 
-
-upper constraint on the "sd" argument (default:1500)
-
-=cut
-
-$options{'sd_u=i'} = \(my $opt_sd_u=1500);
 
 =item [--[no]verbose] 
 
@@ -195,20 +99,27 @@ $R->send(q`print(xMax)`);
 my $ret = $R->read;
 print("Max at:\n");
 $ret=~s/\[1\]\s+//;
+my $max=$ret;
 print("$ret\n");
 $R->send(q`minLowess<-lowess(data$V1[data$V1<xMax],data$V2[data$V1<xMax])`);
 $R->send(q`xMin<-which(minLowess[[2]]==min(minLowess[[2]]))`);
 $R->send(q`print(xMin)`);
 $ret = $R->read;
 $ret=~s/\[1\]\s+//;
+my $min=$ret;
 print("Min at:\n");
 print("$ret\n");
-my $pdf_file = "$prefix_dir"."/"."$prefix_name"."_fits.pdf";
+
+open(OUT, ">$prefix_dir"."/"."$prefix_name"."_minmax.tsv") or die "Can't open file $prefix_dir"."/"."$prefix_name"."_minmax.tsv$!";
+print OUT "$min\t$max\n";
+close OUT or die "$!";
+print("Output min-max written to $prefix_dir"."/"."$prefix_name"."_minmax.tsv\n");
+
+my $pdf_file = "$prefix_dir"."/"."$prefix_name"."_fit.pdf";
 $R->send(qq`c(pdf("$pdf_file"),plot(data[,1], data[,2], ylim=c(0,3*maxLowess[[2]][xMax])),lines(maxLowess, col="red", lwd=3),lines(minLowess, col="green", lwd=3),dev.off())`);
 $R->stopR() ;
-print("Output plot written\n");
-
-print("findChloroPeek.pl finished\n");
+print("Output plot written to $prefix_dir"."/"."$prefix_name"."_fit.tsv\n");
+print("findChloroPeak.pl finished\n");
 
 
 

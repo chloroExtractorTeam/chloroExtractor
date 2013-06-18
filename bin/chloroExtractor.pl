@@ -193,6 +193,18 @@ $vwga->nline();
 $vplain->verbose($jellyfish_histo_re) if $jellyfish_histo_re;
 $vwga->exit('ERROR: Histogramming kmer counts failed') if $?>> 8;
 
+$vwga->verbose('Finding chloroplast peak in kmer histogram');
+$vwga->hline();
+my $findChloroPeak_cmd = findChloroPeak_command();
+$vbash->verbose( $findChloroPeak_cmd );
+my $findChloroPeak_re = qx($findChloroPeak_cmd); 
+$vwga->nline();
+$vplain->verbose($findChloroPeak_re) if $findChloroPeak_re;
+open(IN, "<$opt_prefix"."_minmax.tsv") or die "Can't open file $opt_prefix"."_minmax.tsv$!";
+my ($min, $max) = split(/\t/,<IN>);
+chomp $max;
+$vwga->exit('ERROR: Chloroplast peak detection failed') if $?>> 8;
+
 $vwga->verbose('chloroExtractor finished');
 
 
@@ -233,6 +245,19 @@ sub jellyfish_histo_command{
 	$cmd .= "-o $opt_prefix"."_full_histo.jf ";
 	$cmd .= "--threads 20 --high 100000 ";
 	$cmd .= "$opt_prefix"."_full.jf";
+	return $cmd;
+}
+
+=head2 findChloroPeak_command
+
+Returns the command to call findChloroPeak.pl for chloroplast peak detection.
+
+=cut
+
+sub findChloroPeak_command{
+	my $cmd = "perl $FindBin::Bin/ ";
+	$cmd .= "--histo $opt_prefix"."_full_histo.jf ";
+	$cmd .= "--prefix $opt_prefix";
 	return $cmd;
 }
 
