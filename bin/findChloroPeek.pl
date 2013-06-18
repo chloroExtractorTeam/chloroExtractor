@@ -189,7 +189,7 @@ my $R = Statistics::R->new() ;
 $R->startR ;
 print("Loading data\n");
 $R->send(qq`data<-read.table("$opt_histo")`);
-$R->send(q`maxLowess<-lowess(data$V1, data$V2)`);
+$R->send(q`maxLowess<-lowess(data$V1[data$V1>100], data$V2[data$V1>100])`);
 $R->send(q`xMax<-which(maxLowess[[2]]==max(maxLowess[[2]]))`);
 $R->send(q`print(xMax)`);
 my $ret = $R->read;
