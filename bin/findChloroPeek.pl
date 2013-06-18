@@ -195,7 +195,7 @@ $R->send(qq`lowerConst<-c($opt_lower_l,$opt_upper_l,$opt_mean_l,$opt_sd_l)`) ;
 $R->send(qq`upperConst<-c($opt_lower_u,$opt_upper_u,$opt_mean_u,$opt_sd_u)`) ;
 $R->send(qq`start<-c($opt_lower_s,$opt_upper_s,$opt_mean_s,$opt_sd_s)`) ;
 $R->send(q`opt<-optim(par=start, fn=logLhistoMinus, histo=data, lower=lowerConst, upper=upperConst, method="L-BFGS-B")`) ;
-$R->send(q`opt`) ;
+$R->send(q`print(opt)`) ;
 my $ret = $R->read ;
 print("$ret\n");
 my $pdf_file = "$prefix_dir"."/"."$prefix_name"."_fits.pdf";
