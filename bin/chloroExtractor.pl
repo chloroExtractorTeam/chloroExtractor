@@ -251,32 +251,13 @@ sub get_prefix{
 
 =head1 LIMITATIONS
 
-This pipeline is meant to give a quick and easy to use possibility to generate and visualize whole genome alignments.
-It is not meant for extensive analyses of whole genomes. For this purpose see the documentation of the alignment programs
-and consider using them.  
-
-=head1 CHANGELOG
-
-=head2 08.11.2012
-
-=over
-
-=item * The --unmask option is now set by default, there is an additional --mask flag to enforce masking by lastz
-
-=item * There are two additional option --minidentity <INT> and --minlength <INT> that are passed through to the Circos Parsers
-
-=item * A statistic of total and aligned contigs is returned as part of the log
-
-=back
-
+If you encounter a bug, please drop me a line.
 
 =head1 AUTHORS
 
 =over
 
 =item * Markus Ankenbrand, markus.ankenbrand@stud-mail.uni-wuerzburg.de
-
-=item * Thomas Hackl, thomas.hackl@uni-wuerzburg.de
 
 =back
 
