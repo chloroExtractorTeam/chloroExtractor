@@ -188,26 +188,22 @@ print("Starting R\n");
 my $R = Statistics::R->new() ;
 $R->startR ;
 print("Loading data\n");
-$R->send(qq`data<-read.table("$opt_histo")`) ;
-print("Loading functions\n");
-print("Constraints:\n");
-print("\tlower\tupper\tmean\tsd\n");
-print("l\t$opt_lower_l\t$opt_upper_l\t$opt_mean_l\t$opt_sd_l\n");
-print("s\t$opt_lower_s\t$opt_upper_s\t$opt_mean_s\t$opt_sd_s \n");
-print("u\t$opt_lower_u\t$opt_upper_u\t$opt_mean_u\t$opt_sd_u \n");
-$R->send(qq`source("$FindBin::Bin/../find_chloro_kmer_peek_ml/find_chloro_kmer_peek_ml.R")`) ;
-$R->send(qq`lowerConst<-c($opt_lower_l,$opt_upper_l,$opt_mean_l,$opt_sd_l)`) ;
-$R->send(qq`upperConst<-c($opt_lower_u,$opt_upper_u,$opt_mean_u,$opt_sd_u)`) ;
-$R->send(qq`start<-c($opt_lower_s,$opt_upper_s,$opt_mean_s,$opt_sd_s)`) ;
-$R->send(q`opt<-optim(par=start, fn=logLhistoMinus, histo=data, lower=lowerConst, upper=upperConst, method="L-BFGS-B")`) ;
-$R->send(q`print(opt)`) ;
+$R->send(qq`data<-read.table("$opt_histo")`);
+$R->send(q`maxLowess<-lowess(data$V1, data$V2)`);
+$R->send(q`xMax<-which(maxLowess[[2]]==max(maxLowess[[2]]))`);
+$R->send(q`print(xMax)`);
 my $ret = $R->read ;
-print("Optimization result:\n");
+print("Max at:\n");
+print("$ret\n");
+$R->send(q`minLowess<-lowess(data$V1[data$V1<xMax],data2$V2[data$V1<xMax])`);
+$R->send(q`xMin<-which(minLowess[[2]]==min(minLowess[[2]]))`);
+$R->send(q`print(xMin)`);
+print("Min at:\n");
 print("$ret\n");
 my $pdf_file = "$prefix_dir"."/"."$prefix_name"."_fits.pdf";
-$R->send(qq`c(pdf("$pdf_file"),plotResult(opt[[1]], data),plotResultFull(opt[[1]], data),dev.off())`);
+$R->send(qq`c(pdf("$pdf_file"),plot(data[,1], data[,2], ylim=c(0,3*maxLowess[[2]][xMax])),lines(maxLowess, col="red", lwd=3),lines(minLowess, col="green", lwd=3),dev.off())`);
 $R->stopR() ;
-
+print("Output plot written\n");
 
 print("findChloroPeek.pl finished\n");
 
