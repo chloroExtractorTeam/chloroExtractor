@@ -95,8 +95,8 @@ print("Loading data\n");
 $R->send(qq`data<-scan("$opt_histo")`) ;
 print("Loading functions\n");
 $R->send(qq`source("$FindBin::Bin/../find_chloro_kmer_peek_ml/find_chloro_kmer_peek_ml.R")`) ;
-
-#$R->send(qq`x = 123 \n print(x)`) ;
+$R->send(q`parameters<-cbind(c(1000,1500,2000),c(5500,6000,6500),c(3000,4000,4500),c(300,500,1000))`) ;
+$R->send(q`opt<-optim(par=parameters[2,], fn=logLhistoMinus, histo=data, lower=parameters[1,], upper=parameters[3,], method="L-BFGS-B")`) ;
 my $ret = $R->read ;
 print("$ret\n");
 $R->stopR() ;

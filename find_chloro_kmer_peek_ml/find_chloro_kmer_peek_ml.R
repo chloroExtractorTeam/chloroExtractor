@@ -23,3 +23,5 @@ plotResultFull <- function(result, histo){
   plot(x=histo[,1], y=histo[,2],ylim=c(0,max(histo_inrange[,2])))
   lines(seq(min(histo[,1]),max(histo[,1])),dtnorm(lower=result[1],upper=result[2],mean=result[3],sd=result[4],seq(min(histo[,1]),max(histo[,1])))*sum(histo_inrange[,2]),col="blue",lwd=3)
 }
+
+print("Functions loaded")
