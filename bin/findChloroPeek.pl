@@ -202,6 +202,7 @@ $R->send(qq`start<-c($opt_lower_s,$opt_upper_s,$opt_mean_s,$opt_sd_s)`) ;
 $R->send(q`opt<-optim(par=start, fn=logLhistoMinus, histo=data, lower=lowerConst, upper=upperConst, method="L-BFGS-B")`) ;
 $R->send(q`print(opt)`) ;
 my $ret = $R->read ;
+print("Optimization result:\n");
 print("$ret\n");
 my $pdf_file = "$prefix_dir"."/"."$prefix_name"."_fits.pdf";
 $R->send(qq`c(pdf("$pdf_file"),plotResult(opt[[1]], data),plotResultFull(opt[[1]], data),dev.off())`);
