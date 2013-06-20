@@ -93,16 +93,35 @@ my $R = Statistics::R->new() ;
 $R->startR ;
 print("Loading data\n");
 $R->send(qq`data<-read.table("$opt_histo")`);
-$R->send(q`maxLowess<-lowess(data$V1[data$V1>100], data$V2[data$V1>100])`);
-$R->send(q`xMax<-which(maxLowess[[2]]==max(maxLowess[[2]]))`);
-$R->send(q`print(xMax)`);
+$R->send(q`print(max(data$V1))`);
 my $ret = $R->read;
+$ret=~s/\[1\]\s+//;
+my $upperBound=$ret;
+$R->send(q`maxLowess<-lowess(data$V1, data$V2)`);
+$R->send(q`xMax<-which.max(maxLowess[[2]])[1]`);
+$R->send(q`print(xMax)`);
+$ret = $R->read;
 print("Max at:\n");
 $ret=~s/\[1\]\s+//;
 my $max=$ret;
 print("$ret\n");
+
+$upperBound -= 1000;
+while($max<2 and $upperBound>0){
+	print("Next iteration, upperBound=$upperBound\n");
+	$R->send(qq`maxLowess<-lowess(data[,1][data[,1]<$upperBound], data[,2][data[,1]<$upperBound])`);
+	$R->send(q`xMax<-which.max(maxLowess[[2]])[1]`);
+	$R->send(q`print(xMax)`);
+	$ret = $R->read;
+	print("Max at:\n");
+	$ret=~s/\[1\]\s+//;
+	my $max=$ret;
+	print("$ret\n");
+	$upperBound -= 1000;
+}
+
 $R->send(q`minLowess<-lowess(data$V1[data$V1<xMax],data$V2[data$V1<xMax])`);
-$R->send(q`xMin<-which(minLowess[[2]]==min(minLowess[[2]]))`);
+$R->send(q`xMin<-which.min(minLowess[[2]])[1]`);
 $R->send(q`print(xMin)`);
 $ret = $R->read;
 $ret=~s/\[1\]\s+//;

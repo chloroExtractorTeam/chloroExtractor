@@ -45,6 +45,15 @@ path to the paired reads in fastq format
 
 $options{'mates=s'} = \(my $opt_mates);
 
+=item --insertsize=<INT>
+
+Insert size of the paired library as passed to downstream programs.
+
+
+=cut
+
+$options{'mates=s'} = \(my $opt_mates);
+
 =item [--prefix=<STRING>] 
 
 prefix for the output files. Default is current directory and a prefix
@@ -85,6 +94,14 @@ Path to Allpath-correction executable (ErrorCorrectReads.pl). Default tries if E
 =cut
 
 $options{'allpath-correction-bin=s'} = \(my $opt_allpath_correction_bin = `which ErrorCorrectReads.pl 2>/dev/null`);
+
+=item [--sickle-bin=<FILE>] 
+
+Path to sickle executable. Default tries if sickle is in PATH;
+
+=cut
+
+$options{'sickle-bin=s'} = \(my $opt_sickle_bin = `which sickle 2>/dev/null`);
 
 =item [--velvet-bin=<FILE>] 
 
@@ -161,6 +178,7 @@ $vwga->verbose('Checking parameter');
 pod2usage(-msg => "Missing parameter reads", -verbose => 0) unless ($opt_reads);
 pod2usage(-msg => 'jellyfish not in $PATH and binary (--jellyfish-bin) not specified', -verbose => 0) unless ($opt_jellyfish_bin);
 pod2usage(-msg => 'ErrorCorrectReads.pl not in $PATH and binary (--allpath-correction-bin) not specified', -verbose => 0) unless ($opt_allpath_correction_bin);
+pod2usage(-msg => 'sickle not in $PATH and binary (--sickle-bin) not specified', -verbose => 0) unless ($opt_sickle_bin);
 pod2usage(-msg => 'velvet not in $PATH and binary (--velvet-bin) not specified', -verbose => 0) unless ($opt_velvet_bin);
 
 $opt_prefix = get_prefix() unless $opt_prefix;
@@ -205,6 +223,45 @@ my ($min, $max) = split(/\t/,<IN>);
 chomp $max;
 $vwga->exit('ERROR: Chloroplast peak detection failed') if $?>> 8;
 
+$max *= 3; # Take three times the maximal x value (expect IR at double)
+
+$vwga->verbose('Dumping kmers in count range $min - $max');
+$vwga->hline();
+my $jellyfish_dump_cmd = jellyfish_dump_command();
+$vbash->verbose( $jellyfish_dump_cmd );
+my $jellyfish_dump_re = qx($jellyfish_dump_cmd); 
+$vwga->nline();
+$vplain->verbose($jellyfish_dump_re) if $jellyfish_dump_re;
+$vwga->exit('ERROR: Dumping kmers failed') if $?>> 8;
+
+$vwga->verbose('Quality trimming raw reads');
+$vwga->hline();
+my $quality_trimming_cmd = quality_trimming_command();
+$vbash->verbose( $quality_trimming_cmd );
+my $quality_trimming_re = qx($quality_trimming_cmd); 
+$vwga->nline();
+$vplain->verbose($quality_trimming_re) if $quality_trimming_re;
+$vwga->exit('ERROR: Quality trimming failed') if $?>> 8;
+
+$vwga->verbose('Dumping reads by kmer coverage');
+$vwga->hline();
+my $initial_read_dump_cmd = initial_read_dump_command();
+$vbash->verbose( $initial_read_dump_cmd );
+my $initial_read_dump_re = qx($initial_read_dump_cmd); 
+$vwga->nline();
+$vplain->verbose($initial_read_dump_re) if $initial_read_dump_re;
+$vwga->exit('ERROR: Dumping reads by kmer coverage') if $?>> 8;
+
+########### ALLPATH Correction
+
+########### velvet assembly
+
+########### contig Filtering (simple size filter)
+
+########### Iteration
+
+########### IR-Resolution
+
 $vwga->verbose('chloroExtractor finished');
 
 
@@ -248,6 +305,21 @@ sub jellyfish_histo_command{
 	return $cmd;
 }
 
+=head2 jellyfish_dump_command
+
+Returns the command to call jellyfish for dumping.
+
+=cut
+
+sub jellyfish_dump_command{
+	my $cmd = "$opt_jellyfish_bin dump ";
+	$cmd .= "--column --tab ";
+	$cmd .= "-o $opt_prefix"."_dump_$min"."_$max".".jf ";
+	$cmd .= "--lower-count=$min --upper-count=$max ";
+	$cmd .= "$opt_prefix"."_full.jf";
+	return $cmd;
+}
+
 =head2 findChloroPeak_command
 
 Returns the command to call findChloroPeak.pl for chloroplast peak detection.
@@ -255,23 +327,69 @@ Returns the command to call findChloroPeak.pl for chloroplast peak detection.
 =cut
 
 sub findChloroPeak_command{
-	my $cmd = "perl $FindBin::Bin/ ";
+	my $cmd = "perl $FindBin::Bin/findChloroPeak.pl ";
 	$cmd .= "--histo $opt_prefix"."_full_histo.jf ";
 	$cmd .= "--prefix $opt_prefix";
 	return $cmd;
 }
 
+=head2 quality_trimming_command
 
+Returns the command to call sickle for quality trimming of the raw reads.
+
+=cut
+
+sub quality_trimming_command{
+	my $cmd = "$opt_sickle_bin pe ";
+	# TODO PHRED offset is fixed to sanger (33) at the moment
+	$cmd .= "-f $opt_reads -r $opt_mates -t sanger ";
+	$cmd .= "-o $opt_prefix"."_reads_trimmed_1.fq ";
+	$cmd .= "-p $opt_prefix"."_reads_trimmed_2.fq ";
+	$cmd .= "-s $opt_prefix"."_reads_trimmed_singles.fq ";
+	$cmd .= "-l 50";
+	return $cmd;
+}
+
+=head2 initial_read_dump_command
+
+Returns the command to call Kmer.pl for the initial dumping of reads (by kmer coverage).
+
+=cut
+
+sub initial_read_dump_command{
+	my $cmd = "perl $FindBin::Bin/Kmer.pl ";
+	$cmd .= "--kmers $opt_prefix"."_dump_$min"."_$max".".jf ";
+	$cmd .= "--reads $opt_prefix"."_reads_trimmed_1.fq ";
+	$cmd .= "--mates $opt_prefix"."_reads_trimmed_1.fq ";
+	$cmd .= "--out $opt_prefix"."_reads_trimmed_dumped ";
+	$cmd .= "--histo $opt_prefix"."_trusted_kmers.histo ";
+	$cmd .= "--cutoff 50 --maxreads 200000 --notrustall";
+	return $cmd;
+}
+
+=head2 error_correction_command
+
+Returns the command to call ErrorCorrectReads.pl for ErrorCorrection of the dumped reads.
+
+=cut
+
+sub error_correction_command{
+	my $cmd = "$opt_allpath_correction_bin ";
+	$cmd .= "PHRED_ENCODING=33 READS_OUT=SRR492316_trimmed_dump_corr ";
+	$cmd .= "PAIRED_READS_A_IN=SRR492316_trimmed_dump_1.fq PAIRED_READS_B_IN=SRR492316_trimmed_dump_2.fq ";
+	$cmd .= "PAIRED_SEP=300 PAIRED_STDEV=100 PLOIDY=1 THREADS=20"
+	return $cmd;
+}
 
 =head2 get_prefix
 
-Returns a default prefix if none is specified by the user. Style: <reads_-_> (without .fq/.fastq)
+Returns a default prefix if none is specified by the user. Style: <reads_-> (without .fq/.fastq)
 
 =cut
 
 sub get_prefix{
 	my ($reads_name,$reads_path,$reads_suffix) = fileparse($opt_reads, qw(.fq .fastq));
-	return './'.$reads_name.'_-_';
+	return './'.$reads_name.'_-';
 }
 
 =head1 LIMITATIONS
