@@ -47,12 +47,20 @@ $options{'mates=s'} = \(my $opt_mates);
 
 =item --insertsize=<INT>
 
-Insert size of the paired library as passed to downstream programs.
-
+Insert size of the paired library as passed to downstream programs (default 200).
 
 =cut
 
-$options{'mates=s'} = \(my $opt_mates);
+$options{'insertsize=i'} = \(my $opt_insertsize=200);
+
+=item --insertsd=<INT>
+
+Standard deviation of the insert size of paired library as passed to downstream programs (default 100).
+
+=cut
+
+$options{'insertsd=i'} = \(my $opt_insertsd=100);
+
 
 =item [--prefix=<STRING>] 
 
@@ -250,13 +258,46 @@ $vbash->verbose( $initial_read_dump_cmd );
 my $initial_read_dump_re = qx($initial_read_dump_cmd); 
 $vwga->nline();
 $vplain->verbose($initial_read_dump_re) if $initial_read_dump_re;
-$vwga->exit('ERROR: Dumping reads by kmer coverage') if $?>> 8;
+$vwga->exit('ERROR: Dumping reads by kmer coverage failed') if $?>> 8;
 
-########### ALLPATH Correction
+$vwga->verbose('Error correcting reads');
+$vwga->hline();
+my $error_correction_cmd = error_correction_command();
+$vbash->verbose( $error_correction_cmd );
+my $error_correction_re = qx($error_correction_cmd); 
+$vwga->nline();
+$vplain->verbose($error_correction_re) if $error_correction_re;
+$vwga->exit('ERROR: Error correcting reads failed') if $?>> 8;
 
 ########### velvet assembly
+$vwga->verbose('Assembly of the corrected reads');
+$vwga->hline();
+$vwga->verbose('Preparing assembly: velveth');
+$vwga->hline();
+my $velveth_cmd = velveth_command();
+$vbash->verbose( $velveth_cmd );
+my $velveth_re = qx($velveth_cmd); 
+$vwga->nline();
+$vplain->verbose($velveth_re) if $velveth_re;
+$vwga->exit('ERROR: velveth failed') if $?>> 8;
+$vwga->verbose('Executing assembly: velvetg');
+$vwga->hline();
+my $velvetg_cmd = velvetg_command();
+$vbash->verbose( $velvetg_cmd );
+my $velvetg_re = qx($velvetg_cmd); 
+$vwga->nline();
+$vplain->verbose($velvetg_re) if $velvetg_re;
+$vwga->exit('ERROR: velvetg failed') if $?>> 8;
 
 ########### contig Filtering (simple size filter)
+$vwga->verbose('Filtering contigs by size');
+$vwga->hline();
+my $sizefilter_contigs_cmd = sizefilter_contigs_command();
+$vbash->verbose( $sizefilter_contigs_cmd );
+my $sizefilter_contigs_re = qx($sizefilter_contigs_cmd); 
+$vwga->nline();
+$vplain->verbose($sizefilter_contigs_re) if $sizefilter_contigs_re;
+$vwga->exit('ERROR: Filtering contigs by size failed') if $?>> 8;
 
 ########### Iteration
 
@@ -343,9 +384,9 @@ sub quality_trimming_command{
 	my $cmd = "$opt_sickle_bin pe ";
 	# TODO PHRED offset is fixed to sanger (33) at the moment
 	$cmd .= "-f $opt_reads -r $opt_mates -t sanger ";
-	$cmd .= "-o $opt_prefix"."_reads_trimmed_1.fq ";
-	$cmd .= "-p $opt_prefix"."_reads_trimmed_2.fq ";
-	$cmd .= "-s $opt_prefix"."_reads_trimmed_singles.fq ";
+	$cmd .= "-o $opt_prefix"."_trimmed_1.fq ";
+	$cmd .= "-p $opt_prefix"."_trimmed_2.fq ";
+	$cmd .= "-s $opt_prefix"."_trimmed_singles.fq ";
 	$cmd .= "-l 50";
 	return $cmd;
 }
@@ -359,9 +400,9 @@ Returns the command to call Kmer.pl for the initial dumping of reads (by kmer co
 sub initial_read_dump_command{
 	my $cmd = "perl $FindBin::Bin/Kmer.pl ";
 	$cmd .= "--kmers $opt_prefix"."_dump_$min"."_$max".".jf ";
-	$cmd .= "--reads $opt_prefix"."_reads_trimmed_1.fq ";
-	$cmd .= "--mates $opt_prefix"."_reads_trimmed_1.fq ";
-	$cmd .= "--out $opt_prefix"."_reads_trimmed_dumped ";
+	$cmd .= "--reads $opt_prefix"."_trimmed_1.fq ";
+	$cmd .= "--mates $opt_prefix"."_trimmed_1.fq ";
+	$cmd .= "--out $opt_prefix"."_trimmed_dumped ";
 	$cmd .= "--histo $opt_prefix"."_trusted_kmers.histo ";
 	$cmd .= "--cutoff 50 --maxreads 200000 --notrustall";
 	return $cmd;
@@ -375,9 +416,50 @@ Returns the command to call ErrorCorrectReads.pl for ErrorCorrection of the dump
 
 sub error_correction_command{
 	my $cmd = "$opt_allpath_correction_bin ";
-	$cmd .= "PHRED_ENCODING=33 READS_OUT=SRR492316_trimmed_dump_corr ";
-	$cmd .= "PAIRED_READS_A_IN=SRR492316_trimmed_dump_1.fq PAIRED_READS_B_IN=SRR492316_trimmed_dump_2.fq ";
-	$cmd .= "PAIRED_SEP=300 PAIRED_STDEV=100 PLOIDY=1 THREADS=20"
+	$cmd .= "PHRED_ENCODING=33 READS_OUT=$opt_prefix"."_trimmed_dumped_corr ";
+	$cmd .= "PAIRED_READS_A_IN=$opt_prefix"."_trimmed_dumped_1.fq ";
+	$cmd .= "PAIRED_READS_B_IN=$opt_prefix"."_trimmed_dumped_2.fq ";
+	$cmd .= "PAIRED_SEP=$opt_insertsize PAIRED_STDEV=$opt_insertsd PLOIDY=1 THREADS=20";
+	return $cmd;
+}
+
+=head2 velveth_command
+
+Returns the command to call velveth.
+
+=cut
+
+sub velveth_command{
+	my $cmd = "$opt_velvet_path/velveth ";
+	$cmd .= "$prefix_dir $opt_velvet_kmer_size -fastq -shortPaired -separate ";
+	$cmd .= "$opt_prefix"."_trimmed_dumped_corr.paired.A.fastq ";
+	$cmd .= "$opt_prefix"."_trimmed_dumped_corr.paired.B.fastq ";
+	return $cmd;
+}
+
+=head2 velvetg_command
+
+Returns the command to call velvetg.
+
+=cut
+
+sub velvetg_command{
+	my $cmd = "$opt_velvet_path/velvetg ";
+	$cmd .= "$prefix_dir -ins_length $opt_insertsize -exp_cov auto ";
+	return $cmd;
+}
+
+=head2 sizefilter_contigs_command
+
+Returns the command to call SeqFilter for filtering the contigs by length.
+
+=cut
+
+sub sizefilter_contigs_command{
+	my $cmd = "$FindBin::Bin/SeqFilter ";
+	$cmd .= "--in $prefix_dir/contigs.fa ";
+	$cmd .= "--min-length 2000 ";
+	$cmd .= "--out $prefix_dir/contigs_min2000.fa ";
 	return $cmd;
 }
 
