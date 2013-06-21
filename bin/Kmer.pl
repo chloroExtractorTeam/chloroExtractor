@@ -178,8 +178,12 @@ while(my $fq =$fp->next_seq()){
 		$dumped_reads++;
 		last if($opt_maxreads>0 and $dumped_reads>$opt_maxreads);
 		if($opt_trustall){
-			$target_kmer{$kmer}=1 foreach my $kmer (Kmer->Kmerize_nr($fq->seq));
-			$target_kmer{$kmer2}=1 foreach my $kmer2 (Kmer->Kmerize_nr($fq2->seq));
+			foreach my $kmer (Kmer->Kmerize_nr($fq->seq)){
+				$target_kmer{$kmer}=1;
+			}
+			foreach my $kmer (Kmer->Kmerize_nr($fq2->seq)){
+				$target_kmer{$kmer}=1;
+			}
 		}
 	}
 }
