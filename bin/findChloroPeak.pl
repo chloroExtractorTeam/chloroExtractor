@@ -4,6 +4,7 @@ use warnings;
 use Getopt::Long;
 use Pod::Usage;
 use File::Basename;
+use File::Spec;
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 use Data::Dumper;
@@ -87,12 +88,14 @@ pod2usage(-msg => "Missing parameter --histo", -verbose => 0) unless ($opt_histo
 
 $opt_prefix = get_prefix() unless $opt_prefix;
 my ($prefix_name,$prefix_dir) = fileparse($opt_prefix);
+my $abs_prefix_dir = File::Spec->rel2abs( $prefix_dir );
+my $abs_histo = File::Spec->rel2abs( $opt_histo );
 
 print("Starting R\n");
 my $R = Statistics::R->new() ;
 $R->startR ;
 print("Loading data\n");
-$R->send(qq`data<-read.table("$opt_histo")`);
+$R->send(qq`data<-read.table("$abs_histo")`);
 print("Loading functions\n");
 $R->send(qq`source("$FindBin::Bin/../find_chloro_kmer_peak/find_chloro_kmer_peak.lowess")`);
 print("Finding peaks\n");
@@ -114,15 +117,15 @@ my $min=$ret;
 print("Min at:\n");
 print("$ret\n");
 
-open(OUT, ">$prefix_dir"."/"."$prefix_name"."_minmax.tsv") or die "Can't open file $prefix_dir"."/"."$prefix_name"."_minmax.tsv$!";
+open(OUT, ">$abs_prefix_dir"."/"."$prefix_name"."_minmax.tsv") or die "Can't open file $abs_prefix_dir"."/"."$prefix_name"."_minmax.tsv$!";
 print OUT "$min\t$max\n";
 close OUT or die "$!";
-print("Output min-max written to $prefix_dir"."/"."$prefix_name"."_minmax.tsv\n");
+print("Output min-max written to $abs_prefix_dir"."/"."$prefix_name"."_minmax.tsv\n");
 
-my $pdf_file = "$prefix_dir"."/"."$prefix_name"."_fit.pdf";
+my $pdf_file = "$abs_prefix_dir"."/"."$prefix_name"."_fit.pdf";
 $R->send(qq`c(pdf("$pdf_file"),plot(data[,1], data[,2], ylim=c(0,3*maxLowess[[2]][xMax])),lines(maxLowess, col="red", lwd=3),lines(minLowess, col="green", lwd=3),dev.off())`);
 $R->stopR() ;
-print("Output plot written to $prefix_dir"."/"."$prefix_name"."_fit.tsv\n");
+print("Output plot written to $abs_prefix_dir"."/"."$prefix_name"."_fit.pdf\n");
 print("findChloroPeak.pl finished\n");
 
 
