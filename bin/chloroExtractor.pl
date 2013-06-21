@@ -157,7 +157,7 @@ $options{'man'} = \(my $opt_man);
 =cut
 
 
-chomp($opt_jellyfish_bin,$opt_allpath_correction_bin,$opt_velvet_bin);
+chomp($opt_jellyfish_bin,$opt_allpath_correction_bin,$opt_velvet_bin,$opt_sickle_bin);
 my $opt_velvet_path = dirname($opt_velvet_bin);
 
 GetOptions(%options) or pod2usage(1);
