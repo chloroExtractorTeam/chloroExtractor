@@ -369,8 +369,8 @@ Returns the command to call findChloroPeak.pl for chloroplast peak detection.
 
 sub findChloroPeak_command{
 	my $cmd = "perl $FindBin::Bin/findChloroPeak.pl ";
-	$cmd .= "--histo $opt_prefix"."_full_histo.jf ";
-	$cmd .= "--prefix $opt_prefix";
+	$cmd .= "--histo $prefix_dir"."$prefix_name"."_full_histo.jf ";
+	$cmd .= "--prefix $prefix_dir"."$prefix_name";
 	return $cmd;
 }
 
