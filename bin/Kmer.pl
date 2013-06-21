@@ -176,7 +176,7 @@ while(my $fq =$fp->next_seq()){
 		print OUT1 $fq->string();
 		print OUT2 $fq2->string() if($opt_mates);
 		$dumped_reads++;
-		last if($opt_maxreads>0 and $dumped_reads>$opt_maxreads);
+		last if($opt_maxreads>0 and $dumped_reads>=$opt_maxreads);
 		if($opt_trustall){
 			foreach my $kmer (Kmer->Kmerize_nr($fq->seq)){
 				$target_kmer{$kmer}=1;
