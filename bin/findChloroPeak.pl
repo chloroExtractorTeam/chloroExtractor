@@ -97,7 +97,7 @@ $R->startR ;
 print("Loading data\n");
 $R->send(qq`data<-read.table("$abs_histo")`);
 print("Loading functions\n");
-$R->send(qq`source("$FindBin::Bin/../find_chloro_kmer_peak/find_chloro_kmer_peak.lowess")`);
+$R->send(qq`source("$FindBin::Bin/../find_chloro_kmer_peak/find_chloro_kmer_peak_lowess.R")`);
 print("Finding peaks\n");
 $R->send(q`maxLowess<-findMaxLowess(data)`);
 $R->send(q`xMax<-which.max(maxLowess[[2]])[1]`);
