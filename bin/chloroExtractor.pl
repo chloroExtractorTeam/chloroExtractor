@@ -459,7 +459,7 @@ sub quality_trimming_command{
 	# TODO PHRED offset is fixed to sanger (33) at the moment
 	my $offset_type = "sanger";
 	$offset_type = "illumina" if($opt_phred == 64);
-	$cmd .= "-f $opt_reads -r $opt_mates -t sanger ";
+	$cmd .= "-f $opt_reads -r $opt_mates -t $offset_type ";
 	$cmd .= "-o $opt_prefix"."_trimmed_1.fq ";
 	$cmd .= "-p $opt_prefix"."_trimmed_2.fq ";
 	$cmd .= "-s $opt_prefix"."_trimmed_singles.fq ";
