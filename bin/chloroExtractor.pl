@@ -268,14 +268,12 @@ else{
 	$vwga->exit('ERROR: Chloroplast peak detection failed') if $?>> 8;
 }
 
+get_min_max();
+
 if(exists $skip{3}){
 	$vwga->verbose('Skipping kmer dump');
 }
 else{
-	open(IN, "<$opt_prefix"."_minmax.tsv") or die "Can't open file $opt_prefix"."_minmax.tsv$!";
-	($min, $max) = split(/\t/,<IN>);
-	chomp $max;
-	$max *= 3; # Take three times the maximal x value (expect IR at double)
 	$vwga->verbose('Dumping kmers in count range $min - $max');
 	$vwga->hline();
 	my $jellyfish_dump_cmd = jellyfish_dump_command();
@@ -456,7 +454,6 @@ Returns the command to call sickle for quality trimming of the raw reads.
 
 sub quality_trimming_command{
 	my $cmd = "$opt_sickle_bin pe ";
-	# TODO PHRED offset is fixed to sanger (33) at the moment
 	my $offset_type = "sanger";
 	$offset_type = "illumina" if($opt_phred == 64);
 	$cmd .= "-f $opt_reads -r $opt_mates -t $offset_type ";
@@ -548,6 +545,19 @@ Returns a default prefix if none is specified by the user. Style: <reads_-> (wit
 sub get_prefix{
 	my ($reads_name,$reads_path,$reads_suffix) = fileparse($opt_reads, qw(.fq .fastq));
 	return './'.$reads_name.'_-';
+}
+
+=head2 get_min_max
+
+Reads minimum and maximum from file
+
+=cut
+
+sub get_min_max{
+	open(IN, "<$opt_prefix"."_minmax.tsv") or die "Can't open file $opt_prefix"."_minmax.tsv$!";
+	($min, $max) = split(/\t/,<IN>);
+	chomp $max;
+	$max *= 3; # Take three times the maximal x value (expect IR at double)
 }
 
 =head1 LIMITATIONS
