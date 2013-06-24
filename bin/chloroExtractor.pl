@@ -243,6 +243,8 @@ else{
 	$vwga->exit('ERROR: Histogramming kmer counts failed') if $?>> 8;
 }
 
+my $min;
+my $max;
 if(exists $skip{2}){
 	$vwga->verbose('Skipping peak detection');
 }
@@ -262,7 +264,7 @@ if(exists $skip{3}){
 }
 else{
 	open(IN, "<$opt_prefix"."_minmax.tsv") or die "Can't open file $opt_prefix"."_minmax.tsv$!";
-	my ($min, $max) = split(/\t/,<IN>);
+	($min, $max) = split(/\t/,<IN>);
 	chomp $max;
 	$max *= 3; # Take three times the maximal x value (expect IR at double)
 	$vwga->verbose('Dumping kmers in count range $min - $max');
