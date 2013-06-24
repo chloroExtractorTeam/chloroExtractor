@@ -45,6 +45,15 @@ path to the paired reads in fastq format
 
 $options{'mates=s'} = \(my $opt_mates);
 
+=item --phred=<INT>
+
+Phred offset of the fastq files (default 33).
+Sickle is called with --qual-type sanger, only if --phred=64 is selected it will be --qual-type illumina
+
+=cut
+
+$options{'phred=i'} = \(my $opt_phred=33);
+
 =item --insertsize=<INT>
 
 Insert size of the paired library as passed to downstream programs (default 200).
@@ -448,6 +457,8 @@ Returns the command to call sickle for quality trimming of the raw reads.
 sub quality_trimming_command{
 	my $cmd = "$opt_sickle_bin pe ";
 	# TODO PHRED offset is fixed to sanger (33) at the moment
+	my $offset_type = "sanger";
+	$offset_type = "illumina" if($opt_phred == 64);
 	$cmd .= "-f $opt_reads -r $opt_mates -t sanger ";
 	$cmd .= "-o $opt_prefix"."_trimmed_1.fq ";
 	$cmd .= "-p $opt_prefix"."_trimmed_2.fq ";
@@ -481,7 +492,7 @@ Returns the command to call ErrorCorrectReads.pl for ErrorCorrection of the dump
 
 sub error_correction_command{
 	my $cmd = "$opt_allpath_correction_bin ";
-	$cmd .= "PHRED_ENCODING=33 READS_OUT=$opt_prefix"."_trimmed_dumped_corr ";
+	$cmd .= "PHRED_ENCODING=$opt_phred READS_OUT=$opt_prefix"."_trimmed_dumped_corr ";
 	$cmd .= "PAIRED_READS_A_IN=$opt_prefix"."_trimmed_dumped_1.fq ";
 	$cmd .= "PAIRED_READS_B_IN=$opt_prefix"."_trimmed_dumped_2.fq ";
 	$cmd .= "PAIRED_SEP=$opt_insertsize PAIRED_STDEV=$opt_insertsd PLOIDY=1 THREADS=20";
