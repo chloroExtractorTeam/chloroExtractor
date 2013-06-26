@@ -401,14 +401,14 @@ else{
 		$vplain->verbose($jellyfish_count_re) if $jellyfish_count_re;
 		$vwga->exit('ERROR: Iterative assembly failed in iteration '."$i".' in kmer counting step') if $?>> 8;
 		
-		my $jellifish_dump_cmd = "$opt_jellyfish_bin dump --column --tab -o $opt_prefix/iteration$i/chloro_kmers_dump.tsv $opt_prefix/iteration$i/contigs*";
+		my $jellifish_dump_cmd = "$opt_jellyfish_bin dump --column --tab -o $prefix_dir/iteration$i/chloro_kmers_dump.tsv $opt_prefix/iteration$i/contigs*";
 		$vbash->verbose( $jellifish_dump_cmd );
 		my $jellyfish_dump_re = qx($jellifish_dump_cmd); 
 		$vwga->nline();
 		$vplain->verbose($jellyfish_dump_re) if $jellyfish_dump_re;
 		$vwga->exit('ERROR: Iterative assembly failed in iteration '."$i".' in kmer dump step') if $?>> 8;
 		
-		my $read_dump_cmd = "perl $FindBin::Bin/Kmer.pl --kmers $opt_prefix/iteration$i/chloro_kmers_dump.tsv ";
+		my $read_dump_cmd = "perl $FindBin::Bin/Kmer.pl --kmers $prefix_dir/iteration$i/chloro_kmers_dump.tsv ";
 		$read_dump_cmd .= "--reads $opt_prefix"."_trimmed_1.fq ";
 		$read_dump_cmd .= "--mates $opt_prefix"."_trimmed_2.fq ";
 		$read_dump_cmd .= "--out $prefix_dir/iteration$i/"."chloro_trimmed_dumped ";
