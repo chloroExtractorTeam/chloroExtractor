@@ -401,7 +401,7 @@ else{
 		$vplain->verbose($jellyfish_count_re) if $jellyfish_count_re;
 		$vwga->exit('ERROR: Iterative assembly failed in iteration '."$i".' in kmer counting step') if $?>> 8;
 		
-		my $jellifish_dump_cmd = "$opt_jellyfish_bin dump --column --tab -o $prefix_dir/iteration$i/chloro_kmers_dump.tsv $opt_prefix/iteration$i/contigs*";
+		my $jellifish_dump_cmd = "$opt_jellyfish_bin dump --column --tab -o $prefix_dir/iteration$i/chloro_kmers_dump.tsv $prefix_dir/iteration$i/contigs*";
 		$vbash->verbose( $jellifish_dump_cmd );
 		my $jellyfish_dump_re = qx($jellifish_dump_cmd); 
 		$vwga->nline();
