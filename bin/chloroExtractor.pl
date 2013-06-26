@@ -389,7 +389,10 @@ else{
 		$assembly_file = "$prefix_dir/iteration$i/contigs_min2000.fa" if $i==0;
 		$vwga->verbose('Starting iteration '."$i");
 		$vwga->hline();
-		$vbash->verbose(mkdir $opt_prefix/iteration$i);
+		my $mkdir_cmd = "mkdir $prefix_dir/iteration$i";
+		$vbash->verbose($mkdir_cmd);
+		my $mkdir_re = qx($mkdir_cmd);
+		$vplain->verbose($mkdir_re) if $mkdir_re;
 		
 		my $jellifish_count_cmd = "$opt_jellyfish_bin count -m $opt_jellyfish_kmer_size -o $prefix_dir/iteration$i/contigs -s 100000000 -t 20 --both-strands $assembly_file";
 		$vbash->verbose( $jellifish_count_cmd );
