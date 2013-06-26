@@ -448,6 +448,16 @@ else{
 		$vwga->nline();
 		$vplain->verbose($velvetg_re2) if $velvetg_re2;
 		$vwga->exit('ERROR: Iterative assembly failed in iteration '."$i".' in assembly (velvetg) step') if $?>> 8;
+		
+		my $seq_filter_cmd = "$FindBin::Bin/SeqFilter ";
+		$seq_filter_cmd .= "--in $prefix_dir/iteration$i/contigs.fa ";
+		$seq_filter_cmd .= "--min-length 2000 ";
+		$seq_filter_cmd .= "--out $prefix_dir/iteration$i/contigs_min2000.fa ";
+		$vbash->verbose( $seq_filter_cmd );
+		my $seq_filter_re = qx($seq_filter_cmd); 
+		$vwga->nline();
+		$vplain->verbose($seq_filter_re) if $seq_filter_re;
+		$vwga->exit('ERROR: Iterative assembly failed in iteration '."$i".' in contig filtering step') if $?>> 8;
 	}
 }
 
