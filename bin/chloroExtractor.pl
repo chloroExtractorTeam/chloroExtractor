@@ -385,8 +385,8 @@ else{
 	$vwga->verbose('Iterative assembly');
 	$vwga->hline();
 	for(my $i=1; $i<=$opt_iterations; $i++){
-		my $assembly_file = "iteration".($i-1)."$prefix_dir/contigs_min2000.fa";
-		$assembly_file = "$prefix_dir/iteration$i/contigs_min2000.fa" if $i==1;
+		my $assembly_file = "$prefix_dir"."iteration".($i-1)."/contigs_min2000.fa";
+		$assembly_file = "$prefix_dir/contigs_min2000.fa" if $i==1;
 		$vwga->verbose('Starting iteration '."$i");
 		$vwga->hline();
 		my $mkdir_cmd = "mkdir $prefix_dir/iteration$i";
