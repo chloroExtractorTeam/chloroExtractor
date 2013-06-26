@@ -9,6 +9,10 @@ use lib "$FindBin::Bin/../lib";
 use Verbose;
 use Data::Dumper;
 
+# TODO config einlesen
+#my %cfg = do "$FindBin::RealBin/../chloroExtractor.cfg";
+#die "Config error" if($@);
+
 my %options;
 
 =head1 NAME 
@@ -70,6 +74,13 @@ Standard deviation of the insert size of paired library as passed to downstream 
 
 $options{'insertsd=i'} = \(my $opt_insertsd=100);
 
+=item --iterations=<INT>
+
+Number of iterations for the final refinement of the assemblies (default 5).
+
+=cut
+
+$options{'iterations=i'} = \(my $opt_iterations=5);
 
 =item [--prefix=<STRING>] 
 
@@ -367,6 +378,75 @@ else{
 }
 
 ########### Iteration
+if(exists $skip{9}){
+	$vwga->verbose('Skipping iterative assembly');
+}
+else{
+	$vwga->verbose('Iterative assembly');
+	$vwga->hline();
+	for(my $i=1; $i<=$opt_iterations; $i++){
+		my $assembly_file = "iteration".($i-1)."$prefix_dir/contigs_min2000.fa";
+		$assembly_file = "$prefix_dir/iteration$i/contigs_min2000.fa" if $i==0;
+		$vwga->verbose('Starting iteration '."$i");
+		$vwga->hline();
+		$vbash->verbose(mkdir $opt_prefix/iteration$i);
+		
+		my $jellifish_count_cmd = "$opt_jellyfish_bin count -m $opt_jellyfish_kmer_size -o $prefix_dir/iteration$i/contigs -s 100000000 -t 20 --both-strands $assembly_file";
+		$vbash->verbose( $jellifish_count_cmd );
+		my $jellyfish_count_re = qx($jellifish_count_cmd); 
+		$vwga->nline();
+		$vplain->verbose($jellyfish_count_re) if $jellyfish_count_re;
+		$vwga->exit('ERROR: Iterative assembly failed in iteration '."$i".' in kmer counting step') if $?>> 8;
+		
+		my $jellifish_dump_cmd = "$opt_jellyfish_bin dump --column --tab -o $opt_prefix/iteration$i/chloro_kmers_dump.tsv $opt_prefix/iteration$i/contigs*";
+		$vbash->verbose( $jellifish_dump_cmd );
+		my $jellyfish_dump_re = qx($jellifish_dump_cmd); 
+		$vwga->nline();
+		$vplain->verbose($jellyfish_dump_re) if $jellyfish_dump_re;
+		$vwga->exit('ERROR: Iterative assembly failed in iteration '."$i".' in kmer dump step') if $?>> 8;
+		
+		my $read_dump_cmd = "perl $FindBin::Bin/Kmer.pl --kmers $opt_prefix/iteration$i/chloro_kmers_dump.tsv ";
+		$read_dump_cmd .= "--reads $opt_prefix"."_trimmed_1.fq ";
+		$read_dump_cmd .= "--mates $opt_prefix"."_trimmed_2.fq ";
+		$read_dump_cmd .= "--out $prefix_dir/iteration$i/"."chloro_trimmed_dumped ";
+		$read_dump_cmd .= "--histo $prefix_dir/iteration$i/"."trusted_kmers.histo ";
+		$read_dump_cmd .= "--cutoff 60 --maxreads 200000 --trustall";
+		$vbash->verbose( $read_dump_cmd );
+		my $read_dump_re = qx($read_dump_cmd); 
+		$vwga->nline();
+		$vplain->verbose($read_dump_re) if $read_dump_re;
+		$vwga->exit('ERROR: Iterative assembly failed in iteration '."$i".' in read dump step') if $?>> 8;
+		
+		my $error_correct_cmd = "$opt_allpath_correction_bin ";
+		$error_correct_cmd .= "PHRED_ENCODING=$opt_phred READS_OUT=$prefix_dir/iteration$i/"."chloro_trimmed_dumped_corr ";
+		$error_correct_cmd .= "PAIRED_READS_A_IN=$prefix_dir/iteration$i/"."chloro_trimmed_dumped_1.fq ";
+		$error_correct_cmd .= "PAIRED_READS_B_IN=$prefix_dir/iteration$i/"."chloro_trimmed_dumped_2.fq ";
+		$error_correct_cmd .= "PAIRED_SEP=$opt_insertsize PAIRED_STDEV=$opt_insertsd PLOIDY=1 THREADS=20";
+		$vbash->verbose( $error_correct_cmd );
+		my $error_correct_re = qx($error_correct_cmd); 
+		$vwga->nline();
+		$vplain->verbose($error_correct_re) if $error_correct_re;
+		$vwga->exit('ERROR: Iterative assembly failed in iteration '."$i".' in error correction step') if $?>> 8;
+		
+		my $velveth_cmd2 = "$opt_velvet_path/velveth ";
+		$velveth_cmd2 .= "$prefix_dir/iteration$i $opt_velvet_kmer_size -fastq -shortPaired -separate ";
+		$velveth_cmd2 .= "$prefix_dir/iteration$i/"."chloro_trimmed_dumped_corr.paired.A.fastq ";
+		$velveth_cmd2 .= "$prefix_dir/iteration$i/"."chloro_trimmed_dumped_corr.paired.B.fastq ";
+		$vbash->verbose( $velveth_cmd2 );
+		my $velveth_re2 = qx($velveth_cmd2); 
+		$vwga->nline();
+		$vplain->verbose($velveth_re2) if $velveth_re2;
+		$vwga->exit('ERROR: Iterative assembly failed in iteration '."$i".' in assembly (velveth) step') if $?>> 8;
+	
+		my $velvetg_cmd2 = "$opt_velvet_path/velvetg ";
+		$velvetg_cmd2 .= "$prefix_dir/iteration$i -ins_length $opt_insertsize -exp_cov auto ";
+		$vbash->verbose( $velvetg_cmd2 );
+		my $velvetg_re2 = qx($velvetg_cmd2); 
+		$vwga->nline();
+		$vplain->verbose($velvetg_re2) if $velvetg_re2;
+		$vwga->exit('ERROR: Iterative assembly failed in iteration '."$i".' in assembly (velvetg) step') if $?>> 8;
+	}
+}
 
 ########### IR-Resolution
 
@@ -474,7 +554,7 @@ sub initial_read_dump_command{
 	my $cmd = "perl $FindBin::Bin/Kmer.pl ";
 	$cmd .= "--kmers $opt_prefix"."_dump_$min"."_$max".".jf ";
 	$cmd .= "--reads $opt_prefix"."_trimmed_1.fq ";
-	$cmd .= "--mates $opt_prefix"."_trimmed_1.fq ";
+	$cmd .= "--mates $opt_prefix"."_trimmed_2.fq ";
 	$cmd .= "--out $opt_prefix"."_trimmed_dumped ";
 	$cmd .= "--histo $opt_prefix"."_trusted_kmers.histo ";
 	$cmd .= "--cutoff 50 --maxreads 200000 --notrustall";
