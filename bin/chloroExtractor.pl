@@ -435,6 +435,7 @@ else{
 		$velveth_cmd2 .= "$prefix_dir/iteration$i $opt_velvet_kmer_size -fastq -shortPaired -separate ";
 		$velveth_cmd2 .= "$prefix_dir/iteration$i/"."chloro_trimmed_dumped_corr.paired.A.fastq ";
 		$velveth_cmd2 .= "$prefix_dir/iteration$i/"."chloro_trimmed_dumped_corr.paired.B.fastq ";
+		$velveth_cmd2 .= "-fasta -long $assembly_file ";
 		$vbash->verbose( $velveth_cmd2 );
 		my $velveth_re2 = qx($velveth_cmd2); 
 		$vwga->nline();
