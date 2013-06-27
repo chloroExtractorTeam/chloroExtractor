@@ -413,7 +413,7 @@ else{
 		$read_dump_cmd .= "--mates $opt_prefix"."_trimmed_2.fq ";
 		$read_dump_cmd .= "--out $prefix_dir/iteration$i/"."chloro_trimmed_dumped ";
 		$read_dump_cmd .= "--histo $prefix_dir/iteration$i/"."trusted_kmers.histo ";
-		$read_dump_cmd .= "--cutoff 60 --maxreads 200000 --trustall";
+		$read_dump_cmd .= "--cutoff 60 --maxreads 200000 --notrustall";
 		$vbash->verbose( $read_dump_cmd );
 		my $read_dump_re = qx($read_dump_cmd); 
 		$vwga->nline();
