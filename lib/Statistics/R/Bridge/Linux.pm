@@ -20,6 +20,8 @@
 #############################################################################
 
 
+  use FindBin;
+  use lib "$FindBin::Bin/../../..";
   use Statistics::R::Bridge::pipe ;
 
 { package Statistics::R::Bridge::Linux ;

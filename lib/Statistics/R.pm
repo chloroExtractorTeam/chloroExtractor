@@ -23,6 +23,8 @@
 { package Statistics::R ;
 
   use strict qw(vars) ; no warnings ;
+  use FindBin;
+  use lib "$FindBin::Bin/..";
 
   my (%CLASS_HPLOO , $this) ;
  

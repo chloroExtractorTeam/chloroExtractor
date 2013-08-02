@@ -19,7 +19,8 @@
 ##              modify it under the same terms as Perl itself
 #############################################################################
 
-
+  use FindBin;
+  use lib "$FindBin::Bin/../../..";
   use Statistics::R::Bridge::pipe ;
 
 { package Statistics::R::Bridge::Win32 ;
