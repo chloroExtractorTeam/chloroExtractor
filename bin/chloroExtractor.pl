@@ -157,6 +157,24 @@ The containing folder is used to find both velveth and velvetg.
 $options{'velvet-bin=s'} = \(my $opt_velvet_bin = `which velveth 2>/dev/null`);
 
 
+=item [--sspace-bin=<FILE>] 
+
+Path to the sspace executable (eg SSPACE_Basic_v2.0.pl). Default tries if sspace is in PATH;
+
+=cut
+
+$options{'sspace-bin=s'} = \(my $opt_sspace_bin = `which SSPACE_Basic_v2.0.pl 2>/dev/null`);
+
+
+=item [--shrimp-bin=<FILE>] 
+
+Path to the shrimp executable (gmapper-ls). Default tries if gmapper-ls is in PATH;
+
+=cut
+
+$options{'shrimp-bin=s'} = \(my $opt_shrimp_bin = `which gmapper-ls 2>/dev/null`);
+
+
 =item [--[no]verbose] 
 
 verbose is default.
@@ -431,11 +449,45 @@ else{
 		$vplain->verbose($error_correct_re) if $error_correct_re;
 		$vwga->exit('ERROR: Iterative assembly failed in iteration '."$i".' in error correction step') if $?>> 8;
 		
+		# Create library file for sspace scaffolding
+		my $library_txt = "$prefix_dir/iteration$i/"."library.txt";
+		open(LIBRARY, ">$library_txt") or die "Can't open $library_txt $!";
+		print LIBRARY "raw $opt_prefix"."_trimmed_dumped_corr.paired.A.fastq $opt_prefix"."_trimmed_dumped_corr.paired.B.fastq $opt_insertsize 0.5 FR\n";
+		for(my $j=1; $j<=$i; $j++){
+			print LIBRARY "iteration$j $prefix_dir/iteration$j/"."chloro_trimmed_dumped_corr.paired.A.fastq $prefix_dir/iteration$j/"."chloro_trimmed_dumped_corr.paired.B.fastq $opt_insertsize 0.5 FR\n";
+		}
+		close LIBRARY or die "$!";
+		my $scaffolding_cmd = "$opt_sspace_bin -l $library_txt -s $assembly_file ";
+		$scaffolding_cmd .= "-x 1 -T 20 -b $prefix_dir/iteration$i/sspace_x";
+		$vbash->verbose( $scaffolding_cmd );
+		my $scaffolding_re = qx($scaffolding_cmd); 
+		$vwga->nline();
+		$vplain->verbose($scaffolding_re) if $scaffolding_re;
+		$vwga->exit('ERROR: Iterative assembly failed in iteration '."$i".' in scaffolding step') if $?>> 8;
+				
+		#MAPPING
+		my $mapping_cmd = "$opt_shrimp_bin --fastq --sam --global --qv-offset $opt_phred --threads 20 ";
+		$mapping_cmd .= "--fuull-threshold 95\% --pair-mode opp-in --all-contigs --sam-unaligned --isize ";
+		$mapping_cmd .= ($opt_insertsize-$opt_insertsd).",".($opt_insertsize+$opt_insertsd)." ";
+		$mapping_cmd .= "-1 $prefix_dir/iteration$i/"."chloro_trimmed_dumped_corr.paired.A.fastq ";
+		$mapping_cmd .= "-2 $prefix_dir/iteration$i/"."chloro_trimmed_dumped_corr.paired.B.fastq ";
+		$mapping_cmd .= "$prefix_dir/iteration$i/sspace_x.final.scaffolds.fasta >$prefix_dir/iteration$i/mapping.sam ";
+		$mapping_cmd .= "2>$prefix_dir/iteration$i/mapping.log ";
+		$vbash->verbose( $mapping_cmd );
+		my $mapping_re = qx($mapping_cmd); 
+		$vwga->nline();
+		$vplain->verbose($mapping_re) if $mapping_re;
+		$vwga->exit('ERROR: Iterative assembly failed in iteration '."$i".' in mapping step') if $?>> 8;
+		my $sort_mapping_cmd = "sort $prefix_dir/iteration$i/mapping.sam $prefix_dir/iteration$i/shortReads.sam";
+		$vbash->verbose($sort_mapping_cmd);
+		my $sort_mapping_re = qx($sort_mapping_cmd);
+		$vplain->verbose($sort_mapping_re) if $sort_mapping_re;
+		#MAPPING
+		
 		my $velveth_cmd2 = "$opt_velvet_path/velveth ";
-		$velveth_cmd2 .= "$prefix_dir/iteration$i $opt_velvet_kmer_size -fastq -shortPaired -separate ";
-		$velveth_cmd2 .= "$prefix_dir/iteration$i/"."chloro_trimmed_dumped_corr.paired.A.fastq ";
-		$velveth_cmd2 .= "$prefix_dir/iteration$i/"."chloro_trimmed_dumped_corr.paired.B.fastq ";
-		$velveth_cmd2 .= "-fasta -long $assembly_file ";
+		$velveth_cmd2 .= "$prefix_dir/iteration$i $opt_velvet_kmer_size ";
+		$velveth_cmd2 .= "-reference $prefix_dir/iteration$i/sspace_x.final.scaffolds.fasta";
+		$velveth_cmd2 .= "-shortPaired -sam $prefix_dir/iteration$i/shortReads.sam";
 		$vbash->verbose( $velveth_cmd2 );
 		my $velveth_re2 = qx($velveth_cmd2); 
 		$vwga->nline();
@@ -443,7 +495,7 @@ else{
 		$vwga->exit('ERROR: Iterative assembly failed in iteration '."$i".' in assembly (velveth) step') if $?>> 8;
 	
 		my $velvetg_cmd2 = "$opt_velvet_path/velvetg ";
-		$velvetg_cmd2 .= "$prefix_dir/iteration$i -ins_length $opt_insertsize -exp_cov auto ";
+		$velvetg_cmd2 .= "$prefix_dir/iteration$i -ins_length $opt_insertsize -exp_cov auto -scaffolding yes";
 		$vbash->verbose( $velvetg_cmd2 );
 		my $velvetg_re2 = qx($velvetg_cmd2); 
 		$vwga->nline();
@@ -612,7 +664,7 @@ Returns the command to call velvetg.
 
 sub velvetg_command{
 	my $cmd = "$opt_velvet_path/velvetg ";
-	$cmd .= "$prefix_dir -ins_length $opt_insertsize -exp_cov auto ";
+	$cmd .= "$prefix_dir -ins_length $opt_insertsize -exp_cov auto -scaffolding yes";
 	return $cmd;
 }
 
