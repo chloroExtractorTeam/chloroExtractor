@@ -475,7 +475,7 @@ else{
 		$mapping_cmd .= ($opt_insertsize-$opt_insertsd).",".($opt_insertsize+$opt_insertsd)." ";
 		$mapping_cmd .= "-1 $prefix_dir/iteration$i/"."chloro_trimmed_dumped_corr.paired.A.fastq ";
 		$mapping_cmd .= "-2 $prefix_dir/iteration$i/"."chloro_trimmed_dumped_corr.paired.B.fastq ";
-		$mapping_cmd .= "$prefix_dir/iteration$i/sspace_x.final.scaffolds.fasta >$prefix_dir/iteration$i/mapping.sam ";
+		$mapping_cmd .= "iteration$i"."_sspace_x.final.scaffolds.fasta >$prefix_dir/iteration$i/mapping.sam ";
 		$mapping_cmd .= "2>$prefix_dir/iteration$i/mapping.log ";
 		$vbash->verbose( $mapping_cmd );
 		my $mapping_re = qx($mapping_cmd); 
@@ -490,7 +490,7 @@ else{
 		
 		my $velveth_cmd2 = "$opt_velvet_path/velveth ";
 		$velveth_cmd2 .= "$prefix_dir/iteration$i $opt_velvet_kmer_size ";
-		$velveth_cmd2 .= "-reference $prefix_dir/iteration$i/sspace_x.final.scaffolds.fasta";
+		$velveth_cmd2 .= "-reference iteration$i"."_sspace_x.final.scaffolds.fasta";
 		$velveth_cmd2 .= "-shortPaired -sam $prefix_dir/iteration$i/shortReads.sam";
 		$vbash->verbose( $velveth_cmd2 );
 		my $velveth_re2 = qx($velveth_cmd2); 
