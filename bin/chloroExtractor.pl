@@ -482,7 +482,7 @@ else{
 		$vwga->nline();
 		$vplain->verbose($mapping_re) if $mapping_re;
 		$vwga->exit('ERROR: Iterative assembly failed in iteration '."$i".' in mapping step') if $?>> 8;
-		my $sort_mapping_cmd = "sort $prefix_dir/iteration$i/mapping.sam $prefix_dir/iteration$i/shortReads.sam";
+		my $sort_mapping_cmd = "sort $prefix_dir/iteration$i/mapping.sam >$prefix_dir/iteration$i/shortReads.sam";
 		$vbash->verbose($sort_mapping_cmd);
 		my $sort_mapping_re = qx($sort_mapping_cmd);
 		$vplain->verbose($sort_mapping_re) if $sort_mapping_re;
