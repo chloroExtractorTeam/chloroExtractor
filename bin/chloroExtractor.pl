@@ -460,7 +460,7 @@ else{
 			print LIBRARY "iteration$j $prefix_dir/iteration$j/"."chloro_trimmed_dumped_corr.paired.A.fastq $prefix_dir/iteration$j/"."chloro_trimmed_dumped_corr.paired.B.fastq $opt_insertsize 0.5 FR\n";
 		}
 		close LIBRARY or die "$!";
-		my $scaffolding_cmd = "$opt_sspace_bin -l $library_txt -s $assembly_file ";
+		my $scaffolding_cmd = "perl $opt_sspace_bin -l $library_txt -s $assembly_file ";
 		$scaffolding_cmd .= "-x 1 -T 20 -b $prefix_dir/iteration$i/sspace_x";
 		$vbash->verbose( $scaffolding_cmd );
 		my $scaffolding_re = qx($scaffolding_cmd); 
