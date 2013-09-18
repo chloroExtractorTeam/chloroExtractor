@@ -461,7 +461,8 @@ else{
 		}
 		close LIBRARY or die "$!";
 		my $scaffolding_cmd = "perl $opt_sspace_bin -l $library_txt -s $assembly_file ";
-		$scaffolding_cmd .= "-x 1 -T 20 -b $prefix_dir/iteration$i/sspace_x";
+		$scaffolding_cmd .= "-x 1 -T 20 -b iteration$i"."_sspace_x";
+		# TODO scaffolding findet immer im Aufrufverzeichnis statt (notfalls schiebe Dateien anschliessend selbst ins korrekte Verzeichnis)
 		$vbash->verbose( $scaffolding_cmd );
 		my $scaffolding_re = qx($scaffolding_cmd); 
 		$vwga->nline();
