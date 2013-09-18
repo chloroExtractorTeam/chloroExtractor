@@ -471,7 +471,7 @@ else{
 				
 		#MAPPING
 		my $mapping_cmd = "$opt_shrimp_bin --fastq --sam --global --qv-offset $opt_phred --threads 20 ";
-		$mapping_cmd .= "--fuull-threshold 95\% --pair-mode opp-in --all-contigs --sam-unaligned --isize ";
+		$mapping_cmd .= "--full-threshold 95\% --pair-mode opp-in --all-contigs --sam-unaligned --isize ";
 		$mapping_cmd .= ($opt_insertsize-$opt_insertsd).",".($opt_insertsize+$opt_insertsd)." ";
 		$mapping_cmd .= "-1 $prefix_dir/iteration$i/"."chloro_trimmed_dumped_corr.paired.A.fastq ";
 		$mapping_cmd .= "-2 $prefix_dir/iteration$i/"."chloro_trimmed_dumped_corr.paired.B.fastq ";
