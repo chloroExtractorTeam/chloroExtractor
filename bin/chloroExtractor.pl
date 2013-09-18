@@ -490,7 +490,7 @@ else{
 		
 		my $velveth_cmd2 = "$opt_velvet_path/velveth ";
 		$velveth_cmd2 .= "$prefix_dir/iteration$i $opt_velvet_kmer_size ";
-		$velveth_cmd2 .= "-reference iteration$i"."_sspace_x.final.scaffolds.fasta";
+		$velveth_cmd2 .= "-reference iteration$i"."_sspace_x.final.scaffolds.fasta ";
 		$velveth_cmd2 .= "-shortPaired -sam $prefix_dir/iteration$i/shortReads.sam";
 		$vbash->verbose( $velveth_cmd2 );
 		my $velveth_re2 = qx($velveth_cmd2); 
