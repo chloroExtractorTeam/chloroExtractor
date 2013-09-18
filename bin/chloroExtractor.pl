@@ -102,6 +102,7 @@ Comma separated list of steps to skip:
 6 Error correct Dumped Reads
 7 Assemble Reads
 8 Filter contigs
+9 Iterative refinement
 
 =cut
 
@@ -211,7 +212,7 @@ $options{'man'} = \(my $opt_man);
 =cut
 
 
-chomp($opt_jellyfish_bin,$opt_allpath_correction_bin,$opt_velvet_bin,$opt_sickle_bin);
+chomp($opt_jellyfish_bin,$opt_allpath_correction_bin,$opt_velvet_bin,$opt_sickle_bin,$opt_sspace_bin,$opt_shrimp_bin);
 my $opt_velvet_path = dirname($opt_velvet_bin);
 
 GetOptions(%options) or pod2usage(1);
@@ -242,6 +243,8 @@ pod2usage(-msg => 'jellyfish not in $PATH and binary (--jellyfish-bin) not speci
 pod2usage(-msg => 'ErrorCorrectReads.pl not in $PATH and binary (--allpath-correction-bin) not specified', -verbose => 0) unless ($opt_allpath_correction_bin);
 pod2usage(-msg => 'sickle not in $PATH and binary (--sickle-bin) not specified', -verbose => 0) unless ($opt_sickle_bin);
 pod2usage(-msg => 'velvet not in $PATH and binary (--velvet-bin) not specified', -verbose => 0) unless ($opt_velvet_bin);
+pod2usage(-msg => 'sspace not in $PATH and binary (--sspace-bin) not specified', -verbose => 0) unless ($opt_sspace_bin);
+pod2usage(-msg => 'shrimp not in $PATH and binary (--shrimp-bin) not specified', -verbose => 0) unless ($opt_shrimp_bin);
 
 my %skip = ();
 $skip{$_} = 1 foreach split(/,/,$opt_skip);
