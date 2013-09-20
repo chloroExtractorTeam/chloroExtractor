@@ -175,6 +175,14 @@ Path to the shrimp executable (gmapper-ls). Default tries if gmapper-ls is in PA
 
 $options{'shrimp-bin=s'} = \(my $opt_shrimp_bin = `which gmapper-ls 2>/dev/null`);
 
+=item [--min-length=<INTEGER>] 
+
+Minimum length of contigs to keep after filtering. Default is 2000;
+
+=cut
+
+$options{'min-length=i'} = \(my $opt_min_length = 2000);
+
 
 =item [--[no]verbose] 
 
@@ -406,8 +414,8 @@ else{
 	$vwga->verbose('Iterative assembly');
 	$vwga->hline();
 	for(my $i=1; $i<=$opt_iterations; $i++){
-		my $assembly_file = "$prefix_dir"."iteration".($i-1)."/contigs_min2000.fa";
-		$assembly_file = "$prefix_dir/contigs_min2000.fa" if $i==1;
+		my $assembly_file = "$prefix_dir"."iteration".($i-1)."/contigs_min$opt_min_length.fa";
+		$assembly_file = "$prefix_dir/contigs_min$opt_min_length.fa" if $i==1;
 		$vwga->verbose('Starting iteration '."$i");
 		$vwga->hline();
 		my $mkdir_cmd = "mkdir $prefix_dir/iteration$i";
@@ -508,8 +516,8 @@ else{
 		
 		my $seq_filter_cmd = "$FindBin::Bin/SeqFilter ";
 		$seq_filter_cmd .= "--in $prefix_dir/iteration$i/contigs.fa ";
-		$seq_filter_cmd .= "--min-length 2000 ";
-		$seq_filter_cmd .= "--out $prefix_dir/iteration$i/contigs_min2000.fa ";
+		$seq_filter_cmd .= "--min-length $opt_min_length ";
+		$seq_filter_cmd .= "--out $prefix_dir/iteration$i/contigs_min$opt_min_length.fa ";
 		$vbash->verbose( $seq_filter_cmd );
 		my $seq_filter_re = qx($seq_filter_cmd); 
 		$vwga->nline();
