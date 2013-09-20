@@ -689,8 +689,8 @@ Returns the command to call SeqFilter for filtering the contigs by length.
 sub sizefilter_contigs_command{
 	my $cmd = "$FindBin::Bin/SeqFilter ";
 	$cmd .= "--in $prefix_dir/contigs.fa ";
-	$cmd .= "--min-length 2000 ";
-	$cmd .= "--out $prefix_dir/contigs_min2000.fa ";
+	$cmd .= "--min-length $opt_min_length ";
+	$cmd .= "--out $prefix_dir/contigs_min$opt_min_length.fa ";
 	return $cmd;
 }
 
