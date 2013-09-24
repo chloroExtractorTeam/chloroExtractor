@@ -184,6 +184,17 @@ Minimum length of contigs to keep after filtering. Default is 2000;
 $options{'min-length=i'} = \(my $opt_min_length = 2000);
 
 
+=item [--kmer-freq=<FILE>] 
+
+Path to the precalculated jellyfish kmer hash 
+--> implies skipping of jellyfish count and jellyfish merge
+--> directly starts with histogramming of the kmer counts
+
+=cut
+
+$options{'kmer-freq=s'} = \(my $opt_kmer_freq);
+
+
 =item [--[no]verbose] 
 
 verbose is default.
@@ -264,23 +275,29 @@ if(exists $skip{1}){
 	$vwga->verbose('Skipping kmer counting, merging und histogramming');
 }
 else{
-	$vwga->verbose('Counting kmers');
-	$vwga->hline();
-	my $jellyfish_count_cmd = jellyfish_count_command();
-	$vbash->verbose( $jellyfish_count_cmd );
-	my $jellyfish_count_re = qx($jellyfish_count_cmd); 
-	$vwga->nline();
-	$vplain->verbose($jellyfish_count_re) if $jellyfish_count_re;
-	$vwga->exit('ERROR: Counting kmers failed') if $?>> 8;
-	
-	$vwga->verbose('Merging kmer counts');
-	$vwga->hline();
-	my $jellyfish_merge_cmd = jellyfish_merge_command();
-	$vbash->verbose( $jellyfish_merge_cmd );
-	my $jellyfish_merge_re = qx($jellyfish_merge_cmd); 
-	$vwga->nline();
-	$vplain->verbose($jellyfish_merge_re) if $jellyfish_merge_re;
-	$vwga->exit('ERROR: Merging kmer counts') if $?>> 8;
+	if($opt_kmer_freq){
+		$vwga->verbose('k-mer frequencies (--kmer-freq) given as '.$opt_kmer_freq.' --> Skipping jellyfish count and merge.');	
+		$vwga->hline();
+	}
+	else{
+		$vwga->verbose('Counting kmers');	
+		$vwga->hline();
+		my $jellyfish_count_cmd = jellyfish_count_command();
+		$vbash->verbose( $jellyfish_count_cmd );
+		my $jellyfish_count_re = qx($jellyfish_count_cmd); 
+		$vwga->nline();
+		$vplain->verbose($jellyfish_count_re) if $jellyfish_count_re;
+		$vwga->exit('ERROR: Counting kmers failed') if $?>> 8;
+		
+		$vwga->verbose('Merging kmer counts');
+		$vwga->hline();
+		my $jellyfish_merge_cmd = jellyfish_merge_command();
+		$vbash->verbose( $jellyfish_merge_cmd );
+		my $jellyfish_merge_re = qx($jellyfish_merge_cmd); 
+		$vwga->nline();
+		$vplain->verbose($jellyfish_merge_re) if $jellyfish_merge_re;
+		$vwga->exit('ERROR: Merging kmer counts') if $?>> 8;
+	}
 	
 	$vwga->verbose('Histogramming kmer counts');
 	$vwga->hline();
@@ -572,7 +589,12 @@ sub jellyfish_histo_command{
 	my $cmd = "$opt_jellyfish_bin histo ";
 	$cmd .= "-o $opt_prefix"."_full_histo.jf ";
 	$cmd .= "--threads 20 --high 100000 ";
-	$cmd .= "$opt_prefix"."_full.jf";
+	if($opt_kmer_freq){
+		$cmd .= "$opt_kmer_freq";
+	}
+	else{
+		$cmd .= "$opt_prefix"."_full.jf";
+	}
 	return $cmd;
 }
 
@@ -587,7 +609,12 @@ sub jellyfish_dump_command{
 	$cmd .= "--column --tab ";
 	$cmd .= "-o $opt_prefix"."_dump_$min"."_$max".".jf ";
 	$cmd .= "--lower-count=$min --upper-count=$max ";
-	$cmd .= "$opt_prefix"."_full.jf";
+	if($opt_kmer_freq){
+		$cmd .= "$opt_kmer_freq";
+	}
+	else{
+		$cmd .= "$opt_prefix"."_full.jf";
+	}
 	return $cmd;
 }
 
