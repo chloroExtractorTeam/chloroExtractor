@@ -4,6 +4,10 @@ num_points <- 10000
 xdat <- runif(num_points)*100000
 ydat <- rnorm(num_points)*1e7
 
+dat<-read.table("Rg_ChlGen_full_histo.jf");
+xdat <- dat$V1;
+ydat <- dat$V2;
+
 ready="p";
 xlimit<-range(xdat)
 ylimit<-range(ydat)
@@ -17,6 +21,7 @@ while (ready != "c")
     if (choice[1] == "p")
         {
             xlimit <- range(values$x)
+            ylimit <- range(ydat[(xdat>=xlimit[1])&(xdat<=xlimit[2])])
         }
     if (choice[1] == "l")
         {
