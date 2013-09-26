@@ -195,6 +195,17 @@ Path to the precalculated jellyfish kmer hash
 $options{'kmer-freq=s'} = \(my $opt_kmer_freq);
 
 
+=item [--trusted-range=<INT>,<INT>] 
+
+Explicitly set the range in which kmers are trusted.
+If set, chloroPeakDetection is automatically disabled (same as --skip 2).
+Dump Kmers trusts reads if they have enough kmers with coverage inside the given range.
+
+=cut
+
+$options{'trusted-range=s'} = \(my $opt_trusted_range);
+
+
 =item [--[no]verbose] 
 
 verbose is default.
@@ -270,6 +281,8 @@ $skip{$_} = 1 foreach split(/,/,$opt_skip);
 
 $opt_prefix = get_prefix() unless $opt_prefix;
 my ($prefix_name,$prefix_dir) = fileparse($opt_prefix);
+my $min; my $max;
+$skip{2} = 1 if($opt_trusted_range);
 
 if(exists $skip{1}){
 	$vwga->verbose('Skipping kmer counting, merging und histogramming');
@@ -309,8 +322,6 @@ else{
 	$vwga->exit('ERROR: Histogramming kmer counts failed') if $?>> 8;
 }
 
-my $min;
-my $max;
 if(exists $skip{2}){
 	$vwga->verbose('Skipping peak detection');
 }
@@ -556,7 +567,7 @@ Returns the command to call jellyfish for counting.
 
 sub jellyfish_count_command{
 	my $cmd = "$opt_jellyfish_bin count -m $opt_jellyfish_kmer_size ";
-	$cmd .= "-o $opt_prefix"."_jf_parts ";
+	$cmd .= "-o $opt_prefix"."_jf_parts --invalid-char ignore ";
 	$cmd .= "-s 100000000 -t 20 --both-strands $opt_reads $opt_mates";
 	return $cmd;
 }
@@ -739,10 +750,15 @@ Reads minimum and maximum from file
 =cut
 
 sub get_min_max{
-	open(IN, "<$opt_prefix"."_minmax.tsv") or die "Can't open file $opt_prefix"."_minmax.tsv$!";
-	($min, $max) = split(/\t/,<IN>);
-	chomp $max;
-	$max *= 3; # Take three times the maximal x value (expect IR at double)
+	if($opt_trusted_range){
+		($min, $max) = split(/,/,$opt_trusted_range);
+	}
+	else{
+		open(IN, "<$opt_prefix"."_minmax.tsv") or die "Can't open file $opt_prefix"."_minmax.tsv$!";
+		($min, $max) = split(/\t/,<IN>);
+		chomp $max;
+		$max *= 3; # Take three times the maximal x value (expect IR at double)
+	}
 }
 
 =head1 LIMITATIONS
