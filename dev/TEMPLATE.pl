@@ -13,6 +13,14 @@
 
 =over
 
+=item --create-config
+
+Create a config file with default settings for user customization.
+
+=item -c|--config
+
+Use user customized config file. Superseeds default config.
+
 =item -V|--version
 
 Display version.
@@ -102,11 +110,11 @@ for(my $i=0; $i<@ARGV; $i++){
 
 GetOptions( # use %opt (Cfg) as defaults
 	\%opt, qw(
-		version|V
-		debug|D
-		help|h
-		config|c
-		create_config
+		version|V!
+		debug|D!
+		help|h!
+		config|c=s
+		create_config|create-config
 	)
 ) or $L->logcroak('Failed to "GetOptions"');
 
@@ -125,6 +133,7 @@ if($opt{create_config}){
 	my $user_cfg = @ARGV ? $ARGV[0] : basename($core_cfg);
 	copy($core_cfg, $user_cfg) or $L->logdie("Creatring config failed: $!");
 	$L->info("Created config file: $user_cfg");
+	exit 0;
 }
 
 # required stuff  
