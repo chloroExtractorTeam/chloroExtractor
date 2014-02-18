@@ -21,6 +21,10 @@ Create a config file with default settings for user customization.
 
 Use user customized config file. Superseeds default config.
 
+=item --debug
+
+Verbose debug messages.
+
 =item -V|--version
 
 Display version.
