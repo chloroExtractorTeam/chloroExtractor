@@ -75,9 +75,6 @@ use Sam::Parser;
 use Sam::Seq;
 use Sam::Alignment;
 
-#enable in script mapping
-use Shrimp;
-
 
 #-----------------------------------------------------------------------------#
 # Globals
@@ -127,9 +124,7 @@ GetOptions( # use %opt (Cfg) as defaults
 		help|h!
 		config|c=s
 		create_config|create-config
-                input_reads|1=s
-                input_mates|2=s
-                target_coverage|coverage=i
+		sam|s=s
 	)
 ) or $L->logcroak('Failed to "GetOptions"');
 
@@ -151,6 +146,10 @@ if($opt{create_config}){
 	exit 0;
 }
 
+#required stuff  
+for(qw(sam)){
+  pod2usage("required: --$_") unless defined ($opt{$_})
+};
 
 # debug level
 $L->level($DEBUG) if $opt{debug};
@@ -163,90 +162,8 @@ $L->debug(Dumper(\%opt));
 #-----------------------------------------------------------------------------#
 # MAIN
 
-
-my $shrimp = Shrimp->new(
-  %{$opt{gmapper_ls_params}},
-  ref => $opt{gmapper_ls_CDS_file},
-  reads => $opt{input_reads},
-  mates => $opt{input_mates},
-  bin => $opt{gmapper_ls_path},
-  log => $opt{gmapper_ls_log},
-
-);
-
-$shrimp->run;
-
-# read output on the fly
-my $sp = Sam::Parser->new(
-  fh => $shrimp->oh
-);
-
-
-my %h; 
-my $ss;
-
-my %seqs;
-
-while(%h = $sp->next_header_line('@SQ')){
-  $seqs{$h{'SN'}} = Sam::Seq->new(
-    id => $h{'SN'},
-    len => $h{'LN'},
-  );  
-  print '@SQ'."\tSN:$h{'SN'}\tLN:$h{'LN'}\n" if ($opt{debug});
-}
-
-my $current_cov;
-my $last_id;
-
-my $c; 
-while(my $aln = $sp->next_aln){
-  my $id = $aln->rname();
-  $seqs{$id}->add_aln($aln);
-  print "$aln" if ($opt{debug});
-  $c++;
-  unless ($c % $opt{coverage_check_interval}){
-    $current_cov = estimate_coverage(\%seqs);
-    $L->debug("Coverage: ",$current_cov);
-    $last_id = $aln->qname;
-    if ($current_cov >= $opt{target_coverage}) { 
-      last;
-    }
-  }
-}
-
-
-$shrimp->cancel("Coverage = $current_cov\n");
-
-$last_id =~ s?/[12]$??;
-
-my $sed_cmd1 = 'sed "1~4 {/^\@'.$last_id.'\(\/[12]\)*\s/{N;N;N;q}}" '.$opt{input_reads}." >".$opt{reads_out};
-
-$L->debug($sed_cmd1);
-qx($sed_cmd1);
-
-if ($opt{input_mates}) {
-
-  my $sed_cmd2 = 'sed "1~4 {/^\@'.$last_id.'\(\/[12]\)*\s/{N;N;N;q}}" '.$opt{input_mates}." >".$opt{mates_out};
-
-  $L->debug($sed_cmd2);
-  qx($sed_cmd2);
-
-}
-
-
-
-
-
-
-
-
-
-
-# ----- SUBS ------ #
-
-
-
 sub pairwise_sum {
+
   my @array1 = @{$_[0]};
   my @array2 = @{$_[1]};
 
@@ -289,14 +206,13 @@ sub estimate_coverage {
 
   my %protein_wise_coverage;
   for my $ss(values %{$_[0]}){
-    my @covs=$ss->coverage();
-    my $protein = (split /_/, $ss->id())[-1];
-    @{$protein_wise_coverage{$protein}} = pairwise_sum(\@{$protein_wise_coverage{$protein}}, \@covs);
+          my @covs=$ss->coverage();
+          my $protein = (split /_/, $ss->id())[-1];
+          @{$protein_wise_coverage{$protein}} = pairwise_sum(\@{$protein_wise_coverage{$protein}}, \@covs);
   }
 
 
-
-  # print proteinwise coverage // omitting 
+  # print proteinwise coverage // ommiting 
   # zeros and empty proteins // also trim
   # both ends
 
@@ -312,14 +228,10 @@ sub estimate_coverage {
       @{$protein_wise_coverage{$_}} = ();
     }
     if (@{$protein_wise_coverage{$_}}) {
-      my $prot_median = median(\@{$protein_wise_coverage{$_}});
-      $medians{$_} = $prot_median;
-      push @median_array, $prot_median if ($prot_median > $opt{min_single_coverage});
-
+      $medians{$_} = median(\@{$protein_wise_coverage{$_}});
+      push @median_array, median(\@{$protein_wise_coverage{$_}});
     }
   }
-
-  $L->debug("Coverage Array ","@median_array"," -- ",scalar @median_array);
 
   if (@median_array > $opt{min_covered_CDS}) {
     return median(\@median_array);
@@ -329,6 +241,41 @@ sub estimate_coverage {
   }
 
 }
+
+
+my $sp = Sam::Parser->new(file => $opt{sam});
+
+my %h; 
+my $ss;
+
+my %seqs;
+
+while(%h = $sp->next_header_line('@SQ')){
+  $seqs{$h{'SN'}} = Sam::Seq->new(
+    id => $h{'SN'},
+    len => $h{'LN'},
+  );  
+}
+
+while(my $aln = $sp->next_aln){
+  my $id = $aln->rname();
+  $seqs{$id}->add_aln($aln);
+}
+
+
+my $current_cov = estimate_coverage(\%seqs);
+print "$current_cov\n";
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -341,6 +288,18 @@ Clemens Weiss S<clemens.weiss@stud-mail.uni-wuerzburg.de>
 Thomas Hackl S<thomas.hackl@uni-wuerzburg.de>
 
 =cut
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

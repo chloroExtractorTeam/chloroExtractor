@@ -76,7 +76,7 @@ use Sam::Seq;
 use Sam::Alignment;
 
 #enable in script mapping
-use Shrimp;
+use Bowtie2;
 
 
 #-----------------------------------------------------------------------------#
@@ -164,23 +164,35 @@ $L->debug(Dumper(\%opt));
 # MAIN
 
 
-my $shrimp = Shrimp->new(
-  %{$opt{gmapper_ls_params}},
-  ref => $opt{gmapper_ls_CDS_file},
-  reads => $opt{input_reads},
-  mates => $opt{input_mates},
-  bin => $opt{gmapper_ls_path},
-  log => $opt{gmapper_ls_log},
+my $bowtie2 = Bowtie2->new(
+  path => $opt{bowtie2_path},
+  log => $opt{bowtie2_log},
 
 );
 
-$shrimp->run;
+$bowtie2->bowtie2(
+  %{$opt{bowtie2_params}},
+  "-U" => $opt{input_reads},
+  "-x" => $opt{bowtie2_DB}
+);
+
+# WARNING: Bowtie required "-U" twice for paired; not possible in option hash
+# Therefore: if input mates option exists, set singleorpair to 2 to map only reads
+# and multiply current coverage by two
+
+my $singleorpair;
+if ($opt{input_mates}) {
+  $singleorpair = 2;
+}
+else {
+  $singleorpair = 1;
+}
+
 
 # read output on the fly
 my $sp = Sam::Parser->new(
-  fh => $shrimp->oh
+  fh => $bowtie2->stdout
 );
-
 
 my %h; 
 my $ss;
@@ -205,7 +217,7 @@ while(my $aln = $sp->next_aln){
   print "$aln" if ($opt{debug});
   $c++;
   unless ($c % $opt{coverage_check_interval}){
-    $current_cov = estimate_coverage(\%seqs);
+    $current_cov = estimate_coverage(\%seqs)*$singleorpair;
     $L->debug("Coverage: ",$current_cov);
     $last_id = $aln->qname;
     if ($current_cov >= $opt{target_coverage}) { 
@@ -214,8 +226,7 @@ while(my $aln = $sp->next_aln){
   }
 }
 
-
-$shrimp->cancel("Coverage = $current_cov\n");
+$bowtie2->cancel("Coverage = $current_cov\n");
 
 $last_id =~ s?/[12]$??;
 
@@ -315,7 +326,6 @@ sub estimate_coverage {
       my $prot_median = median(\@{$protein_wise_coverage{$_}});
       $medians{$_} = $prot_median;
       push @median_array, $prot_median if ($prot_median > $opt{min_single_coverage});
-
     }
   }
 
