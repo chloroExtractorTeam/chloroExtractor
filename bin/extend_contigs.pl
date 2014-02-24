@@ -118,9 +118,21 @@ GetOptions( # use %opt (Cfg) as defaults
 		debug|D!
 		help|h!
 		config|c=s
-		create_config|create-config
+		reads|1=s
+		mates|2=s
+		insert_size|insert-size|isize|s=i
+		border=i
+		in|i=s
+		out|o=s
 	)
 ) or $L->logcroak('Failed to "GetOptions"');
+
+## check if the border was set, otherwise use 2x insert_size as default value
+unless (exists $opt{border} && $opt{border} > 0)
+{
+    $opt{border} = $opt{insert_size}*2;
+}
+
 
 # help
 $opt{help} && pod2usage(1);
@@ -131,19 +143,10 @@ if($opt{version}){
 	exit 0;
 }
 
-# create template for user cfg
-if($opt{create_config}){
-	pod2usage(-msg => 'To many arguments', -exitval=>1) if @ARGV > 1;
-	my $user_cfg = @ARGV ? $ARGV[0] : basename($core_cfg);
-	copy($core_cfg, $user_cfg) or $L->logdie("Creatring config failed: $!");
-	$L->info("Created config file: $user_cfg");
-	exit 0;
-}
-
 # required stuff  
-# for(qw(in out)){
-#        pod2usage("required: --$_") unless defined ($opt{$_})
-#};
+for(qw(in out insert-size mates reads)){
+        pod2usage("required: --$_") unless defined ($opt{$_})
+};
 
 # debug level
 $L->level($DEBUG) if $opt{debug};
