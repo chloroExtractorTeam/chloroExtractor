@@ -161,27 +161,25 @@ $L->debug(Dumper(\%opt));
 
 $L->info('Extend contig script');
 
+$L->info("Generating 5' and 3' ends of contigs");
+
 #### first generate a FASTA file for 5' and 3' ends from input file
 my $fasta_in = Fasta::Parser->new(
     file => $opt{in}
     );
+my $fasta_contig_ends=$opt{in}.'_contig_ends';
 my $fasta_out = Fasta::Parser->new(
-    file => $opt{out},
+    file => $fasta_contig_ends,
     mode => '>'                    # overwrite an existing file
     );
 # loop through the FASTA file and generate a set of contig ends
+my %contig_ends_seen = ();
 while (my $contig=$fasta_in->next_seq())
 {
-    my $start = Fasta::Seq->new(
-	id => $contig->id()."_5prime",
-	seq => substr($contig->seq(), 0, $opt{border})
-	);
-    $fasta_out->append_seq($start);
-    my $end = Fasta::Seq->new(
-	id => $contig->id()."_3prime",
-	seq => substr($contig->seq(), -$opt{border}),
-	);
-    $fasta_out->append_seq($end);
+    # store 5' end
+    store_sequence_and_create_folder(name => $contig->id()."_5prime", seq => substr($contig->seq(), 0, $opt{border}), file_out => $fasta_out);
+    # store 3' end
+    store_sequence_and_create_folder(name => $contig->id()."_3prime", seq => substr($contig->seq(), -$opt{border}), file_out => $fasta_out, seen_names => \%contig_ends_seen);
 }
 
 
@@ -213,19 +211,29 @@ while (my $contig=$fasta_in->next_seq())
 
 
 
-
-
-
-
-
-
-
+sub store_sequence_and_create_folder
+{
+    my %params = @_;
+    my $name = $params{name};
+    if (exists $params{seen_names}{$name})
+    {
+	$L->logdie("The folder '$name' already exists! One possibility are multiple occurence of the same sequence name in the input file");
+    }
+    $params{seen_names}{$name}++;
+    mkdir($name) || $L->logdie("Unable to create folder '$name'");
+    my $seq_obj = Fasta::Seq->new(
+	id => $params{name},
+	seq => $params{seq}
+	);
+    $params{file_out}->append_seq($seq_obj);
+    return 1;
+}
 
 #-----------------------------------------------------------------------------#
 
 =head1 AUTHOR
 
-NAME S<MAIL>
+Frank Foerster NAME S<frank.foerster@biozentrum.uni-wuerzburg.de>
 
 =cut
 
