@@ -70,6 +70,7 @@ use File::Copy;
 
 # additional modules
 use Cfg;
+use Fasta::Parser;
 
 #-----------------------------------------------------------------------------#
 # Globals
@@ -161,6 +162,28 @@ $L->debug(Dumper(\%opt));
 
 $L->info('Extend contig script');
 
+#### first generate a FASTA file for 5' and 3' ends from input file
+my $fasta_in = Fasta::Parser->new(
+    file => $opt{in}
+    );
+my $fasta_out = Fasta::Parser->new(
+    file => $opt{out},
+    mode => '>'                    # overwrite an existing file
+    );
+# loop through the FASTA file and generate a set of contig ends
+while (my $contig=$fasta_in->next_seq())
+{
+    my $start = Fasta::Seq->new(
+	id => $contig->id()."_5prime",
+	seq => substr($contig->seq(), 0, $opt{border})
+	);
+    $fasta_out->append_seq($start);
+    my $end = Fasta::Seq->new(
+	id => $contig->id()."_3prime",
+	seq => substr($contig->seq(), -$opt{border}),
+	);
+    $fasta_out->append_seq($end);
+}
 
 
 
