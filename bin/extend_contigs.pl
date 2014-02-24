@@ -159,13 +159,9 @@ $L->debug(Dumper(\%opt));
 #-----------------------------------------------------------------------------#
 # MAIN
 
-$L->info('
+$L->info('Extend contig script');
 
-    "I think Smithers picked me because of my motivational skills. 
-    Everyone always says they have to work a lot harder when I am around."
-                                                                           H.J.S
 
-');
 
 
 
