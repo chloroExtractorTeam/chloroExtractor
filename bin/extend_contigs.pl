@@ -128,13 +128,6 @@ GetOptions( # use %opt (Cfg) as defaults
 	)
 ) or $L->logcroak('Failed to "GetOptions"');
 
-## check if the border was set, otherwise use 2x insert_size as default value
-unless (exists $opt{border} && $opt{border} > 0)
-{
-    $opt{border} = $opt{insert_size}*2;
-}
-
-
 # help
 $opt{help} && pod2usage(1);
 
@@ -145,9 +138,15 @@ if($opt{version}){
 }
 
 # required stuff  
-for(qw(in out insert-size mates reads)){
+for(qw(in out insert_size mates reads)){
         pod2usage("required: --$_") unless defined ($opt{$_})
 };
+
+## check if the border was set, otherwise use 2x insert_size as default value
+unless (exists $opt{border} && $opt{border} > 0)
+{
+    $opt{border} = $opt{insert_size}*2;
+}
 
 # debug level
 $L->level($DEBUG) if $opt{debug};
