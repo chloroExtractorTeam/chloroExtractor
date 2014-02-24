@@ -177,6 +177,9 @@ my $fasta_out = Fasta::Parser->new(
 my %contig_ends_seen = ();
 while (my $contig=$fasta_in->next_seq())
 {
+    # filter for a minimum length
+    next unless (length($contig->seq()) > $opt{min_seq_length});
+
     # store 5' end
     store_sequence_and_create_folder(name => $contig->id()."_5prime", seq => substr($contig->seq(), 0, $opt{border}), file_out => $fasta_out);
     # store 3' end
