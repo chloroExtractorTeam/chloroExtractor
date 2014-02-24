@@ -92,7 +92,7 @@ Log::Log4perl->init( \q(
 
 # core
 my $core_cfg = "$RealBin/../chloroExtractor.cfg";
-my %opt = Cfg->Read_Cfg($core_cfg); 
+my %cfg = Cfg->Read_Cfg($core_cfg);
 
 # user defaults and overwrite core
 my $user_cfg;
@@ -103,8 +103,8 @@ for(my $i=0; $i<@ARGV; $i++){
         }
 }
 
-%opt = (%opt, Cfg->Read_Cfg($user_cfg)) if $user_cfg; # simple overwrite
-
+%cfg = (%cfg, Cfg->Read_Cfg($user_cfg)) if $user_cfg; # simple overwrite
+my %opt = %{$cfg{exc}};
 
 #TODO: custom config
 
