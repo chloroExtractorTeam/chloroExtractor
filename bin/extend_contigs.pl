@@ -71,6 +71,7 @@ use File::Copy;
 # additional modules
 use Cfg;
 use Fasta::Parser;
+use Bowtie2;
 
 #-----------------------------------------------------------------------------#
 # Globals
@@ -182,10 +183,24 @@ while (my $contig=$fasta_in->next_seq())
     store_sequence_and_create_folder(name => $contig->id()."_3prime", seq => substr($contig->seq(), -$opt{border}), file_out => $fasta_out, seen_names => \%contig_ends_seen);
 }
 
+$L->info("Building bowtie2 index");
 
+my $bowtie2_db = $opt{in}.'_bowtie2_db';
+my $bowtie2 = Bowtie2->new(
+    path => $opt{bowtie2_path},
+    log => $opt{bowtie2_log},
+    ref => $fasta_contig_ends,
+    pre => $bowtie2_db,
+);
 
+# TODO: bowtie2 generate db -> prevent issues with different indices on different architectures or bowtie2 versions
+$bowtie2->bowtie2_build();
+my $bis = $bowtie2->stdout;
+my $bie = $bowtie2->stderr;
 
+$L->debug(<$bis>, <$bie>);
 
+$bowtie2->finish();
 
 
 
