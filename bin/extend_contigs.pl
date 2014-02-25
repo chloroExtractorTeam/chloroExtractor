@@ -242,6 +242,16 @@ while( my ($aln1, $aln2) = $sp->next_pair() ){
     }
     $contig_name = ($aln1->is_unmapped) ? $aln2->rname() : $aln1->rname();
 
+    ### doing some statistics for each contig-end
+    if ($aln1->is_unmapped() || $aln2->is_unmapped())
+    {
+	# the read pair is half mapped
+	$filehandles{$contig_name}{half_mapped}++;
+    } else {
+	# the read pair is completely mapped
+	$filehandles{$contig_name}{complete_mapped}++;
+    }
+
     # generate a fastq sequence block for the first read
     my $seq_obj = Fastq::Seq->new(
 	"@".$aln1->qname(),
@@ -260,6 +270,18 @@ while( my ($aln1, $aln2) = $sp->next_pair() ){
 	);
     $filehandles{$contig_name}{mates}->append_seq($seq_obj);
 }
+
+$L->info("Border mapping statistics");
+
+### printing the statistics
+# generating a overall stastistic
+my ($half, $complete) = (0, 0);
+foreach my $contig_border (keys %filehandles) {
+    $L->debug(sprintf "%s\tmapped reads (half/complete): (%d/%d)", $contig_border, $filehandles{$contig_border}{half_mapped}, $filehandles{$contig_border}{complete_mapped});
+    $half+=$filehandles{$contig_border}{half_mapped};
+    $complete+=$filehandles{$contig_border}{complete_mapped};
+}
+$L->info(sprintf("Overall number of mapped reads (half/complete): %d/%d", $half, $complete));
 
 sub store_sequence_and_create_folder
 {
