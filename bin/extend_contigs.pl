@@ -207,27 +207,16 @@ $L->debug(<$bis>, <$bie>);
 
 $bowtie2->finish();
 
+$L->info("Running bowtie2");
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+$bowtie2->bowtie2(
+    %{$opt{bowtie2_params}},
+    ref => undef,
+    "-1" => $opt{reads},
+    "-2" => $opt{mates},
+    "-x" => $bowtie2_db,
+    "--all" => ' ',           # generate all alignments
+);
 
 
 
