@@ -73,6 +73,7 @@ use Cfg;
 use Fasta::Parser;
 use Fastq::Parser;
 use Bowtie2;
+use Sam::Parser;
 
 #-----------------------------------------------------------------------------#
 # Globals
@@ -218,7 +219,47 @@ $bowtie2->bowtie2(
     "--all" => ' ',           # generate all alignments
 );
 
+# read output on the fly
+my $sp = Sam::Parser->new(
+  fh => $bowtie2->stdout
+);
 
+# print sequences of read pairs with both reads mapped
+while( my ($aln1, $aln2) = $sp->next_pair() ){
+    # if no read was aligned, skip this pair
+    next if ($aln1->is_unmapped() && $aln2->is_unmapped());
+
+    # both reads should be mapped on the same contig
+    my $contig_name = undef;
+    if (
+	$aln1->rname() ne $aln2->rname() &&
+	! $aln1->is_unmapped &&
+	! $aln2->is_unmapped
+	)
+    {
+	$L->debug(sprintf "Skipping reads mapped on contigs: %s and %s", $aln1->rname(), $aln2->rname());
+	next;
+    }
+    $contig_name = ($aln1->is_unmapped) ? $aln2->rname() : $aln1->rname();
+
+    # generate a fastq sequence block for the first read
+    my $seq_obj = Fastq::Seq->new(
+	"@".$aln1->qname(),
+	$aln1->seq(),
+	"+",
+	$aln1->qual(),
+	);
+    $filehandles{$contig_name}{reads}->append_seq($seq_obj);
+
+    # generate a fastq sequence block for the second read
+    $seq_obj = Fastq::Seq->new(
+	"@".$aln2->qname(),
+	$aln2->seq(),
+	"+",
+	$aln2->qual(),
+	);
+    $filehandles{$contig_name}{mates}->append_seq($seq_obj);
+}
 
 sub store_sequence_and_create_folder
 {
