@@ -71,6 +71,7 @@ use File::Copy;
 # additional modules
 use Cfg;
 use Fasta::Parser;
+use Fastq::Parser;
 use Bowtie2;
 
 #-----------------------------------------------------------------------------#
@@ -175,15 +176,16 @@ my $fasta_out = Fasta::Parser->new(
     );
 # loop through the FASTA file and generate a set of contig ends
 my %contig_ends_seen = ();
+my %filehandles = ();
 while (my $contig=$fasta_in->next_seq())
 {
     # filter for a minimum length
     next unless (length($contig->seq()) > $opt{min_seq_length});
 
     # store 5' end
-    store_sequence_and_create_folder(name => $contig->id()."_5prime", seq => substr($contig->seq(), 0, $opt{border}), file_out => $fasta_out);
+    store_sequence_and_create_folder(name => $contig->id()."_5prime", seq => substr($contig->seq(), 0, $opt{border}), file_out => $fasta_out, seen_names => \%contig_ends_seen, filehandle => \%filehandles);
     # store 3' end
-    store_sequence_and_create_folder(name => $contig->id()."_3prime", seq => substr($contig->seq(), -$opt{border}), file_out => $fasta_out, seen_names => \%contig_ends_seen);
+    store_sequence_and_create_folder(name => $contig->id()."_3prime", seq => substr($contig->seq(), -$opt{border}), file_out => $fasta_out, seen_names => \%contig_ends_seen, filehandle => \%filehandles);
 }
 
 $L->info("Building bowtie2 index");
@@ -239,6 +241,16 @@ sub store_sequence_and_create_folder
     }
     $params{seen_names}{$name}++;
     mkdir($name) || $L->logdie("Unable to create folder '$name'");
+
+    $params{filehandle}{$params{name}}{reads}=Fasta::Parser->new(
+	file => $name.'/'.'reads.fq',
+	mode => '>'                    # overwrite an existing file
+	);
+    $params{filehandle}{$params{name}}{mates}=Fasta::Parser->new(
+	file => $name.'/'.'mates.fq',
+	mode => '>'                    # overwrite an existing file
+	);
+
     my $seq_obj = Fasta::Seq->new(
 	id => $params{name},
 	seq => $params{seq}
