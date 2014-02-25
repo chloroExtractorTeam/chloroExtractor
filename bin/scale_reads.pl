@@ -2,24 +2,39 @@
 
 =head1 NAME
 
+scale_reads.pl
 
 =head1 DESCRIPTION
 
+Generate fastq library files with sufficient chloroplast coverage (200X). Coverage is deduced from coverage distributions of read mapping onto cluster of conserved CDS sequences. The mapping will be terminated as soon as enough chloroplast sequences have been found and fastq library files subsets will be created accordingly.
 
 =head1 SYNOPSIS
 
+  $ perl scale_reads.pl -1 lib_1.fq -2 lib_2.fq -ref_cluster cds.fa -t 200
 
 =head1 OPTIONS
 
 =over
 
-=item -s|--sam
+=item -1|--reads
 
-SAM file. REQUIRED.
+Input reads file, first of pair.
 
-=item --create-config
+=item -2|--mates
 
-Create a config file with default settings for user customization.
+Input reads file, second of pair
+
+=item -o|--out
+
+Output prefix.
+
+=item -r|--ref-cluster
+
+Reference sequences for mapping.
+
+=item -t|--target-coverage [200]
+
+Return read files with this estimated coverage.
 
 =item -c|--config
 
@@ -68,6 +83,7 @@ use lib "$RealBin/../lib/";
 use File::Basename;
 use File::Copy;
 
+
 # additional modules
 use Cfg;
 
@@ -100,7 +116,7 @@ Log::Log4perl->init( \q(
 
 # core
 my $core_cfg = "$RealBin/../chloroExtractor.cfg";
-my %opt = Cfg->Read_Cfg($core_cfg); 
+my %cfg = Cfg->Read_Cfg($core_cfg); 
 
 # user defaults and overwrite core
 my $user_cfg;
@@ -111,10 +127,10 @@ for(my $i=0; $i<@ARGV; $i++){
         }
 }
 
-%opt = (%opt, Cfg->Read_Cfg($user_cfg)) if $user_cfg; # simple overwrite
+%cfg = (%cfg, Cfg->Read_Cfg($user_cfg)) if $user_cfg; # simple overwrite
 
+my %opt = %{$cfg{scr}};
 
-#TODO: custom config
 
 
 #-----------------------------------------------------------------------------#
@@ -122,14 +138,14 @@ for(my $i=0; $i<@ARGV; $i++){
 
 GetOptions( # use %opt (Cfg) as defaults
 	\%opt, qw(
+                target_coverage|coverage=i
+                reads|1=s
+                mates|2=s
+		ref_cluster
 		version|V!
 		debug|D!
 		help|h!
 		config|c=s
-		create_config|create-config
-                input_reads|1=s
-                input_mates|2=s
-                target_coverage|coverage=i
 	)
 ) or $L->logcroak('Failed to "GetOptions"');
 
@@ -142,14 +158,11 @@ if($opt{version}){
 	exit 0;
 }
 
-# create template for user cfg
-if($opt{create_config}){
-	pod2usage(-msg => 'To many arguments', -exitval=>1) if @ARGV > 1;
-	my $user_cfg = @ARGV ? $ARGV[0] : basename($core_cfg);
-	copy($core_cfg, $user_cfg) or $L->logdie("Creatring config failed: $!");
-	$L->info("Created config file: $user_cfg");
-	exit 0;
-}
+
+# required stuff  
+for(qw(reads mates ref_cluster)){
+        pod2usage("required: --$_") unless defined ($opt{$_})
+};
 
 
 # debug level
@@ -163,31 +176,42 @@ $L->debug(Dumper(\%opt));
 #-----------------------------------------------------------------------------#
 # MAIN
 
+# TODO: working dir
+my $opt_o1 = $opt{out}."_1.fq";
+my $opt_o2 = $opt{out}."_2.fq";
+
+$L->info("Building bowtie2 index");
 
 my $bowtie2 = Bowtie2->new(
-  path => $opt{bowtie2_path},
-  log => $opt{bowtie2_log},
-
+    path => $opt{bowtie2_path},
+    log => $opt{bowtie2_log},
+    ref => $opt{ref_cluster},
+    pre => $opt{bowtie2_DB},
 );
+
+# TODO: bowtie2 generate db -> prevent issues with different indices on different architectures or bowtie2 versions
+$bowtie2->bowtie2_build();
+my $bis = $bowtie2->stdout;
+my $bie = $bowtie2->stderr;
+
+$L->debug(<$bis>, <$bie>);
+
+$bowtie2->finish();
+
+$L->info("Running bowtie2");
 
 $bowtie2->bowtie2(
-  %{$opt{bowtie2_params}},
-  "-U" => $opt{input_reads},
-  "-x" => $opt{bowtie2_DB}
+    %{$opt{bowtie2_params}},
+    ref => undef,
+    "-1" => $opt{reads},
+    "-2" => $opt{mates},
+    "-x" => $opt{bowtie2_DB},
+    "-p" => $cfg{threads},
 );
 
+## DEPRECATED: mapping paired
 # WARNING: Bowtie required "-U" twice for paired; not possible in option hash
 # Therefore: if input mates option exists, set singleorpair to 2 to map only reads
-# and multiply current coverage by two
-
-my $singleorpair;
-if ($opt{input_mates}) {
-  $singleorpair = 2;
-}
-else {
-  $singleorpair = 1;
-}
-
 
 # read output on the fly
 my $sp = Sam::Parser->new(
@@ -217,7 +241,7 @@ while(my $aln = $sp->next_aln){
   print "$aln" if ($opt{debug});
   $c++;
   unless ($c % $opt{coverage_check_interval}){
-    $current_cov = estimate_coverage(\%seqs)*$singleorpair;
+    $current_cov = estimate_coverage(\%seqs);
     $L->debug("Coverage: ",$current_cov);
     $last_id = $aln->qname;
     if ($current_cov >= $opt{target_coverage}) { 
@@ -230,14 +254,14 @@ $bowtie2->cancel("Coverage = $current_cov\n");
 
 $last_id =~ s?/[12]$??;
 
-my $sed_cmd1 = 'sed "1~4 {/^\@'.$last_id.'\(\/[12]\)*\s/{N;N;N;q}}" '.$opt{input_reads}." >".$opt{reads_out};
+my $sed_cmd1 = 'sed "1~4 {/^\@'.$last_id.'\(\/[12]\)*\s/{N;N;N;q}}" '.$opt{reads}." >".$opt_o1;
 
 $L->debug($sed_cmd1);
 qx($sed_cmd1);
 
 if ($opt{input_mates}) {
 
-  my $sed_cmd2 = 'sed "1~4 {/^\@'.$last_id.'\(\/[12]\)*\s/{N;N;N;q}}" '.$opt{input_mates}." >".$opt{mates_out};
+  my $sed_cmd2 = 'sed "1~4 {/^\@'.$last_id.'\(\/[12]\)*\s/{N;N;N;q}}" '.$opt{input_mates}." >".$opt_o2;
 
   $L->debug($sed_cmd2);
   qx($sed_cmd2);
