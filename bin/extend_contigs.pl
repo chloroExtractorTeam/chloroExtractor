@@ -216,12 +216,12 @@ $bowtie2->bowtie2(
     "-1" => $opt{reads},
     "-2" => $opt{mates},
     "-x" => $bowtie2_db,
-    "--all" => ' ',           # generate all alignments
+#    "--all" => '',           # generate all alignments
 );
 
 # read output on the fly
 my $sp = Sam::Parser->new(
-  fh => $bowtie2->stdout
+  fh => $bowtie2->stdout,
 );
 
 # print sequences of read pairs with both reads mapped
@@ -229,59 +229,82 @@ while( my ($aln1, $aln2) = $sp->next_pair() ){
     # if no read was aligned, skip this pair
     next if ($aln1->is_unmapped() && $aln2->is_unmapped());
 
-    # both reads should be mapped on the same contig
-    my $contig_name = undef;
-    if (
-	$aln1->rname() ne $aln2->rname() &&
-	! $aln1->is_unmapped &&
-	! $aln2->is_unmapped
-	)
-    {
-	$L->debug(sprintf "Skipping reads mapped on contigs: %s and %s", $aln1->rname(), $aln2->rname());
-	next;
-    }
-    $contig_name = ($aln1->is_unmapped) ? $aln2->rname() : $aln1->rname();
+    # two options:
+    # 1) both reads are mapped
+    # 2) only one read was mapped
+    my @contig_name = ();
+    my $mappingtype = undef;
 
-    ### doing some statistics for each contig-end
-    if ($aln1->is_unmapped() || $aln2->is_unmapped())
+    if ($aln1->is_mapped_both())
     {
-	# the read pair is half mapped
-	$filehandles{$contig_name}{half_mapped}++;
-    } else {
-	# the read pair is completely mapped
-	$filehandles{$contig_name}{complete_mapped}++;
+	# both reads are mapped
+	# onto same contig?
+	if ($aln1->rname() eq $aln2->rname())
+	{
+	    # both reads on same contig
+	    $contig_name[0] = $aln1->rname();
+	    $mappingtype = 'complete';
+	} else {
+	    # both reads on different contigs
+	    $L->debug(sprintf("Found joining pair for contigs %s and %s", $aln1->rname, $aln2->rname));
+	    $mappingtype = 'overlapping';
+	    @contig_name=($aln1->rname(), $aln2->rname());
+
+	    # store the information in the joined_with hash
+	    $filehandles{$aln1->rname()}{joined_with}{$aln2->rname()}++;
+	    $filehandles{$aln2->rname()}{joined_with}{$aln1->rname()}++;
+	}
+    } else
+    {
+	# what is the contig name?
+	$contig_name[0] = ($aln1->is_unmapped) ? $aln2->rname() : $aln1->rname();
+	$mappingtype = 'half';
     }
 
+    # reorder the alignments
+    # SAM always shows the mapped read first, but this one can be first or second read
+    if ($aln1->is_second())
+    {
+	($aln1, $aln2) = ($aln2, $aln1);
+    }
+    
     # generate a fastq sequence block for the first read
-    my $seq_obj = Fastq::Seq->new(
+    my $first_read = Fastq::Seq->new(
 	"@".$aln1->qname(),
 	$aln1->seq(),
 	"+",
 	$aln1->qual(),
 	);
-    $filehandles{$contig_name}{reads}->append_seq($seq_obj);
 
     # generate a fastq sequence block for the second read
-    $seq_obj = Fastq::Seq->new(
+    my $second_read = Fastq::Seq->new(
 	"@".$aln2->qname(),
 	$aln2->seq(),
 	"+",
 	$aln2->qual(),
 	);
-    $filehandles{$contig_name}{mates}->append_seq($seq_obj);
+
+
+    foreach my $contig (@contig_name)
+    {
+	$filehandles{$contig}{reads}->append_seq($first_read);
+	$filehandles{$contig}{mates}->append_seq($second_read);
+	$filehandles{$contig}{$mappingtype}++;
+    }
 }
 
 $L->info("Border mapping statistics");
 
 ### printing the statistics
 # generating a overall stastistic
-my ($half, $complete) = (0, 0);
+my ($half, $complete, $overlapping) = (0, 0, 0);
 foreach my $contig_border (keys %filehandles) {
-    $L->debug(sprintf "%s\tmapped reads (half/complete): (%d/%d)", $contig_border, $filehandles{$contig_border}{half_mapped}, $filehandles{$contig_border}{complete_mapped});
-    $half+=$filehandles{$contig_border}{half_mapped};
-    $complete+=$filehandles{$contig_border}{complete_mapped};
+    $L->debug(sprintf "%s\tmapped reads (half/complete/overlapping): (%d/%d/%d)", $contig_border, $filehandles{$contig_border}{half}, $filehandles{$contig_border}{complete}, $filehandles{$contig_border}{overlapping});
+    $half+=$filehandles{$contig_border}{half};
+    $complete+=$filehandles{$contig_border}{complete};
+    $overlapping+=$filehandles{$contig_border}{overlapping};
 }
-$L->info(sprintf("Overall number of mapped reads (half/complete): %d/%d", $half, $complete));
+$L->info(sprintf("Overall number of mapped reads (half/complete/overlapping): %d/%d/%d", $half, $complete, $overlapping));
 
 sub store_sequence_and_create_folder
 {
@@ -293,6 +316,14 @@ sub store_sequence_and_create_folder
     }
     $params{seen_names}{$name}++;
     mkdir($name) || $L->logdie("Unable to create folder '$name'");
+
+    # generate an empty set for statistics and overlapping mappings
+    $params{filehandle}{$params{name}} = {
+	overlapping => 0,
+	half => 0,
+	complete => 0,
+	joined_with => {}
+    };
 
     $params{filehandle}{$params{name}}{reads}=Fasta::Parser->new(
 	file => $name.'/'.'reads.fq',
