@@ -235,7 +235,7 @@ while( my ($aln1, $aln2) = $sp->next_pair() ){
     my @contig_name = ();
     my $mappingtype = undef;
 
-    if ($aln1->is_mapped_both())
+    if (!$aln1->is_unmapped() && !$aln2->is_unmapped())
     {
 	# both reads are mapped
 	# onto same contig?
@@ -299,7 +299,35 @@ $L->info("Border mapping statistics");
 # generating a overall stastistic
 my ($half, $complete, $overlapping) = (0, 0, 0);
 foreach my $contig_border (keys %filehandles) {
-    $L->debug(sprintf "%s\tmapped reads (half/complete/overlapping): (%d/%d/%d)", $contig_border, $filehandles{$contig_border}{half}, $filehandles{$contig_border}{complete}, $filehandles{$contig_border}{overlapping});
+    # check if the contig is capable of joining other contigs
+    my $joined_contigs = 0;
+    my $self_joined = 0;
+
+    my $contig = $contig_border;
+    $contig =~ s/_[53]prime$//;
+    if (scalar (keys %{$filehandles{$contig_border}{joined_with}}) > 0)
+    {
+	foreach my $joined_contig (keys %{$filehandles{$contig_border}{joined_with}})
+	{
+	    $joined_contig =~ s/_[53]prime$//;
+	    if ($joined_contig eq $contig)
+	    {
+		$L->debug(sprintf("Contig %s mapped other contig border", $contig));
+		$self_joined++;			  
+	    } else {
+		$L->debug(sprintf("Contig %s mapped other contig %s", $contig, $joined_contig));
+		$joined_contigs++;
+	    }
+	}
+    }
+    $L->debug(
+	sprintf "%s\tmapped reads (half/complete/overlapping): (%d/%d/%d) joining %d contigs", 
+	$contig_border, 
+	$filehandles{$contig_border}{half}, 
+	$filehandles{$contig_border}{complete}, 
+	$filehandles{$contig_border}{overlapping},
+	$joined_contigs
+	);
     $half+=$filehandles{$contig_border}{half};
     $complete+=$filehandles{$contig_border}{complete};
     $overlapping+=$filehandles{$contig_border}{overlapping};
