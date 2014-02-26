@@ -107,7 +107,7 @@ Log::Log4perl->init( \q(
 	log4perl.appender.Screen                = Log::Log4perl::Appender::Screen
 	log4perl.appender.Screen.stderr         = 1
 	log4perl.appender.Screen.layout         = PatternLayout
-	log4perl.appender.Screen.layout.ConversionPattern = [%d{yy-MM-dd HH:mm:ss}] [%C] %m%n
+	log4perl.appender.Screen.layout.ConversionPattern = [%d{yy-MM-dd HH:mm:ss}] [scr] %m%n
 ));
 
 
@@ -141,7 +141,7 @@ GetOptions( # use %opt (Cfg) as defaults
                 target_coverage|coverage=i
                 reads|1=s
                 mates|2=s
-		ref_cluster
+		ref_cluster|r=s
 		version|V!
 		debug|D!
 		help|h!
@@ -248,6 +248,12 @@ while(my $aln = $sp->next_aln){
       last;
     }
   }
+}
+
+#what if not enough coverage in entire file.
+unless($current_cov && $current_cov >= $opt{target_coverge}){
+    $L->info("Insufficient coverage in library");
+    exit 1;
 }
 
 $bowtie2->cancel("Coverage = $current_cov\n");
