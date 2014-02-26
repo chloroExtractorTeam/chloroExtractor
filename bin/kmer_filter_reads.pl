@@ -95,17 +95,21 @@ Prefix for the output files
 
 Size of kmers used in Jellyfish hash.
 
-=item -n|--cutoff
+=item -n|--cutoff <INT/INT%> [95%]
 
-Minimum number of kmers in range [--lower .. --upper] for read to be accepted.
+Minimum number of kmers in range [--lower .. --upper] for read to be accepted. Absolute number or percentage, e.g. 90%.
 
-=item -u|--upper <INT> [1000]
+=item -u|--upper <INT> [200]
 
 Upper kmer count cutoff. 0 deactivates cutoff.
 
 =item -l|--lower <INT> [5]
 
 Lower kmer count cutoff. 0 deactivates cutoff.
+
+=item -x|--kmer-shift [1]
+
+Use every x kmer.
 
 =item [--[no]-penalize-N] [ON]
 
@@ -123,6 +127,21 @@ Write a histogram of trusted kmers count frequencies.
 
 Use user customized config file. Superseeds default config.
 
+=item [--debug]
+
+Turn on debug messages.
+
+=item [--quiet]
+
+Do not report status/progress, only warnings.
+
+=item [--help]
+
+Show this help screen.
+
+=back
+
+=cut
 
 # TODO:
 # currently not working - test assumes only "good" kmer in hash - jellyfish hash however
@@ -132,21 +151,6 @@ Use user customized config file. Superseeds default config.
 #By default, kmers are read to a Perl hash structure for fastest access. This hash can become massive on large datasets. To avoid memory clashs you can disable this behaviour. The kmers are then queried directly against the Jellyfish hash database, which is slower,
 #but does not require loading all kmers to RAM.
 
-=item [--debug]
-
-Turn on debug messages.
-
-=item [--quiet]
-
-=item [--help]
-
-Show this help screen.
-
-Supress verbose information messages.
-
-=back
-
-=cut
 
 use warnings;
 no warnings 'qw';
@@ -181,8 +185,6 @@ use Verbose::ProgressBar;
 
 our $VERSION = '0.03';
 
-my $ID = "kfr";
-
 # get a logger
 my $L = Log::Log4perl::get_logger();
 Log::Log4perl->init(\<<'CFG');
@@ -190,7 +192,7 @@ Log::Log4perl->init(\<<'CFG');
 	log4perl.appender.Screen			= Log::Log4perl::Appender::Screen
 	log4perl.appender.Screen.stderr		= 0
 	log4perl.appender.Screen.layout		= PatternLayout
-	log4perl.appender.Screen.layout.ConversionPattern = [%d{MM-dd HH:mm:ss}] [$ID] %m%n
+	log4perl.appender.Screen.layout.ConversionPattern = [%d{MM-dd HH:mm:ss}] [kfr] %m%n
 CFG
 $L->level($INFO);
 
@@ -212,7 +214,17 @@ for(my $i=0; $i<@ARGV; $i++){
 
 %cfg = (%cfg, Cfg->Read_Cfg($user_cfg)) if $user_cfg; # simple overwrite
 
-my %opt = %{$cfg{$ID}};
+my %opt = (
+    reads => [],
+    mates => [],
+    lower => 5,
+    upper => 200,
+    'kmer-shift' => 1,
+    cutoff => '95%',
+    penalize_N => 1,
+    perl_hash => 1,
+    %{$cfg{kfr}}
+);
 
 
 #------------------------------------------------------------------------------#
@@ -224,21 +236,17 @@ GetOptions(\%opt, qw(
 	out|o=s
 	kmer-hash|k=s
 	kmer-size|m=i
-	cutoff|n=i
+	cutoff|n=s
 	lower|l=i
 	upper|u=i
 	kmer-shift|x=i
-	penalize-N!
-	perl-hash!
-	quiet
+	penalize_N|penalize-N!
+	histogram=s
+        quiet
 	debug
-	help
+	help|h
 config|c=s
 )) or $L->logcroak($!);
-
-my @fq_suffixes=(qw/.fq .fastq .FQ .FASTQ/);
-my @opt_reads = @{$opt{reads}};
-my @opt_mates = @{$opt{mates}};
 
 pod2usage(1) if $opt{help};
 
@@ -253,27 +261,48 @@ $opt{debug} && $L->level($DEBUG);
 
 $L->debug("GetOptions:\n", Dumper(\%opt));
 
-my $opt_c = $opt{cutoff};
-my $opt_u = $opt{upper};
-my $opt_l = $opt{lower};
-my $opt_m = $opt{'max-reads'};
 
 ##------------------------------------------------------------------------##	
 # required	
-for(qw(kmer-hash kmer-size cutoff)){
-	pod2usage("required: --$_") unless defined ($opt{$_}) 
+for(qw(kmer-hash kmer-size cutoff reads mates)){
+    if(ref $opt{$_} eq 'ARRAY'){
+	pod2usage("required: --$_") unless @{$opt{$_}}
+    }else{
+	pod2usage("required: --$_") unless defined ($opt{$_})
+    }
 };
 
-@{$opt{reads}} || pod2usage("required: --reads");
+
+# check fq files -e -s
+my @fq_suffixes=(qw/.fq .fastq .FQ .FASTQ/);
+my @opt_reads = @{$opt{reads}};
+my @opt_mates = @{$opt{mates}};
 
 if(@opt_mates){
 	$L->logcroak("Number of -1 and -2 files differs!") if @opt_mates != @opt_reads;
 }
 
-# check db files -e -s
 foreach my $file(@opt_reads, @opt_mates){
 	$L->logcroak("Cannot find file: $file ") unless -e $file && -f $file;
 }
+
+
+# boundaries and cutoff
+my $opt_c;
+my $opt_p;
+if($opt{cutoff} =~ /^\d+%$/){
+    $opt_p = substr($opt{cutoff}, 0, -1)/100;
+}elsif($opt{cutoff} =~ /^\d+$/){
+    $opt_c = $opt{cutoff};
+}else{
+    pod2usage("invalid --cutoff $opt{cutoff}");
+}
+my $opt_c1 = $opt_c; # first read with %
+my $opt_c2 = $opt_c; # second read with %
+my $opt_u = $opt{upper};
+my $opt_l = $opt{lower};
+my $opt_m = $opt{'max-reads'};
+
 
 $L->warn("--lower($opt_l) > --upper($opt_u), are you sure that's what you want?") if $opt_u && $opt_l > $opt_u;
 
@@ -284,6 +313,7 @@ my $out_file2 = $opt{out} ? $opt{out}."_2.fq" : basename($opt_mates[0], @fq_suff
 ##------------------------------------------------------------------------##	
 
 my $jf = Jellyfish->new();
+
 my $km = Kmer->new(
 	kmer_size => $opt{'kmer-size'},
 	shift_by => $opt{'kmer-shift'}
@@ -294,18 +324,18 @@ my %H = (); # histogram
 ##------------------------------------------------------------------------##	
 
 my %K = ();
-$L->logdie("--no-perl-hash currently not implemented!") unless $opt{'perl-hash'};
-my $khash = $opt{'perl-hash'};
+$L->logdie("--no-perl-hash currently not implemented!") unless $opt{perl_hash};
+my $khash = $opt{perl_hash};
 
 if($khash){
 	$L->info("Loading kmer hash");
 	my $kfh = $jf->dump([
-			qw(-c -t), 						# column, tab separated
-			$opt_l ? ("-L", $opt_l) : (), 	# lower cutoff
-			$opt_u ? ("-U", $opt_u) : (), 	# upper cutoff
-			$opt{'kmer-hash'}				# hash
-		]);
-	if($opt{'penalize-N'}){
+	    qw(-c -t),	                  # column, tab separated
+	    $opt_l ? ("-L", $opt_l) : (), # lower cutoff
+	    $opt_u ? ("-U", $opt_u) : (), # upper cutoff
+	    $opt{'kmer-hash'}             # hash
+			    ]);
+	if($opt{penalize_N}){
 		while(<$kfh>){
 			my ($k, $v) = split("\t", $_);
 			$K{$k} = $v	unless $k =~ tr/N//;
@@ -367,9 +397,14 @@ unless(@opt_mates){
 			$pg->update unless $pgc++%10000;
 			
 			my $c=0;
-			$c+= exists $K{$_} for $km->cmerize($fq1->seq),
-			
+			my @kmers = $km->cmerize($fq1->seq);
+			$c+= exists $K{$_} for @kmers;
+
 			$H{$c}++;
+
+			if($opt_p){
+			    $opt_c = $opt_p * @kmers;
+			}
 
 			if($c<$opt_c){
 				$L->debug("discarded ",$fq1->id());
@@ -413,14 +448,22 @@ unless(@opt_mates){
 			
 			my $c1=0;
 			my $c2=0;
-
-			$c1+= exists $K{$_} for $km->cmerize($fq1->seq);
-			$c2+= exists $K{$_} for $km->cmerize($fq2->seq);
+			
+			my @kmers1 = $km->cmerize($fq1->seq);
+			my @kmers2 = $km->cmerize($fq2->seq);
+			$c1+= exists $K{$_} for @kmers1;
+			$c2+= exists $K{$_} for @kmers2;
 			
 			$H{$c1}++;
 			$H{$c2}++;
 
-			if($c1 < $opt_c && $c2 < $opt_c){
+			if($opt_p){
+			    $opt_c1 = $opt_p * @kmers1;
+			    $opt_c2 = $opt_p * @kmers2;
+			}
+			
+
+			if($c1 < $opt_c1 && $c2 < $opt_c2){
 				$L->debug("discarded ".$fq1->id." / ".$fq2->id);
 			}else{
 				print FQ1 "$fq1";
