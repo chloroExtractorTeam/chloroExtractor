@@ -15,10 +15,6 @@ package asr;
 
 =over
 
-=item --create-config
-
-Create a config file with default settings for user customization.
-
 =item -c|--config
 
 Use user customized config file. Superseeds default config.
@@ -34,6 +30,8 @@ Display version.
 =item -h|--help
 
 Display this help.
+
+=item 
 
 =back
 
@@ -130,6 +128,8 @@ GetOptions( # use %opt (Cfg) as defaults
 		insert_size|insert-size|isize|s=i
 		workingdir|wd|w=s
  		velvetparameter=s
+ 		extendmode
+ 		append!
 	)
 ) or $L->logcroak('Failed to "GetOptions"');
 
@@ -222,9 +222,11 @@ if (File::Spec->file_name_is_absolute($outputfasta))
     $L->debug(sprintf("Filename for output file is realtive, assuming to put it in the original directory. New absolut filename is '%s'", $outputfasta));
 }
 
+# if append is set, the output file will be extended
+my $mode = ($opt{append}) ? ">>" : ">";
 my $output = Fasta::Parser->new(
     file => $outputfasta,
-    mode => '>'                    # overwrite an existing file
+    mode => $mode
     );
 
 # generate a list of kmers in output

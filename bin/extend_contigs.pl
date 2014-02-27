@@ -341,7 +341,7 @@ $L->info(sprintf("Overall number of mapped reads (half/complete/overlapping): %d
 $L->info("Running assemble_reads.pl");
 foreach my $contig_border (keys %filehandles)
 {
-    my $cmd = $RealBin."/assemble_reads.pl ".join(" ", ("--workingdir", $contig_border, "--isize", $opt{insert_size}), "--reads", "reads.fq", "--mates", "mates.fq", "--out", cwd()."/".$contig_border."/asr.fa");
+    my $cmd = $RealBin."/assemble_reads.pl ".join(" ", ("--workingdir", $contig_border, "--isize", $opt{insert_size}), "--reads", "reads.fq", "--mates", "mates.fq", "--extendmode", "--out", cwd()."/".$contig_border."/asr.fa");
     $L->debug("Running assemle_reads using the command '$cmd'");
     qx($cmd);
     my $errorcode = $?;
