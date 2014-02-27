@@ -196,7 +196,7 @@ $L->debug(Dumper(\%opt));
 @{$opt{mates}} = map{File::Spec->rel2abs($_)}@{$opt{mates}};  
 
 $opt{data_cds} = File::Spec->rel2abs($RealBin.'/../data/cds.nr98.fa');
-
+$opt{config} = File::Spec->rel2abs($opt{config}) if $opt{config};
 
 # prepare folder structure
 prep_dir($opt{dir} || '.', $opt{overwrite});
@@ -228,6 +228,7 @@ $L->info("Task: $task");
     "-1" => "@{$opt{reads}}", 
     "-2" => "@{$opt{mates}}", 
     "-r" => $opt{data_cds}, 
+    $opt{config} ? ("-c" => $opt{config}) : (),
     $opt{debug} ? '--debug' : () 
 );
 
@@ -243,6 +244,21 @@ my ($est_insert_size) = pop(@re) =~ /(\d+)/;
 $L->debug("Cov: $est_coverage");
 $L->debug("Isize: $est_insert_size");
 
+
+#---------------#
+# kmer spectrum #
+
+$task = 'building kmer spectrum';
+$L->info("Task: $task");
+
+use Jellyfish;
+my $jf = Jellyfish->new();
+$jf->run(['count', @{$opt{jfr}{jf_opt}}, '-t', $opt{threads} , @{$opt{jfr}{jf_in}}]);
+
+$L->logcroak() if ($? || $@);
+$L->debug("Returned: ",@re);
+
+
 #-------------------#
 # peak detection.pl #
 
@@ -257,6 +273,7 @@ $L->info("Task: $task");
 
 @cmd = (
     "$RealBin/$task", 
+    $opt{config} ? ("-c" => $opt{config}) : (),
     $opt{debug} ? '--debug' : () 
 );
 
@@ -276,6 +293,7 @@ $L->info("Task: $task");
 
 @cmd = (
     "$RealBin/$task",
+    $opt{config} ? ("-c" => $opt{config}) : (),
     $opt{debug} ? '--debug' : ()
     # isize: $opt{insert_size} || $est_insert_size
 );
@@ -296,6 +314,7 @@ $L->info("Task: $task");
 
 @cmd = (
     "$RealBin/$task",
+    $opt{config} ? ("-c" => $opt{config}) : (),
     $opt{debug} ? '--debug' : (), 
     blast_db => $opt{data_cds}, 
 );
@@ -335,6 +354,7 @@ $L->info("Task: $task");
 
 @cmd = (
     "$RealBin/$task",
+    $opt{config} ? ("-c" => $opt{config}) : (),
     $opt{debug} ? '--debug' : () 
 );
 
@@ -354,6 +374,7 @@ $L->info("Task: $task");
 
 @cmd = (
     "$RealBin/$task",
+    $opt{config} ? ("-c" => $opt{config}) : (),
     $opt{debug} ? '--debug' : (), 
     blast_db => $opt{data_cds}, 
 );
@@ -374,6 +395,7 @@ $L->info("Task: $task");
 
 @cmd = (
     "$RealBin/$task",
+    $opt{config} ? ("-c" => $opt{config}) : (),
     $opt{debug} ? '--debug' : () 
 );
 
