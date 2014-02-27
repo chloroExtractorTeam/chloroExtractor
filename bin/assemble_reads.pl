@@ -72,6 +72,7 @@ use File::Copy;
 
 # additional modules
 use Cfg;
+use Cwd; # as we have to change directories
 
 #-----------------------------------------------------------------------------#
 # Globals
@@ -123,7 +124,8 @@ GetOptions( # use %opt (Cfg) as defaults
 		reads|1=s
 		mates|2=s
 		insert_size|insert-size|isize|s=i
-                workingdir|wd|w=s
+		workingdir|wd|w=s
+ 		velvetparameter=s
 	)
 ) or $L->logcroak('Failed to "GetOptions"');
 
@@ -153,6 +155,32 @@ $L->debug(Dumper(\%opt));
 # MAIN
 
 $L->info('Assemble reads');
+
+my $oldpwd;
+BEGIN{
+    $oldpwd = cwd();
+}
+## define rechange of working directory on exit
+END{
+    if (defined $oldpwd) { chdir($oldpwd) }
+}
+
+$L->debug("Changing current directory to $opt{workingdir}");
+chdir($opt{workingdir}) || $L->logdie("Unable to change to working directory $opt{workingdir}");
+
+## run velveth command
+$L->info("Running velveth");
+my $cmd = join(" ", ($opt{velvet_path}."/velveth", $opt{velvet_out}, $opt{velveth_parameter}, "-fastq -shortPaired", $opt{reads}, $opt{mates}));
+$L->debug("Running velveth using the command '$cmd'");
+
+qx($cmd);
+
+my $errorcode = $?;
+
+if ($errorcode != 0)
+{
+    $L->logdie("The velveth run returned with errorcode $errorcode");
+}
 
 #-----------------------------------------------------------------------------#
 
