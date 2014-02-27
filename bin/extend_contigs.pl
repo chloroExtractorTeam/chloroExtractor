@@ -1,5 +1,7 @@
 #!/usr/bin/env perl
 
+package exc;
+
 =head1 NAME
 
 
