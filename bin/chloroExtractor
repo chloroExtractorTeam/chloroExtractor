@@ -32,7 +32,7 @@ Path to a working directory. Will be created. If exists, needs to be empty.
 
 Output file basename, e.g. species id.
 
-=item overwrite
+=item --overwrite
 
 Overwrite non-empty output directory.
 
@@ -98,7 +98,7 @@ use Cfg;
 #-----------------------------------------------------------------------------#
 # Globals
 
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 
 # get a logger
 my $L = Log::Log4perl::get_logger();
@@ -139,6 +139,7 @@ GetOptions( # use %opt (Cfg) as defaults
                 dir|d=s
                 reads|1=s@
                 mates|2=s@
+                insert_size|insert-size=i
 		threads|t=i
 		overwrite!
 		version|V!
@@ -184,6 +185,8 @@ $L->debug(Dumper(\%opt));
 @{$opt{reads}} = map{File::Spec->rel2abs($_)}@{$opt{reads}};  
 @{$opt{mates}} = map{File::Spec->rel2abs($_)}@{$opt{mates}};  
 
+$opt{data_cds} = File::Spec->rel2abs($RealBin.'/../data/cds.nr98.fa');
+
 
 # prepare folder structure
 prep_dir($opt{dir} || '.', $opt{overwrite});
@@ -192,50 +195,188 @@ File::Path::make_path($opt{dir}, {
     verbose => $opt{debug} ? 1 : 0
 });
 
-my @tasks = qw(
-    scr
-    ped
-    kfr
-    asr
-    fic
-    asc
-    exc
-    mir
-);
 
 if($opt{dir}){
     chdir($opt{dir}) || $L->logcroak("'$opt{dir}' ",$!);
 }
-
-File::Path::make_path(@tasks, {
-    verbose => $opt{debug} ? 1 : 0
-});
 
 
 my $task;
 my @re;
 my @cmd;
 
-# scale_reads.pl
 
 
+#----------------#
+# scale_reads.pl #
 
-$task = "scr";
-$L->info("Task: scale_reads.pl [$task]");
+$task = 'scale_reads.pl';
+$L->info("Task: $task");
 
-chdir($task);
+@cmd = (
+    "$RealBin/$task", 
+    "-1" => "@{$opt{reads}}", 
+    "-2" => "@{$opt{mates}}", 
+    "-r" => $opt{data_cds}, 
+    $opt{debug} ? '--debug' : () 
+);
 
-@cmd = ("$RealBin/scale_reads.pl", "-1", "@{$opt{reads}}", "-2", "@{$opt{mates}}", "-r", "$RealBin/../data/cds.nr98.fa", $opt{debug} ? '--debug' : () );
 $L->debug("Running: @cmd");
-
 @re = qx(@cmd);
 
-$L->logdie($@) if $@;
+$L->logcroak() if ($? || $@);
+$L->debug("Returned: ",@re);
+
+my ($est_coverage) = pop(@re) =~ /(\d+)/;
+my ($est_insert_size) = pop(@re) =~ /(\d+)/;
+
+$L->debug("Cov: $est_coverage");
+$L->debug("Isize: $est_insert_size");
+
+#-------------------#
+# peak detection.pl #
+
+# NA
+
+
+#----------------------#
+# kmer_filter_reads.pl #
+
+$task = 'kmer_filter_reads.pl';
+$L->info("Task: $task");
+
+@cmd = (
+    "$RealBin/$task", 
+    $opt{debug} ? '--debug' : () 
+);
+
+$L->debug("Running: @cmd");
+@re = qx(@cmd);
+
+$L->logcroak() if ($? || $@);
 $L->debug("Returned: ",@re);
 
 
-#------------------------------------------------------------------------------#
 
+#-------------------#
+# assemble_reads.pl #
+
+$task = 'assemble_reads.pl';
+$L->info("Task: $task");
+
+@cmd = (
+    "$RealBin/$task",
+    $opt{debug} ? '--debug' : ()
+    # isize: $opt{insert_size} || $est_insert_size
+);
+
+$L->debug("Running: @cmd");
+@re = qx(@cmd);
+
+$L->logcroak if ($? || $@);
+$L->debug("Returned: ",@re);
+
+
+
+#-------------------#
+# filter_contigs.pl #
+
+$task = 'filter_contigs.pl';
+$L->info("Task: $task");
+
+@cmd = (
+    "$RealBin/$task",
+    $opt{debug} ? '--debug' : (), 
+    blast_db => $opt{data_cds}, 
+);
+
+$L->debug("Running: @cmd");
+@re = qx(@cmd);
+
+$L->logcroak if ($? || $@);
+$L->debug("Returned: ",@re);
+
+
+
+#---------------------#
+# assemble_contigs.pl #
+
+$task = 'assemble_contigs.pl';
+$L->info("Task: $task");
+
+@cmd = (
+    "$RealBin/$task",
+    $opt{debug} ? '--debug' : () 
+);
+
+$L->debug("Running: @cmd");
+@re = qx(@cmd);
+
+$L->logcroak if ($? || $@);
+$L->debug("Returned: ",@re);
+
+
+
+#-------------------#
+# extend_contigs.pl #
+
+$task = 'extend_contigs.pl';
+$L->info("Task: $task");
+
+@cmd = (
+    "$RealBin/$task",
+    $opt{debug} ? '--debug' : () 
+);
+
+$L->debug("Running: @cmd");
+@re = qx(@cmd);
+
+$L->logcroak if $@;
+$L->debug("Returned: ",@re);
+
+
+
+#-------------------#
+# filter_contigs.pl # (again)
+
+$task = 'filter_contigs.pl';
+$L->info("Task: $task");
+
+@cmd = (
+    "$RealBin/$task",
+    $opt{debug} ? '--debug' : (), 
+    blast_db => $opt{data_cds}, 
+);
+
+$L->debug("Running: @cmd");
+@re = qx(@cmd);
+
+$L->logcroak if ($? || $@);
+$L->debug("Returned: ",@re);
+
+
+
+#-------------------------#
+# make_inverted_repeat.pl #
+
+$task = 'make_inverted_repeats.pl';
+$L->info("Task: $task");
+
+@cmd = (
+    "$RealBin/$task",
+    $opt{debug} ? '--debug' : () 
+);
+
+$L->debug("Running: @cmd");
+@re = qx(@cmd);
+
+$L->logcroak if ($? || $@);
+$L->debug("Returned: ",@re);
+
+
+
+
+#------------------------------------------------------------------------------#
 # prep_dir(dirname=s, overwrite!)
 sub prep_dir{
     my ($dir, $overwrite) = (@_, 0);
@@ -273,8 +414,16 @@ sub is_empty_dir {
 
 =head1 AUTHOR
 
-Clemens Weiss S<clemens.weiss@stud-mail.uni-wuerzburg.de>
-
 Thomas Hackl S<thomas.hackl@uni-wuerzburg.de>
 
+Markus Ankenbrand S<markus.ankenbrand@stud-mail.uni-wuerzburg.de>
+
+Niklas Terhoeven S<niklaus.terhoeven@stud-mail.uni-wuerzburg.de>
+
+Clemens Weiss S<clemens.weiss@stud-mail.uni-wuerzburg.de>
+
+Frank Foerster S<frank.foerster@biozentrum.uni-wuerzburg.de>
+
 =cut
+
+
