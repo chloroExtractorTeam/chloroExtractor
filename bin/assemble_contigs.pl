@@ -72,6 +72,7 @@ use File::Copy;
 use Cfg;
 use Cwd; # as we have to change directories
 use Fasta::Parser;
+use File::Spec;  # is a filename absolut or relative? Is needed for the output filename
 
 
 #-----------------------------------------------------------------------------#
@@ -107,7 +108,7 @@ for(my $i=0; $i<@ARGV; $i++){
 }
 
 %cfg = (%cfg, Cfg->Read_Cfg($user_cfg)) if $user_cfg; # simple overwrite
-my %opt = %{$cfg{asr}};
+my %opt = %{$cfg{asc}};
 
 #TODO: custom config
 
@@ -165,6 +166,55 @@ END{
 
 $L->debug("Changing current directory to $opt{workingdir}");
 chdir($opt{workingdir}) || $L->logdie("Unable to change to working directory $opt{workingdir}");
+
+$L->info("Renaming fasta sequences");
+
+my $input = Fasta::Parser->new(
+    file => $opt{in},
+    mode => '<'
+    );
+
+my $renamedfile = $opt{in}."_renamed";
+my $renamed = Fasta::Parser->new(
+    file => $renamedfile,
+    mode => '>'
+    );
+
+my $counter = 0;
+while (my $contig=$input->next_seq())
+{
+    # substitute all period (.) with underscore (_) and add .a to the end of the line
+    my $id = $contig->id();
+    $id =~ s/\./_/g;
+    # count all contigs to garantee unique names
+    $counter++;
+    $contig->id(sprintf("%05d_%s.a", $counter, $id));
+    $renamed->append_seq($contig);
+}
+
+$L->info("Running phrap...");
+my $cmd = $opt{phrap_path}."/phrap ".$renamedfile;
+$L->debug("Run command: '$cmd'");
+qx($cmd);
+
+my $errorcode = $?;
+
+if ($errorcode != 0)
+{
+    $L->logdie("The phrap run returned with errorcode $errorcode. The command was '$cmd'");
+}
+
+## last step is copying the output file
+my $outputfasta=$opt{out};
+if (File::Spec->file_name_is_absolute($outputfasta))
+{
+    $L->debug("Filename for output file is absolute");
+} else 
+{
+    $outputfasta = $oldpwd."/".$outputfasta;
+    $L->debug(sprintf("Filename for output file is realtive, assuming to put it in the original directory. New absolut filename is '%s'", $outputfasta));
+}
+copy($renamedfile, $outputfasta) || $L->logdie("Copying the result into the output file failed: $!");
 
 #-----------------------------------------------------------------------------#
 
