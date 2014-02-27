@@ -76,6 +76,7 @@ use Fasta::Parser;
 use Fastq::Parser;
 use Bowtie2;
 use Sam::Parser;
+use Cwd;
 
 #-----------------------------------------------------------------------------#
 # Globals
@@ -335,6 +336,20 @@ foreach my $contig_border (keys %filehandles) {
     $overlapping+=$filehandles{$contig_border}{overlapping};
 }
 $L->info(sprintf("Overall number of mapped reads (half/complete/overlapping): %d/%d/%d", $half, $complete, $overlapping));
+
+## here we need to run a velvet assembly for each folder
+$L->info("Running assemble_reads.pl");
+foreach my $contig_border (keys %filehandles)
+{
+    my $cmd = $RealBin."/assemble_reads.pl ".join(" ", ("--workingdir", $contig_border, "--isize", $opt{insert_size}), "--reads", "reads.fq", "--mates", "mates.fq", "--out", cwd()."/".$contig_border."/asr.fa");
+    $L->debug("Running assemle_reads using the command '$cmd'");
+    qx($cmd);
+    my $errorcode = $?;
+    if ($errorcode != 0)
+    {
+	$L->logdie("Errorcode for command '$cmd' was not 0!");
+    }
+}
 
 sub store_sequence_and_create_folder
 {
