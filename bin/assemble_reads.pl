@@ -182,6 +182,27 @@ if ($errorcode != 0)
     $L->logdie("The velveth run returned with errorcode $errorcode");
 }
 
+## search for all velvet_out directories
+$L->info("Running velvetg");
+my @dir_list = glob($opt{velvet_out}."*");
+$L->debug("List of velvet-hash-directories: ".join(", ", @dir_list));
+
+## run velvetg in each directory
+foreach my $current_dir (@dir_list)
+{
+    $cmd = join(" ", ($opt{velvet_path}."/velvetg", $current_dir, $opt{velvetg_parameter}, "-ins_length", $opt{insert_size}));
+    $L->debug("Running velvetg using the command '$cmd'");
+
+    qx($cmd);
+
+    $errorcode = $?;
+
+    if ($errorcode != 0)
+    {
+	$L->logdie("The velvetg run returned with errorcode $errorcode. The command was '$cmd'");
+    }
+}
+
 #-----------------------------------------------------------------------------#
 
 =head1 AUTHOR
