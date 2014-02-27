@@ -73,6 +73,8 @@ use File::Copy;
 # additional modules
 use Cfg;
 use Cwd; # as we have to change directories
+use Fasta::Parser;
+use File::Spec;  # is a filename absolut or relative? Is needed for the output filename
 
 #-----------------------------------------------------------------------------#
 # Globals
@@ -121,6 +123,8 @@ GetOptions( # use %opt (Cfg) as defaults
 		debug|D!
 		help|h!
 		config|c=s
+                out|o=s
+                outkmer=i@
 		reads|1=s
 		mates|2=s
 		insert_size|insert-size|isize|s=i
@@ -202,6 +206,63 @@ foreach my $current_dir (@dir_list)
 	$L->logdie("The velvetg run returned with errorcode $errorcode. The command was '$cmd'");
     }
 }
+
+## combine output from contigs.fa into a single fasta-file
+## contigs have to be renamed according to their kmer size
+$L->info("Generating output");
+# check if the given output filename is relative or absolute
+# in case of a relative filename it should be written into the oldpwd-directory
+my $outputfasta=$opt{out};
+if (File::Spec->file_name_is_absolute($outputfasta))
+{
+    $L->debug("Filename for output file is absolute");
+} else 
+{
+    $outputfasta = $oldpwd."/".$outputfasta;
+    $L->debug(sprintf("Filename for output file is realtive, assuming to put it in the original directory. New absolut filename is '%s'", $outputfasta));
+}
+
+my $output = Fasta::Parser->new(
+    file => $outputfasta,
+    mode => '>'                    # overwrite an existing file
+    );
+
+# generate a list of kmers in output
+my %wanted_kmer = map {($_, 0)} @{$opt{outkmer}};
+
+## go through @dir_list and search contigs.fa files for combination
+foreach my $current_dir (@dir_list)
+{
+    my ($kmersize) = $current_dir =~ /(\d+)$/;
+    $L->debug(sprintf("Kmersize for directory '%s' was %d", $current_dir, $kmersize));
+
+    if (! exists $wanted_kmer{$kmersize})
+    {
+	$L->debug(sprintf("Skipping kmersize %d from output", $kmersize));
+	next;
+    }
+
+    # test if the file exists
+    my $inputfilename = $current_dir."/contigs.fa";
+    if (! -e $inputfilename)
+    {
+	$L->debug(sprintf("Skipping kmersize %d from output because the file '%s' does not exist.", $kmersize, $inputfilename));
+	next;
+    }
+
+    my $input = Fasta::Parser->new(
+	file => $inputfilename,
+	mode => '<'
+	);
+
+    while (my $contig=$input->next_seq())
+    {
+	# add the kmer size to the contig_name
+	$contig->id("Kmer".$kmersize."_".$contig->id());
+	$output->append_seq($contig);
+    }
+}
+
 
 #-----------------------------------------------------------------------------#
 
