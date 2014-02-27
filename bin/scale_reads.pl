@@ -235,7 +235,7 @@ while(%h = $sp->next_header_line('@SQ')){
     id => $h{'SN'},
     len => $h{'LN'},
   );  
-  print '@SQ'."\tSN:$h{'SN'}\tLN:$h{'LN'}\n" if ($opt{debug});
+  #print '@SQ'."\tSN:$h{'SN'}\tLN:$h{'LN'}\n" if ($opt{debug});
 }
 
 my $current_cov;
@@ -261,7 +261,7 @@ while(my $aln = $sp->next_aln){
 }
 
 #what if not enough coverage in entire file.
-if(! $current_cov || $current_cov < $opt{target_coverge}){
+if(! $current_cov || $current_cov < $opt{target_coverage}){
     $current_cov 
 	? $L->info("Ran out of reads at estimated coverage of $current_cov")
 	: $L->info("Could not detect chloroplast reads in input data");
@@ -281,9 +281,9 @@ my $sed_cmd1 = 'sed "1~4 {/^\@'.$last_id.'\(\/[12]\)*\s/{N;N;N;q}}" '.$opt{reads
 $L->debug($sed_cmd1);
 qx($sed_cmd1);
 
-if ($opt{input_mates}) {
+if ($opt{mates}) {
 
-  my $sed_cmd2 = 'sed "1~4 {/^\@'.$last_id.'\(\/[12]\)*\s/{N;N;N;q}}" '.$opt{input_mates}." >".$opt_o2;
+  my $sed_cmd2 = 'sed "1~4 {/^\@'.$last_id.'\(\/[12]\)*\s/{N;N;N;q}}" '.$opt{mates}." >".$opt_o2;
 
   $L->debug($sed_cmd2);
   qx($sed_cmd2);
