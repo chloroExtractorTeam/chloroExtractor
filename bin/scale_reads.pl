@@ -30,7 +30,7 @@ Output prefix.
 
 =item -r|--ref-cluster
 
-Reference sequences for mapping.
+Reference sequences for mapping. Fasta or already created bowtie2 index prefix.
 
 =item -t|--target-coverage [200]
 
@@ -180,23 +180,30 @@ $L->debug(Dumper(\%opt));
 my $opt_o1 = $opt{out}."_1.fq";
 my $opt_o2 = $opt{out}."_2.fq";
 
-$L->info("Building bowtie2 index");
+
 
 my $bowtie2 = Bowtie2->new(
     path => $opt{bowtie2_path},
     log => $opt{bowtie2_log},
-    ref => $opt{ref_cluster},
-    pre => $opt{bowtie2_DB},
 );
 
 # TODO: bowtie2 generate db -> prevent issues with different indices on different architectures or bowtie2 versions
-$bowtie2->bowtie2_build();
-my $bis = $bowtie2->stdout;
-my $bie = $bowtie2->stderr;
 
-$L->debug(<$bis>, <$bie>);
+unless(-e $opt{ref_cluster}.'.1.bt2'){
+    $L->info("Building bowtie2 index");
+    $bowtie2->bowtie2_build(
+	ref => $opt{ref_cluster},
+	pre => $opt{ref_cluster},
+	);
+    my $bis = $bowtie2->stdout;
+    my $bie = $bowtie2->stderr;
 
-$bowtie2->finish();
+    $L->debug(<$bis>, <$bie>);
+
+    $bowtie2->finish();
+}else{
+    $L->info("Using existing bowtie2 index $opt{ref_cluster}.*.bt2");
+}
 
 $L->info("Running bowtie2");
 
@@ -205,7 +212,7 @@ $bowtie2->bowtie2(
     ref => undef,
     "-1" => $opt{reads},
     "-2" => $opt{mates},
-    "-x" => $opt{bowtie2_DB},
+    "-x" => $opt{ref_cluster},
     "-p" => $cfg{threads},
 );
 
@@ -234,29 +241,38 @@ while(%h = $sp->next_header_line('@SQ')){
 my $current_cov;
 my $last_id;
 
-my $c; 
+my $c;
+my $tlen_sum; 
+
 while(my $aln = $sp->next_aln){
-  my $id = $aln->rname();
-  $seqs{$id}->add_aln($aln);
-  print "$aln" if ($opt{debug});
-  $c++;
-  unless ($c % $opt{coverage_check_interval}){
-    $current_cov = estimate_coverage(\%seqs);
-    $L->debug("Coverage: ",$current_cov);
-    $last_id = $aln->qname;
-    if ($current_cov >= $opt{target_coverage}) { 
-      last;
+    my $id = $aln->rname();
+    $tlen_sum+= abs($aln->tlen); # compute isize
+    $seqs{$id}->add_aln($aln);
+
+    $c++;
+    unless ($c % $opt{coverage_check_interval}){
+	$current_cov = estimate_coverage(\%seqs);
+	$L->debug("Coverage: ",$current_cov);
+	$last_id = $aln->qname;
+	if ($current_cov >= $opt{target_coverage}) { 
+	    last;
+	}
     }
-  }
 }
 
 #what if not enough coverage in entire file.
-unless($current_cov && $current_cov >= $opt{target_coverge}){
-    $L->info("Insufficient coverage in library");
+if(! $current_cov || $current_cov < $opt{target_coverge}){
+    $current_cov 
+	? $L->info("Ran out of reads at estimated coverage of $current_cov")
+	: $L->info("Could not detect chloroplast reads in input data");
+    $L->info("You might need to increase the amount of input data");
+    $L->info("Also make sure, your library contains chloroplast sequences");
     exit 1;
 }
 
-$bowtie2->cancel("Coverage = $current_cov\n");
+$bowtie2->cancel();
+
+$L->info("Creating libraries");
 
 $last_id =~ s?/[12]$??;
 
@@ -274,7 +290,8 @@ if ($opt{input_mates}) {
 
 }
 
-
+print "Estimated coverage: ", $current_cov, "\n";
+print "Estimated insert size: ", int($tlen_sum/$c), "\n";
 
 
 
