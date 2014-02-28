@@ -351,6 +351,50 @@ foreach my $contig_border (keys %filehandles)
     }
 }
 
+## filtering of the output sequences
+my $final_out = Fasta::Parser->new(
+    file => $opt{out},
+    mode => '>'                    # overwrite an existing file
+    );
+
+foreach my $contig_border (keys %filehandles)
+{
+    ## check if output file exists
+    my $patchfilename = $contig_border."/asr.fa";
+    unless (-e $patchfilename)
+    {
+	$L->debug("Skipping file '$patchfilename' because it does not exist");
+	next;
+    }
+
+    my $fasta_in = Fasta::Parser->new(
+	file => $patchfilename
+	);
+
+    my @save = ();
+    while (my $patch=$fasta_in->next_seq())
+    {
+	# filter for a minimum length (4xinsert size)
+	next unless (length($patch->seq()) > 4*$opt{insert_size});
+
+	push(@save, $patch);
+    }
+
+    # check if exactly one sequence is returned
+    unless (@save==1)
+    {
+	$L->debug("More than one sequence remained after filtering... Skipping border '$contig_border'");
+	next;
+    }
+
+    # write the blocks into the output file
+    foreach my $passed_filtering (@save)
+    {
+	$final_out->append_seq($passed_filtering);
+    }
+}
+
+
 sub store_sequence_and_create_folder
 {
     my %params = @_;
