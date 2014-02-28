@@ -375,7 +375,11 @@ foreach my $contig_border (keys %filehandles)
     while (my $patch=$fasta_in->next_seq())
     {
 	# filter for a minimum length (4xinsert size)
-	next unless (length($patch->seq()) > 4*$opt{insert_size});
+	unless (length($patch->seq()) > 4*$opt{insert_size})
+	{
+	    $L->debug("Patch skipped because it is not long enough");
+	    next;
+	}
 
 	push(@save, $patch);
     }
