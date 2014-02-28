@@ -124,7 +124,7 @@ GetOptions( # use %opt (Cfg) as defaults
 		config|c=s
                 out|o=s
 		workingdir|wd|w=s
-		in|i=s
+		in|i=s@
 	)
 ) or $L->logcroak('Failed to "GetOptions"');
 
@@ -169,27 +169,31 @@ chdir($opt{workingdir}) || $L->logdie("Unable to change to working directory $op
 
 $L->info("Renaming fasta sequences");
 
-my $input = Fasta::Parser->new(
-    file => $opt{in},
-    mode => '<'
-    );
-
-my $renamedfile = $opt{in}."_renamed";
+my $renamedfile = $opt{in}[0]."_renamed";
 my $renamed = Fasta::Parser->new(
     file => $renamedfile,
     mode => '>'
     );
 
 my $counter = 0;
-while (my $contig=$input->next_seq())
+
+foreach my $inputfile (@{$opt{in}})
 {
-    # substitute all period (.) with underscore (_) and add .a to the end of the line
-    my $id = $contig->id();
-    $id =~ s/\./_/g;
-    # count all contigs to garantee unique names
-    $counter++;
-    $contig->id(sprintf("%05d_%s.a", $counter, $id));
-    $renamed->append_seq($contig);
+    my $input = Fasta::Parser->new(
+	file => $inputfile,
+	mode => '<'
+    );
+
+    while (my $contig=$input->next_seq())
+    {
+	# substitute all period (.) with underscore (_) and add .a to the end of the line
+	my $id = $contig->id();
+	$id =~ s/\./_/g;
+	# count all contigs to garantee unique names
+	$counter++;
+	$contig->id(sprintf("%05d_%s.a", $counter, $id));
+	$renamed->append_seq($contig);
+    }
 }
 
 $L->info("Running phrap...");
