@@ -127,7 +127,11 @@ for(my $i=0; $i<@ARGV; $i++){
         }
 }
 
-my %opt = %cfg = (%cfg, Cfg->Read_Cfg($user_cfg)) if $user_cfg; # simple overwrite
+my %opt = %cfg;
+if ($user_cfg)
+{
+    %opt = (%cfg, Cfg->Read_Cfg($user_cfg));
+}
 
 
 #-----------------------------------------------------------------------------#
