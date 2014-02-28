@@ -214,7 +214,7 @@ if (File::Spec->file_name_is_absolute($outputfasta))
     $outputfasta = $oldpwd."/".$outputfasta;
     $L->debug(sprintf("Filename for output file is realtive, assuming to put it in the original directory. New absolut filename is '%s'", $outputfasta));
 }
-copy($renamedfile.".contigs", $outputfasta) || $L->logdie(sprintf("Copying the result ('%s') into the output file ('%s') failed: %s", $renamedfile.".contigs", $outputfasta, $!);
+copy($renamedfile.".contigs", $outputfasta) || $L->logdie(sprintf("Copying the result ('%s') into the output file ('%s') failed: %s", $renamedfile.".contigs", $outputfasta, $!));
 
 #-----------------------------------------------------------------------------#
 
