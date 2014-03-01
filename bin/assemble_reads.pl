@@ -123,8 +123,8 @@ GetOptions( # use %opt (Cfg) as defaults
 		config|c=s
                 out|o=s
                 outkmer=i@
-		reads|1=s
-		mates|2=s
+		reads|1=s@
+		mates|2=s@
 		insert_size|insert-size|isize|s=i
 		workingdir|wd|w=s
  		velvetparameter=s
@@ -174,16 +174,24 @@ chdir($opt{workingdir}) || $L->logdie("Unable to change to working directory $op
 
 ## run velveth command
 $L->info("Running velveth");
-my $cmd = join(" ", ($opt{velvet_path}."/velveth", $opt{velvet_out}, $opt{velveth_parameter}, "-fastq -shortPaired", $opt{reads}, $opt{mates}));
-$L->debug("Running velveth using the command '$cmd'");
+my @cmd = (
+    $opt{velvet_path}."/velveth", 
+    $opt{velvet_out}, 
+    $opt{velveth_parameter});
 
-qx($cmd);
+foreach my $setnum (0..@{$opt{reads}-1)
+{
+    push(@cmd, ("-fastq -shortPaired", $opt{reads}[$setnum], $opt{mates}[$setnum]));
+}
+$L->debug("Running velveth using the command '@cmd'");
+
+qx(@cmd);
 
 my $errorcode = $?;
 
 if ($errorcode != 0)
 {
-    $L->logdie("The velveth run returned with errorcode $errorcode");
+    $L->logdie("The velveth run returned with errorcode $errorcode. The command was '@cmd'");
 }
 
 ## search for all velvet_out directories
@@ -194,16 +202,21 @@ $L->debug("List of velvet-hash-directories: ".join(", ", @dir_list));
 ## run velvetg in each directory
 foreach my $current_dir (@dir_list)
 {
-    $cmd = join(" ", ($opt{velvet_path}."/velvetg", $current_dir, $opt{velvetg_parameter}, "-ins_length", $opt{insert_size}));
-    $L->debug("Running velvetg using the command '$cmd'");
+    @cmd = (
+	$opt{velvet_path}."/velvetg", 
+	$current_dir, 
+	$opt{velvetg_parameter}, 
+	"-ins_length", $opt{insert_size}
+	);
+    $L->debug("Running velvetg using the command '@cmd'");
 
-    qx($cmd);
+    qx(@cmd);
 
     $errorcode = $?;
 
     if ($errorcode != 0)
     {
-	$L->logdie("The velvetg run returned with errorcode $errorcode. The command was '$cmd'");
+	$L->logdie("The velvetg run returned with errorcode $errorcode. The command was '@cmd'");
     }
 }
 
