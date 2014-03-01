@@ -124,6 +124,7 @@ GetOptions( # use %opt (Cfg) as defaults
 		config|c=s
                 out|o=s
 		workingdir|wd|w=s
+		overwrite!
 		in|i=s@
 	)
 ) or $L->logcroak('Failed to "GetOptions"');
@@ -169,7 +170,17 @@ chdir($opt{workingdir}) || $L->logdie("Unable to change to working directory $op
 
 $L->info("Renaming fasta sequences");
 
-my $renamedfile = $opt{in}[0]."_renamed";
+my $renamedfile = join("", @{$opt{in}[0]})."_renamed";
+### check if the file exists and create a warning in this case!
+if (-e $renamedfile)
+{
+    if (! $opt{overwrite})
+    {
+	$L->logdie("The file '$renamedfile' already exists! Use --overwrite in case you want to overwrite the file");
+    } else {
+	$L->warning("The file '$renamedfile' already exists and will be overwritten");
+    }
+}
 my $renamed = Fasta::Parser->new(
     file => $renamedfile,
     mode => '>'
@@ -189,9 +200,10 @@ foreach my $inputfile (@{$opt{in}})
 	# substitute all period (.) with underscore (_) and add .a to the end of the line
 	my $id = $contig->id();
 	$id =~ s/\./_/g;
+	$id = $id.".a";
 	# count all contigs to garantee unique names
 	$counter++;
-	$contig->id(sprintf("%05d_%s.a", $counter, $id));
+	$contig->id(sprintf("%05d_%s", $counter, $id));
 	$renamed->append_seq($contig);
     }
 }
