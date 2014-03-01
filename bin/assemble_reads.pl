@@ -179,7 +179,7 @@ my @cmd = (
     $opt{velvet_out}, 
     $opt{velveth_parameter});
 
-foreach my $setnum (0..@{$opt{reads}-1)
+foreach my $setnum (0..@{$opt{reads}}-1)
 {
     push(@cmd, ("-fastq -shortPaired", $opt{reads}[$setnum], $opt{mates}[$setnum]));
 }
