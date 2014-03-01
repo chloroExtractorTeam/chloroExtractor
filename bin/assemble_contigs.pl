@@ -170,7 +170,7 @@ chdir($opt{workingdir}) || $L->logdie("Unable to change to working directory $op
 
 $L->info("Renaming fasta sequences");
 
-my $renamedfile = join("", @{$opt{in}[0]})."_renamed";
+my $renamedfile = join("_", @{$opt{in}})."_renamed";
 ### check if the file exists and create a warning in this case!
 if (-e $renamedfile)
 {
