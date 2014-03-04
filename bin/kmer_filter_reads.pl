@@ -407,7 +407,7 @@ unless(@opt_mates){
 			}
 
 			if($c<$opt_c){
-				$L->debug("discarded ",$fq1->id());
+#				$L->debug("discarded ",$fq1->id());
 				# TODO: dumping of discarded ...
 			}else{
 				print FQ1 "$fq1";
@@ -464,7 +464,7 @@ unless(@opt_mates){
 			
 
 			if($c1 < $opt_c1 && $c2 < $opt_c2){
-				$L->debug("discarded ".$fq1->id." / ".$fq2->id);
+#				$L->debug("discarded ".$fq1->id." / ".$fq2->id);
 			}else{
 				print FQ1 "$fq1";
 				print FQ2 "$fq2";
