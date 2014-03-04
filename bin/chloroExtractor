@@ -310,7 +310,7 @@ $L->info("Task: $task");
     '--isize', $opt{insert_size} || $est_insert_size,
     '--reads', 'kfr_1.fq',
     '--mates', 'kfr_2.fq',
-    '--velvetg_parameter', "-cov_cutoff ".(0.25*$est_coverage)." -exp_cov ".(0.9*$est_coverage)
+    '--velvetg_parameter', "'-cov_cutoff ".(0.25*$est_coverage)." -exp_cov ".(0.9*$est_coverage)."'"
 );
 
 $L->debug("Running: @cmd");
