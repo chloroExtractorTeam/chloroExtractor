@@ -339,16 +339,30 @@ $L->info(sprintf("Overall number of mapped reads (half/complete/overlapping): %d
 
 ## here we need to run a velvet assembly for each folder
 $L->info("Running assemble_reads.pl");
+
+my $patchfilename = cwd()."/extended_asc.fa";
+
+my @cmd = (
+    $RealBin."/assemble_reads.pl",
+    "--workingdir ./",
+    "--isize", $opt{insert_size},
+    "--extendmode", 
+    "--out", $patchfilename,
+    "--velvet_out", "velvet_out_extend"
+);
+
 foreach my $contig_border (keys %filehandles)
 {
-    my $cmd = $RealBin."/assemble_reads.pl ".join(" ", ("--workingdir", $contig_border, "--isize", $opt{insert_size}), "--reads", "reads.fq", "--mates", "mates.fq", "--extendmode", "--out", cwd()."/".$contig_border."/asr.fa");
-    $L->debug("Running assemle_reads using the command '$cmd'");
-    qx($cmd);
-    my $errorcode = $?;
-    if ($errorcode != 0)
-    {
-	$L->logdie("Errorcode for command '$cmd' was not 0!");
-    }
+    push(@cmd, ("--reads", $contig_border."/reads.fq"));
+    push(@cmd, ("--mates", $contig_border."/mates.fq"));
+}
+
+$L->debug("Running assemle_reads using the command '@cmd'");
+qx(@cmd);
+my $errorcode = $?;
+if ($errorcode != 0)
+{
+    $L->logdie("Errorcode for command '@cmd' was not 0!");
 }
 
 ## filtering of the output sequences
@@ -357,47 +371,28 @@ my $final_out = Fasta::Parser->new(
     mode => '>'                    # overwrite an existing file
     );
 
-foreach my $contig_border (keys %filehandles)
+## check if output file exists
+unless (-e $patchfilename)
 {
-    ## check if output file exists
-    my $patchfilename = $contig_border."/asr.fa";
-    unless (-e $patchfilename)
-    {
-	$L->debug("Skipping file '$patchfilename' because it does not exist");
-	next;
-    }
-
-    my $fasta_in = Fasta::Parser->new(
-	file => $patchfilename
-	);
-
-    my @save = ();
-    while (my $patch=$fasta_in->next_seq())
-    {
-	# filter for a minimum length (4xinsert size)
-	unless (length($patch->seq()) > 4*$opt{insert_size})
-	{
-	    $L->debug("Patch skipped because it is not long enough");
-	    next;
-	}
-
-	push(@save, $patch);
-    }
-
-    # check if exactly one sequence is returned
-    unless (@save==1)
-    {
-	$L->debug("More than one sequence remained after filtering... Skipping border '$contig_border'");
-	next;
-    }
-
-    # write the blocks into the output file
-    foreach my $passed_filtering (@save)
-    {
-	$final_out->append_seq($passed_filtering);
-    }
+    $L->debug("Skipping file '$patchfilename' because it does not exist");
 }
 
+my $fasta_patches = Fasta::Parser->new(
+    file => $patchfilename
+    );
+
+
+while (my $patch=$fasta_patches->next_seq())
+{
+    # filter for a minimum length (1.5xinsert size)
+    unless (length($patch->seq()) > 1.5*$opt{insert_size})
+    {
+	$L->debug("Patch skipped because it is not long enough");
+	next;
+    }
+    
+    $final_out->append_seq($patch);
+}
 
 sub store_sequence_and_create_folder
 {

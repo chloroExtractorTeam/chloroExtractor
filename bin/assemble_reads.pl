@@ -128,6 +128,7 @@ GetOptions( # use %opt (Cfg) as defaults
 		insert_size|insert-size|isize|s=i
 		workingdir|wd|w=s
  		velvetparameter=s
+ 		velvet_out=s
  		extendmode
  		append!
 	)
