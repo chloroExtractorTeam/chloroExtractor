@@ -297,7 +297,10 @@ $L->info("Task: $task");
 @cmd = (
     "$RealBin/$task",
     $opt{config} ? ("-c" => $opt{config}) : (),
-    $opt{debug} ? '--debug' : ()
+    $opt{debug} ? '--debug' : (),
+    '--isize', $est_insert_size,
+    '--reads', 'kfr_1.fq',
+    '--mates', 'kfr_2.fq',
     # isize: $opt{insert_size} || $est_insert_size
 );
 
