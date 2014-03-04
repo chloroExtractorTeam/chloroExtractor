@@ -341,7 +341,9 @@ $L->info("Task: $task");
 
 @cmd = (
     "$RealBin/$task",
-    $opt{debug} ? '--debug' : () 
+    $opt{debug} ? '--debug' : (),
+    '--in', 'asr.fa',
+    '--out', 'asc.fa',
 );
 
 $L->debug("Running: @cmd");
