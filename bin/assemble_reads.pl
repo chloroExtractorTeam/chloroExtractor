@@ -127,7 +127,8 @@ GetOptions( # use %opt (Cfg) as defaults
 		mates|2=s@
 		insert_size|insert-size|isize|s=i
 		workingdir|wd|w=s
- 		velvetparameter=s
+ 		velveth_parameter=s
+ 		velvetg_parameter=s
  		velvet_out=s
  		extendmode
  		append!
