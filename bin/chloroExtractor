@@ -151,6 +151,7 @@ GetOptions( # use %opt (Cfg) as defaults
 		debug|D!
 		help|h!
 		config|c=s
+		rerun!
 	)
 ) or $L->logcroak('Failed to "GetOptions"');
 
@@ -204,12 +205,14 @@ $opt{config} = File::Spec->rel2abs($opt{config}) if $opt{config};
 
 
 # prepare folder structure
-prep_dir($opt{dir} || '.', $opt{overwrite});
+unless ($opt{rerun})
+{
+    prep_dir($opt{dir} || '.', $opt{overwrite});
 
-File::Path::make_path($opt{dir}, {
-    verbose => $opt{debug} ? 1 : 0
-});
-
+    File::Path::make_path($opt{dir}, {
+	verbose => $opt{debug} ? 1 : 0
+			  });
+}
 
 if($opt{dir}){
     chdir($opt{dir}) || $L->logcroak("'$opt{dir}' ",$!);
