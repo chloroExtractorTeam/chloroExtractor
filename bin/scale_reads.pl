@@ -243,10 +243,15 @@ my $last_id;
 
 my $c;
 my $tlen_sum; 
+my $seqwithtlen;
 
 while(my $aln = $sp->next_aln){
     my $id = $aln->rname();
-    $tlen_sum+= abs($aln->tlen); # compute isize
+    if (abs($aln->tlen) > 0)
+    {
+	$tlen_sum+= abs($aln->tlen); # compute isize
+	$seqwithtlen++;
+    }
     $seqs{$id}->add_aln($aln);
 
     $c++;
@@ -291,7 +296,7 @@ if ($opt{mates}) {
 }
 
 print "Estimated coverage: ", $current_cov, "\n";
-print "Estimated insert size: ", int($tlen_sum/$c), "\n";
+print "Estimated insert size: ", int($tlen_sum/$seqwithtlen), "\n";
 
 
 
