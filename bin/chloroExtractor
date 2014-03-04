@@ -363,7 +363,10 @@ $L->info("Task: $task");
 @cmd = (
     "$RealBin/$task",
     $opt{config} ? ("-c" => $opt{config}) : (),
-    $opt{debug} ? '--debug' : () 
+    $opt{debug} ? '--debug' : (),
+    '--in', 'asc.fa',
+    '--out', 'extended.fa',
+    '--isize', $est_insert_size,
 );
 
 $L->debug("Running: @cmd");
