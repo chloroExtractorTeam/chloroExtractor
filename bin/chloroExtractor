@@ -298,10 +298,10 @@ $L->info("Task: $task");
     "$RealBin/$task",
     $opt{config} ? ("-c" => $opt{config}) : (),
     $opt{debug} ? '--debug' : (),
-    '--isize', $est_insert_size,
+    '--isize', $opt{insert_size} || $est_insert_size
     '--reads', 'kfr_1.fq',
     '--mates', 'kfr_2.fq',
-    # isize: $opt{insert_size} || $est_insert_size
+    '--velvetg_parameter', "-cov_cutoff ".(0.25*$est_coverage)." -exp_cov ".(0.9*$est_coverage)
 );
 
 $L->debug("Running: @cmd");
@@ -367,6 +367,7 @@ $L->info("Task: $task");
     '--in', 'asc.fa',
     '--out', 'extended.fa',
     '--isize', $est_insert_size,
+    '--coverage', $est_coverage
 );
 
 $L->debug("Running: @cmd");

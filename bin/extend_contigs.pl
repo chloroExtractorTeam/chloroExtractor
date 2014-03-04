@@ -131,6 +131,7 @@ GetOptions( # use %opt (Cfg) as defaults
 		border=i
 		in|i=s
 		out|o=s
+		coverage=s
 	)
 ) or $L->logcroak('Failed to "GetOptions"');
 
@@ -349,6 +350,7 @@ my @cmd = (
     "--extendmode", 
     "--out", $patchfilename,
     "--velvet_out", "velvet_out_extend"
+    '--velvetg_parameter', "-cov_cutoff ".(0.25*$opt{coverage})." -exp_cov ".(0.9*$opt{coverage}),
 );
 
 foreach my $contig_border (keys %filehandles)
