@@ -376,6 +376,25 @@ $L->logcroak if $@;
 $L->debug("Returned: ",@re);
 
 
+#---------------------#
+# assemble_contigs.pl #
+
+$task = 'assemble_contigs.pl';
+$L->info("Task: $task");
+
+@cmd = (
+    "$RealBin/$task",
+    $opt{debug} ? '--debug' : (),
+    '--in', 'extended.fa',
+    '--in', 'asc.fa',
+    '--out', 'patched_final.fa',
+);
+
+$L->debug("Running: @cmd");
+@re = qx(@cmd);
+
+$L->logcroak if ($? || $@);
+$L->debug("Returned: ",@re);
 
 #-------------------#
 # filter_contigs.pl # (again)
