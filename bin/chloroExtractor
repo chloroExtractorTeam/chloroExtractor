@@ -295,7 +295,6 @@ $L->debug("Running: @cmd");
 $L->logcroak() if ($? || $@);
 $L->debug("Returned: ",@re);
 
-=cut
 
 #-------------------#
 # assemble_reads.pl #
@@ -361,7 +360,7 @@ $L->debug("Running: @cmd");
 $L->logcroak if ($? || $@);
 $L->debug("Returned: ",@re);
 
-
+=cut
 
 #-------------------#
 # extend_contigs.pl #
