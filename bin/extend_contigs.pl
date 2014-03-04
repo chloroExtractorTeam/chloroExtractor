@@ -349,7 +349,7 @@ my @cmd = (
     "--isize", $opt{insert_size},
     "--extendmode", 
     "--out", $patchfilename,
-    "--velvet_out", "velvet_out_extend"
+    "--velvet_out", "velvet_out_extend",
     '--velvetg_parameter', "'-cov_cutoff ".(0.25*$opt{coverage})." -exp_cov ".(0.9*$opt{coverage})."'",
 );
 
