@@ -315,22 +315,22 @@ $L->debug("Returned: ",@re);
 #-------------------#
 # filter_contigs.pl #
 
-$task = 'filter_contigs.pl';
-$L->info("Task: $task");
+# $task = 'filter_contigs.pl';
+# $L->info("Task: $task");
 
-@cmd = (
-    "$RealBin/$task",
-    $opt{config} ? ("-c" => $opt{config}) : (),
-    $opt{debug} ? '--debug' : (), 
-    blast_db => $opt{data_cds}, 
-);
+# @cmd = (
+#     "$RealBin/$task",
+#     $opt{config} ? ("-c" => $opt{config}) : (),
+#     $opt{debug} ? '--debug' : (), 
+#     '--blast_db' => $opt{data_cds},
+#     '--in', 'asr.fa'
+# );
 
-$L->debug("Running: @cmd");
-@re = qx(@cmd);
+# $L->debug("Running: @cmd");
+# @re = qx(@cmd);
 
-$L->logcroak if ($? || $@);
-$L->debug("Returned: ",@re);
-
+# $L->logcroak if ($? || $@);
+# $L->debug("Returned: ",@re);
 
 
 #---------------------#
