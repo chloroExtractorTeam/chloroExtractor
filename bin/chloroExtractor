@@ -202,6 +202,7 @@ $L->debug(Dumper(\%opt));
 $opt{data_cds} = File::Spec->rel2abs($RealBin.'/../data/cds.nr98.fa');
 $opt{config} = File::Spec->rel2abs($opt{config}) if $opt{config};
 
+
 # prepare folder structure
 prep_dir($opt{dir} || '.', $opt{overwrite});
 
@@ -218,8 +219,6 @@ if($opt{dir}){
 my $task;
 my @re;
 my @cmd;
-
-
 
 #----------------#
 # scale_reads.pl #
@@ -242,8 +241,8 @@ $L->debug("Running: @cmd");
 $L->logcroak() if ($? || $@);
 $L->debug("Returned: ",@re);
 
-my ($est_coverage) = pop(@re) =~ /(\d+)/;
 my ($est_insert_size) = pop(@re) =~ /(\d+)/;
+my ($est_coverage) = pop(@re) =~ /(\d+)/;
 
 $L->debug("Cov: $est_coverage");
 $L->debug("Isize: $est_insert_size");
