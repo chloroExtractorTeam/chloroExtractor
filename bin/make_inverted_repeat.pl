@@ -118,7 +118,8 @@ GetOptions( # use %opt (Cfg) as defaults
 		debug|D!
 		help|h!
 		config|c=s
-		create_config|create-config
+                out|o=s
+                input|in|i=s
 	)
 ) or $L->logcroak('Failed to "GetOptions"');
 
@@ -131,19 +132,10 @@ if($opt{version}){
 	exit 0;
 }
 
-# create template for user cfg
-if($opt{create_config}){
-	pod2usage(-msg => 'To many arguments', -exitval=>1) if @ARGV > 1;
-	my $user_cfg = @ARGV ? $ARGV[0] : basename($core_cfg);
-	copy($core_cfg, $user_cfg) or $L->logdie("Creatring config failed: $!");
-	$L->info("Created config file: $user_cfg");
-	exit 0;
-}
-
-# required stuff  
-# for(qw(in out)){
-#        pod2usage("required: --$_") unless defined ($opt{$_})
-#};
+required stuff  
+for(qw(input out)){
+       pod2usage("required: --$_") unless defined ($opt{$_})
+};
 
 # debug level
 $L->level($DEBUG) if $opt{debug};
@@ -156,17 +148,10 @@ $L->debug(Dumper(\%opt));
 #-----------------------------------------------------------------------------#
 # MAIN
 
-$L->info('
-
-    "I think Smithers picked me because of my motivational skills. 
-    Everyone always says they have to work a lot harder when I am around."
-                                                                           H.J.S
-
-');
+$L->info('Make inverted repeat');
 
 
-
-
+# 
 
 
 
