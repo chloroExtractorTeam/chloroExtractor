@@ -103,7 +103,8 @@ for(my $i=0; $i<@ARGV; $i++){
         }
 }
 
-%opt = (%opt, Cfg->Read_Cfg($user_cfg)) if $user_cfg; # simple overwrite
+%cfg = (%cfg, Cfg->Read_Cfg($user_cfg)) if $user_cfg; # simple overwrite
+my %opt = %{$cfg{mir}};
 
 
 #TODO: custom config
@@ -149,6 +150,7 @@ $L->debug(Dumper(\%opt));
 # MAIN
 
 $L->info('Make inverted repeat');
+
 
 
 # 
