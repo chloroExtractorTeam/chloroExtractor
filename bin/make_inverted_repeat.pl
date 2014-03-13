@@ -72,6 +72,7 @@ use File::Copy;
 
 # additional modules
 use Cfg;
+use Fasta::Parser;
 
 #-----------------------------------------------------------------------------#
 # Globals
@@ -159,7 +160,38 @@ my $absinput = File::Spec->rel2abs($opt{input});
 my $absintermediate = $absinput."_intermediate";
 my $absoutput = File::Spec->rel2abs($opt{out});
 
+my $input = Fasta::Parser->new(
+    file => $absinput,
+    mode => "<"
+    );
 
+my $intermediate = Fasta::Parser->new(
+    file => $absintermediate,
+    mode => ">"
+    );
+
+my %seq_names_length = ();
+my %new_contig_name2old_name = ();
+
+my $contigcounter = 0;
+
+while (my $contig=$input->next_seq())
+{
+    # rename the contigs
+    $contigcounter++;
+    my $newname = sprintf("%s_%04d", "contig", $contigcounter);
+
+    # store the new and old name and the length
+    $new_contig_name2old_name{$newname} = $contig->id()." ".$contig->desc();
+    $seq_names_length{$newname} = length($contig->seq());
+
+    # rename contig id
+    $contig->id($newname);
+    $contig->desc("");
+
+    # store the fasta-block in the new file
+    $intermediate->append_seq($contig);
+}
 
 # 
 
