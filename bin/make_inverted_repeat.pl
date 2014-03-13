@@ -257,6 +257,52 @@ while (my $blastline = <BLAST>)
 }
 close(BLAST) || $L->logdie("Unable to finish BLAST run using command '@cmd'");
 
+foreach my $contig_with_IRregion (keys %irRegions)
+{
+    my ($ir_id, $ir_start, $ir_end, $sc1_start, $sc1_end, $sc2_start, $sc2_end);
+
+    #extract all IR hits starting at position 1 or ending at last base of contig
+    my @subset = grep {$_->{start1}==1 || $_->{end1}==$seq_names_length{$_->{id}}{len}} (@{$irRegions{$contig_with_IRregion}});
+    foreach my $irRegion (@subset)
+    {
+	if($irRegion->{start1}==1)
+	{
+	    $ir_start  = $irRegion->{start2};
+	    $sc1_start = $irRegion->{end1}+1;
+	    $sc1_end   = $irRegion->{start2}-1;
+	    $ir_id = $irRegion->{id};
+	}
+	elsif($irRegion->{end1}==$seq_names_length{$irRegion->{id}}{len})
+	{
+	    $ir_end    = $irRegion->{end2};
+	    $sc2_start = $irRegion->{end2}+1;
+	    $sc2_end   = $irRegion->{start1}-1;
+	    $ir_id = $irRegion->{id};
+	}
+    }
+    my $sc1 = substr($seq_names_length{$ir_id}{seq}, $sc1_start-1, $sc1_end-$sc1_start+1);
+    my $sc2 = substr($seq_names_length{$ir_id}{seq}, $sc2_start-1, $sc2_end-$sc2_start+1);
+    my $ir1 = substr($seq_names_length{$ir_id}{seq}, $ir_start-1, $ir_end-$ir_start+1);
+    my $ir2 = $ir1;
+    # generate reverse complement
+    $ir2 =~ tr/ACGTacgt/TGCAtgca/;
+    $ir2 = scalar(reverse($ir2));
+
+    # the order is:   sc1---ir1---sc2---ir2
+    # expected order is LSC---IR---SSC---IR, therefore we can rotate the contig, if the length of sc1 is shorter than sc2
+    my $outputseq = "";
+    if (length($sc1) >= length($sc2))
+    {
+	$outputseq = $sc1.$ir1.$sc2.$ir2;
+    } else {
+	$outputseq = $sc2.$ir2.$sc1.$ir1;
+    }
+
+    # finally, output the sequence
+    my $seq = ">possible chloroplast contig former ".$new_contig_name2old_name{$ir_id}."\n$outputseq\n";
+    $output->append_seq(Fasta::Seq->new($seq));
+}
+
 # 
 
 
