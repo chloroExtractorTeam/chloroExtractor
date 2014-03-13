@@ -172,6 +172,11 @@ my $intermediate = Fasta::Parser->new(
     mode => ">"
     );
 
+my $output = Fasta::Parser->new(
+    file => $absoutput,
+    mode => ">"
+    );
+
 my %seq_names_length = ();
 my %new_contig_name2old_name = ();
 
