@@ -156,6 +156,8 @@ $L->info('Make inverted repeat');
 
 ## first read the import file, count number of input sequences and their length for later usage
 
+$L->info("Generating intermediate fasta file");
+
 my $absinput = File::Spec->rel2abs($opt{input});
 my $absintermediate = $absinput."_intermediate";
 my $absoutput = File::Spec->rel2abs($opt{out});
