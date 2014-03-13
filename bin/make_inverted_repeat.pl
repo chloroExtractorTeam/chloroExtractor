@@ -231,7 +231,7 @@ $L->debug("Running blastn using the command '@cmd'");
 open(BLAST, join(" ", @cmd)."|") || $L->logdie("Unable to run BLAST using command '@cmd'");
 
 # for storage of 
-my @irRegions = ();
+my %irRegions = ();
 
 while (my $blastline = <BLAST>)
 {
@@ -243,13 +243,11 @@ while (my $blastline = <BLAST>)
     next unless($sseqid eq $qseqid);
     # only rc matches are considered
     next unless(($sstart < $send) != ($qstart < $qend));
-    push(@irRegions, {'id'=>$sseqid,'start1'=>($sstart>$send ? $send : $sstart),'end1'=>($sstart>$send ? $sstart : $send),
+    push(@{$irRegions{$sseqid}}, {'id'=>$sseqid,'start1'=>($sstart>$send ? $send : $sstart),'end1'=>($sstart>$send ? $sstart : $send),
 		      'start2'=>($qstart>$qend ? $qend : $qstart),'end2'=>($qstart>$qend ? $qstart : $qend)});
     ### end of Markus code
 }
 close(BLAST) || $L->logdie("Unable to finish BLAST run using command '@cmd'");
-
-
 
 # 
 
