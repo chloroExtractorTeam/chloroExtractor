@@ -195,6 +195,25 @@ while (my $contig=$input->next_seq())
     $intermediate->append_seq($contig);
 }
 
+$L->info("Creating BLAST database");
+
+my @cmd = (
+    $opt{blast_path}."/makeblastdb", 
+    '-in', $absintermediate, 
+    '-dbtype', 'nucl'
+    );
+
+$L->debug("Running makeblastdb using the command '@cmd'");
+
+qx(@cmd);
+
+my $errorcode = $?;
+
+if ($errorcode != 0)
+{
+    $L->logdie("The makeblastdb run returned with errorcode $errorcode. The command was '@cmd'");
+}
+
 # 
 
 
