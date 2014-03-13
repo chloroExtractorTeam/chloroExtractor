@@ -65,6 +65,8 @@ $Data::Dumper::Sortkeys = 1;
 use FindBin qw($RealBin);
 use lib "$RealBin/../lib/";
 
+use File::Spec;
+
 use File::Basename;
 use File::Copy;
 
@@ -150,6 +152,12 @@ $L->debug(Dumper(\%opt));
 # MAIN
 
 $L->info('Make inverted repeat');
+
+## first read the import file, count number of input sequences and their length for later usage
+
+my $absinput = File::Spec->rel2abs($opt{input});
+my $absintermediate = $absinput."_intermediate";
+my $absoutput = File::Spec->rel2abs($opt{out});
 
 
 
