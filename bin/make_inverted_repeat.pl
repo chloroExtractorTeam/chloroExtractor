@@ -1,5 +1,7 @@
 #!/usr/bin/env perl
 
+package mir;
+
 =head1 NAME
 
 
