@@ -92,7 +92,7 @@ Log::Log4perl->init( \q(
 
 # core
 my $core_cfg = "$RealBin/../chloroExtractor.cfg";
-my %opt = Cfg->Read_Cfg($core_cfg); 
+my %cfg = Cfg->Read_Cfg($core_cfg); 
 
 # user defaults and overwrite core
 my $user_cfg;
@@ -133,7 +133,7 @@ if($opt{version}){
 	exit 0;
 }
 
-required stuff  
+#required stuff  
 for(qw(input out)){
        pod2usage("required: --$_") unless defined ($opt{$_})
 };
