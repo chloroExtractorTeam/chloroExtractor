@@ -190,7 +190,10 @@ while (my $contig=$input->next_seq())
 
     # store the new and old name and the length
     $new_contig_name2old_name{$newname} = $contig->id()." ".$contig->desc();
-    $seq_names_length{$newname} = length($contig->seq());
+    $seq_names_length{$newname} = { 
+	len => length($contig->seq()),
+	seq => $contig->seq()
+    };
 
     # rename contig id
     $contig->id($newname);
