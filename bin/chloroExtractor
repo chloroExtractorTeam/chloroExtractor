@@ -312,7 +312,7 @@ $L->debug("Returned: ",@re);
 # kmer_filter_reads.pl #
 
 $task = 'kmer_filter_reads.pl';
-$L->info("Task: $task");
+$L->info("Task: $task (2nd run)");
 
 @cmd = (
     "$RealBin/$task", 
