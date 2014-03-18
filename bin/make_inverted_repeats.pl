@@ -282,6 +282,14 @@ foreach my $contig_with_IRregion (keys %irRegions)
 	    $ir_id = $irRegion->{id};
 	}
     }
+
+    # check if all variables have a value, otherwise give a short notice and do next
+    unless (grep {defined $_} ($ir_id, $ir_start, $ir_end, $sc1_start, $sc1_end, $sc2_start, $sc2_end))
+    {
+	$L->warn("Skipping IR-region, because border was not detected completely!");
+	next;
+    }
+
     my $sc1 = substr($seq_names_length{$ir_id}{seq}, $sc1_start-1, $sc1_end-$sc1_start+1);
     my $sc2 = substr($seq_names_length{$ir_id}{seq}, $sc2_start-1, $sc2_end-$sc2_start+1);
     my $ir1 = substr($seq_names_length{$ir_id}{seq}, $ir_start-1, $ir_end-$ir_start+1);
@@ -301,8 +309,11 @@ foreach my $contig_with_IRregion (keys %irRegions)
     }
 
     # finally, output the sequence
-    my $seq = ">possible chloroplast contig former ".$new_contig_name2old_name{$ir_id}."\n$outputseq\n";
-    $output->append_seq(Fasta::Seq->new($seq));
+    if ($outputseq)
+    {
+	my $seq = ">possible chloroplast contig former ".$new_contig_name2old_name{$ir_id}."\n$outputseq\n";
+	$output->append_seq(Fasta::Seq->new($seq));
+    }
 }
 
 # 
