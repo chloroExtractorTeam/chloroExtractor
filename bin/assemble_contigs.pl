@@ -209,7 +209,7 @@ foreach my $inputfile (@{$opt{in}})
 }
 
 $L->info("Running phrap...");
-my $cmd = $opt{phrap_path}."/phrap ".$renamedfile;
+my $cmd = $opt{phrap_path}."/phrap -retain_duplicates".$renamedfile;
 $L->debug("Run command: '$cmd'");
 qx($cmd);
 
