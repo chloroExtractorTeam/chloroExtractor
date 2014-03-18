@@ -231,8 +231,10 @@ $L->info("Running BLAST search");
     '-query', $absintermediate,
     '-task', 'blastn',
     '-db', $absintermediate,
-    '-evalue', '1e-30',
-    '-outfmt', '"6 sseqid sstart send qseqid qstart qend"',
+    '-evalue', '1',
+    '-outfmt', '"6 sseqid sstart send qseqid qstart qend qlen slen evalue bitscore score"',
+#    '-evalue', '1e-30',
+#    '-outfmt', '"6 sseqid sstart send qseqid qstart qend"',
     '-num_threads', '1'
     );	
 		
@@ -246,6 +248,7 @@ my %irRegions = ();
 while (my $blastline = <BLAST>)
 {
     chomp($blastline);
+    $L->debug("Blastoutput: $blastline");
     my ($sseqid, $sstart, $send, $qseqid, $qstart, $qend) = split(/\t/, $blastline);
 
     ### used from Markus code
