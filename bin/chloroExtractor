@@ -471,7 +471,7 @@ $L->info("Task: $task");
     $opt{config} ? ("-c" => $opt{config}) : (),
     $opt{debug} ? '--debug' : (),
     '--input', 'patched_final.fil.fa',
-    '--out', 'final_contigs.fa'
+    '--out', $opt{out}
 );
 
 $L->debug("Running: @cmd");
