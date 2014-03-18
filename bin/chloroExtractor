@@ -282,7 +282,11 @@ $L->info("Task: $task");
 @cmd = (
     "$RealBin/$task", 
     $opt{config} ? ("-c" => $opt{config}) : (),
-    $opt{debug} ? '--debug' : () 
+    $opt{debug} ? '--debug' : (),
+    '--mates', 'scr_2.fq',
+    '--reads', 'scr_1.fq',
+    '--kmer-hash', 'scr.jf_0',
+    '--out', 'kfr'
 );
 
 $L->debug("Running: @cmd");
@@ -291,6 +295,40 @@ $L->debug("Running: @cmd");
 $L->logcroak() if ($? || $@);
 $L->debug("Returned: ",@re);
 
+#-------------------#
+# 2nd kmer spectrum #
+
+$task = 'building 2nd kmer spectrum';
+$L->info("Task: $task");
+
+use Jellyfish;
+my $jf = Jellyfish->new();
+$jf->run(['count', @{$opt{jfr}{jf_opt2}}, '-t', $opt{threads} , @{$opt{jfr}{jf_in2}}]);
+
+$L->logcroak() if ($? || $@);
+$L->debug("Returned: ",@re);
+
+#----------------------#
+# kmer_filter_reads.pl #
+
+$task = 'kmer_filter_reads.pl';
+$L->info("Task: $task");
+
+@cmd = (
+    "$RealBin/$task", 
+    $opt{config} ? ("-c" => $opt{config}) : (),
+    $opt{debug} ? '--debug' : (),
+    '--mates', 'kfr_2.fq',
+    '--reads', 'kfr_1.fq',
+    '--kmer-hash', 'kfr.jf_0',
+    '--out', 'kfr2'
+);
+
+$L->debug("Running: @cmd");
+@re = qx(@cmd);
+
+$L->logcroak() if ($? || $@);
+$L->debug("Returned: ",@re);
 
 #-------------------#
 # assemble_reads.pl #
@@ -303,8 +341,8 @@ $L->info("Task: $task");
     $opt{config} ? ("-c" => $opt{config}) : (),
     $opt{debug} ? '--debug' : (),
     '--isize', $opt{insert_size} || $est_insert_size,
-    '--reads', 'kfr_1.fq',
-    '--mates', 'kfr_2.fq',
+    '--reads', 'kfr2_1.fq',
+    '--mates', 'kfr2_2.fq',
     '--velvetg_parameter', "'-cov_cutoff ".(0.25*$est_coverage)." -exp_cov ".(0.9*$est_coverage)."'"
 );
 
