@@ -284,7 +284,7 @@ foreach my $contig_with_IRregion (keys %irRegions)
     }
 
     # check if all variables have a value, otherwise give a short notice and do next
-    unless (grep {defined $_} ($ir_id, $ir_start, $ir_end, $sc1_start, $sc1_end, $sc2_start, $sc2_end))
+    if (grep {! defined $_} ($ir_id, $ir_start, $ir_end, $sc1_start, $sc1_end, $sc2_start, $sc2_end))
     {
 	$L->warn("Skipping IR-region, because border was not detected completely!");
 	next;
