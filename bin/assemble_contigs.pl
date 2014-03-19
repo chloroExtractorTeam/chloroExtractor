@@ -209,15 +209,19 @@ foreach my $inputfile (@{$opt{in}})
 }
 
 $L->info("Running phrap...");
-my $cmd = $opt{phrap_path}."/phrap -retain_duplicates".$renamedfile;
-$L->debug("Run command: '$cmd'");
-qx($cmd);
+my @cmd = (
+    $opt{phrap_path}."/phrap", 
+    "-retain_duplicates", 
+    $renamedfile
+    );
+$L->debug("Run command: '@cmd'");
+qx(@cmd);
 
 my $errorcode = $?;
 
 if ($errorcode != 0)
 {
-    $L->logdie("The phrap run returned with errorcode $errorcode. The command was '$cmd'");
+    $L->logdie("The phrap run returned with errorcode $errorcode. The command was '@cmd'");
 }
 
 ## last step is copying the output file
