@@ -249,8 +249,8 @@ $L->debug("Returned: ",@re);
 my ($est_insert_size) = pop(@re) =~ /(\d+)/;
 my ($est_coverage) = pop(@re) =~ /(\d+)/;
 
-$L->debug("Cov: $est_coverage");
-$L->debug("Isize: $est_insert_size");
+$L->info("Cov: $est_coverage");
+$L->info("Isize: $est_insert_size");
 
 
 #---------------#
