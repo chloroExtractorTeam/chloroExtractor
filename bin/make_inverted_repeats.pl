@@ -311,11 +311,13 @@ foreach my $contig_with_IRregion (keys %irRegions)
 	$outputseq = $sc2.$ir2.$sc1.$ir1;
     }
 
-    # finally, output the sequence
-    if ($outputseq)
-    {
+    if ($outputseq) {
+	# finally, output the sequence
 	my $seq = ">possible chloroplast contig former ".$new_contig_name2old_name{$ir_id}."\n$outputseq\n";
 	$output->append_seq(Fasta::Seq->new($seq));
+	$L->info($new_contig_name2old_name{$ir_id}.": yes");
+    } else {
+	$L->info($new_contig_name2old_name{$ir_id}.": no");
     }
 }
 
