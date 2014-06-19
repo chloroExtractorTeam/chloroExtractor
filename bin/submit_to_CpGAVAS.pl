@@ -37,7 +37,8 @@ die "File $file not found\n$usage\n" unless(-e $file);
   $formfiller->add_filler( 'tRNAscan_par3' => Fixed => '15' );
   $formfiller->add_filler( 'tRNAscan_par4' => Fixed => '116' );
   $formfiller->add_filler( 'codontable_par1' => Fixed => '' );
-  $formfiller->add_filler( 'Clear' => Fixed => '' );$formfiller->fill_form($agent->current_form);
+  $formfiller->add_filler( 'Clear' => Fixed => '' );
+  $formfiller->fill_form($agent->current_form);
   $agent->submit();
 
 print "$species\t$file\t",$agent->base(),"\n";
