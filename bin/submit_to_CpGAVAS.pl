@@ -4,6 +4,8 @@ use WWW::Mechanize::Firefox;
 use WWW::Mechanize::FormFiller;
 use URI::URL;
 
+use File::Spec;
+
 # USAGE perl submit_to_CpGAVAS.pl <chloro.fa> <species>
 my $usage = "USAGE perl submit_to_CpGAVAS.pl <chloro.fa> <species>";
 # Returns: <Species>\t<File>\t<Weblink to results>
@@ -16,6 +18,8 @@ die "No species name given\n$usage\n" unless($ARGV[1]);
 my ($species, $project, $file) = ($ARGV[1], "chloroExtractor", $ARGV[0]);
 
 die "File $file not found\n$usage\n" unless(-e $file);
+
+$file=File::Spec->rel2abs($file); # absolute path required
 
 $agent->get('http://www.herbalgenomics.org/0506/cpgavas/analyzer/annotate');
 $agent->form_number(1) if $agent->forms and scalar @{$agent->forms};
