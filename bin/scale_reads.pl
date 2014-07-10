@@ -184,46 +184,36 @@ my $opt_o2 = $opt{out}."_2.fq";
 
 my $bowtie2 = Bowtie2->new(
     path => $opt{bowtie2_path},
-    log => $opt{bowtie2_log},
 );
 
 # TODO: bowtie2 generate db -> prevent issues with different indices on different architectures or bowtie2 versions
 
 unless(-e $opt{ref_cluster}.'.1.bt2'){
     $L->info("Building bowtie2 index");
-    $bowtie2->bowtie2_build(
-	ref => $opt{ref_cluster},
-	pre => $opt{ref_cluster},
-	);
-    my $bis = $bowtie2->stdout;
-    my $bie = $bowtie2->stderr;
-
-    $L->debug(<$bis>, <$bie>);
-
-    $bowtie2->finish();
+    $bowtie2->build($opt{ref_cluster});
 }else{
     $L->info("Using existing bowtie2 index $opt{ref_cluster}.*.bt2");
 }
 
 $L->info("Running bowtie2");
 
-$bowtie2->bowtie2(
-    %{$opt{bowtie2_params}},
-    ref => undef,
+$bowtie2->run(
+    @{$opt{bowtie2_params}},
     "-1" => $opt{reads},
     "-2" => $opt{mates},
     "-x" => $opt{ref_cluster},
     "-p" => $cfg{threads},
 );
 
-## DEPRECATED: mapping paired
-# WARNING: Bowtie required "-U" twice for paired; not possible in option hash
-# Therefore: if input mates option exists, set singleorpair to 2 to map only reads
-
 # read output on the fly
 my $sp = Sam::Parser->new(
   fh => $bowtie2->stdout
 );
+
+my $bam = $opt{out}.".bam";
+open(BAM, "| samtools view -Sbu /dev/fd/0 > $bam") or $L->logdie($!);
+open(BED, ">", $opt{out}.".bed") or $L->logdie($!);
+
 
 my %h; 
 my $ss;
@@ -235,8 +225,13 @@ while(%h = $sp->next_header_line('@SQ')){
     id => $h{'SN'},
     len => $h{'LN'},
   );  
-  #print '@SQ'."\tSN:$h{'SN'}\tLN:$h{'LN'}\n" if ($opt{debug});
+
+  print BAM '@SQ'."\tSN:$h{'SN'}\tLN:$h{'LN'}\n";
+  print BED "$h{'SN'}\t$h{'LN'}\n";
+
 }
+
+close BED;
 
 my $current_cov;
 my $last_id;
@@ -246,6 +241,7 @@ my $tlen_sum;
 my $seqwithtlen;
 
 while(my $aln = $sp->next_aln){
+    print BAM "$aln","\n";
     my $id = $aln->rname();
     if (abs($aln->tlen) > 0)
     {
@@ -267,15 +263,27 @@ while(my $aln = $sp->next_aln){
 
 #what if not enough coverage in entire file.
 if(! $current_cov || $current_cov < $opt{target_coverage}){
+    close BAM;
+
+    #$L->info("Recalculating accurate per base coverages");
+    #bam_coverage($opt{out});
+
     $current_cov 
 	? $L->info("Ran out of reads at estimated coverage of $current_cov")
 	: $L->info("Could not detect chloroplast reads in input data");
     $L->info("You might need to increase the amount of input data");
     $L->info("Also make sure, your library contains chloroplast sequences");
+
     exit 1;
 }
 
 $bowtie2->cancel();
+
+close BAM;
+
+#$L->info("Recalculating accurate per base coverages");
+#bam_coverage($opt{out});
+
 
 $L->info("Creating libraries");
 
@@ -305,7 +313,7 @@ print "Estimated insert size: ", int($tlen_sum/$seqwithtlen), "\n";
 
 
 
-# ----- SUBS ------ #
+#-- SUBS ----------------------------------------------------------------------#
 
 
 
@@ -350,14 +358,14 @@ sub estimate_coverage {
   # and protein wise sum of coverage in
   # array
 
+  open(COV, ">", $opt{out}."-cov.tsv") or $L->logdie($!);
+
   my %protein_wise_coverage;
   for my $ss(values %{$_[0]}){
     my @covs=$ss->coverage();
     my $protein = (split /_/, $ss->id())[-1];
     @{$protein_wise_coverage{$protein}} = pairwise_sum(\@{$protein_wise_coverage{$protein}}, \@covs);
   }
-
-
 
   # print proteinwise coverage // omitting 
   # zeros and empty proteins // also trim
@@ -371,16 +379,24 @@ sub estimate_coverage {
     if (@{$protein_wise_coverage{$_}}-100>200) {
       @{$protein_wise_coverage{$_}} = @{$protein_wise_coverage{$_}}[100..@{$protein_wise_coverage{$_}}-100];
     }
-    else {
-      @{$protein_wise_coverage{$_}} = ();
+    else { # ignore to short CDS
+      @{$protein_wise_coverage{$_}} = (); 
     }
     if (@{$protein_wise_coverage{$_}}) {
       my $prot_median = median(\@{$protein_wise_coverage{$_}});
+
+      for my $cov (@{$protein_wise_coverage{$_}}){ 
+	  print COV $_,"\t",$cov,"\n"; 
+      }
+
       $medians{$_} = $prot_median;
       push @median_array, $prot_median if ($prot_median > $opt{min_single_coverage});
     }
   }
 
+  close COV;
+
+  $L->debug(Dumper(\%medians));
   $L->debug("Coverage Array ","@median_array"," -- ",scalar @median_array);
 
   if (@median_array > $opt{min_covered_CDS}) {
@@ -393,6 +409,25 @@ sub estimate_coverage {
 }
 
 
+
+=head2 bam_coverage
+
+Compute per contig coverage using bedtools and write to file.
+
+=cut
+
+sub bam_coverage{
+    my ($pre) = @_;
+    my $bam = $pre.".bam";
+    my $bed = $pre.".bed";
+    my $pre_sorted = $pre."-sorted";
+    my $bam_sorted = $pre."-sorted.bam";
+    my $tsv = $pre."-cov.tsv";
+    my $head = '"id\tposition\tcoverage"';
+    $L->info(qx/samtools sort $bam $pre_sorted/);
+    $L->info(qx/echo $head > $tsv/);
+    $L->info(qx/bedtools genomecov -d -ibam $bam_sorted -g $bed >> $tsv/);
+}
 
 #-----------------------------------------------------------------------------#
 
