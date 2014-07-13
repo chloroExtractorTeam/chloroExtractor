@@ -39,6 +39,10 @@ use strict;
 use Carp;
 use Log::Log4perl qw(:easy :no_extra_logdie_message);
 
+use File::Spec;
+use File::Copy;
+use File::Basename;
+
 #use Data::Dumper;
 #$Data::Dumper::Sortkeys = 1;
 
@@ -46,7 +50,7 @@ use Log::Log4perl qw(:easy :no_extra_logdie_message);
 
 #-----------------------------------------------------------------------------#
 
-=head2 Globals
+=head1 Globals
 
 =cut
 
@@ -64,9 +68,24 @@ our $VERSION = 0.01;
 
 our %Cfg;
 
+
 #-----------------------------------------------------------------------------#
 
-=head2 Class Methods
+=head2 Aliases (for backward compatibility)
+
+=cut
+
+*Read_Cfg = \&Read;
+*Copy_Cfg = \&Copy;
+
+
+#-----------------------------------------------------------------------------#
+
+=head1 Class Methods
+
+=cut
+
+=head2 Read
 
 Read config from simple perl syntax config file (LIST context). Returns config
  , dies on error.
@@ -87,7 +106,7 @@ Simple *.cfg format:
 
 =cut
 
-sub Read_Cfg{
+sub Read{
 	my ($class,$cfg_file) = @_;
 
 	unless(-f $cfg_file){
@@ -102,6 +121,32 @@ sub Read_Cfg{
 
 	return %Cfg;
 }
+
+
+=head2 Copy
+
+Create a copy of a config file at target. Default target is
+<CWD>/basename(<SOURCE>).
+
+  my $cfg_file_copy = Cfg->Copy_Cfg($cfg_file);
+  my $cfg_file_copy = Cfg->Copy_Cfg($cfg_file, $new_cfg_file);
+
+
+=cut
+
+sub Copy{
+	my ($class,$cfg_file, $new_cfg_file) = @_;
+
+	unless(-f $cfg_file){
+		$L->logdie("Cannot find config file '$cfg_file'");
+	}
+
+	$new_cfg_file = basename($cfg_file) unless $new_cfg_file;
+	copy($cfg_file, $new_cfg_file) or $L->logdie("Creatring config failed: $!");
+	
+	return File::Spec->rel2abs($new_cfg_file);
+}
+
 
 =head1 AUTHOR
 
