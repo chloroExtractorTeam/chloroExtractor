@@ -69,7 +69,7 @@ use warnings;
 no warnings 'qw';
 
 use Carp;
-use Getopt::Long qw(:config no_ignore_case bundling);
+use Getopt::Long qw(:config no_ignore_case);
 use Pod::Usage;
 use Log::Log4perl qw(:no_extra_logdie_message);
 use Log::Log4perl::Level;
@@ -77,7 +77,7 @@ use Log::Log4perl::Level;
 use Data::Dumper;
 $Data::Dumper::Sortkeys = 1;
 
-use FindBin qw($RealBin);
+use FindBin qw($RealBin $Script);
 use lib "$RealBin/../lib/";
 
 use File::Basename;
@@ -112,29 +112,9 @@ Log::Log4perl->init( \q(
 
 
 #-----------------------------------------------------------------------------#
-# Config
-
-# core
-my $core_cfg = "$RealBin/../chloroExtractor.cfg";
-my %cfg = Cfg->Read_Cfg($core_cfg); 
-
-# user defaults and overwrite core
-my $user_cfg;
-for(my $i=0; $i<@ARGV; $i++){
-        if($ARGV[$i] =~ /-c$|--config$/){
-                $user_cfg = $ARGV[$i+1];
-                last;
-        }
-}
-
-%cfg = (%cfg, Cfg->Read_Cfg($user_cfg)) if $user_cfg; # simple overwrite
-
-my %opt = %{$cfg{scr}};
-
-
-
-#-----------------------------------------------------------------------------#
 # GetOptions
+
+my %opt;
 
 GetOptions( # use %opt (Cfg) as defaults
 	\%opt, qw(
@@ -145,7 +125,7 @@ GetOptions( # use %opt (Cfg) as defaults
 		version|V!
 		debug|D!
 		help|h!
-		config|c=s
+		config|c=s{1,2}
 	)
 ) or $L->logcroak('Failed to "GetOptions"');
 
@@ -158,7 +138,26 @@ if($opt{version}){
 	exit 0;
 }
 
+##----------------------------------------------------------------------------##
+# Config
 
+# core
+my $core_cfg = "$RealBin/../cfg/".basename($Script, qw(.pl)).".cfg";
+my %cfg = Cfg->Read($core_cfg) if -e $core_cfg; 
+
+if ($opt{config} && @{$opt{config}}){
+    %cfg = (%cfg, Cfg->Read(@{$opt{config}}));
+}
+
+# create template for user cfg
+if(defined $opt{create_config}){
+	pod2usage(-msg => 'To many arguments', -exitval=>1) if @ARGV > 1;
+	my $user_cfg = Cfg->Copy($core_cfg, $opt{create_config}) or $L->logdie("Creatring config failed: $!");
+	$L->info("Created config file: $user_cfg");
+	exit 0;
+}
+
+##----------------------------------------------------------------------------##
 # required stuff  
 for(qw(reads mates ref_cluster)){
         pod2usage("required: --$_") unless defined ($opt{$_})

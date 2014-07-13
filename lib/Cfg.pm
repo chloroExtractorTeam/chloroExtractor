@@ -107,7 +107,7 @@ Simple *.cfg format:
 =cut
 
 sub Read{
-	my ($class,$cfg_file) = @_;
+	my ($class,$cfg_file, $subtree) = @_;
 
 	unless(-f $cfg_file){
 		$L->logdie("Cannot find config file '$cfg_file'");
@@ -118,6 +118,13 @@ sub Read{
         if ($@) {
             $L->logdie("Failed to read config '$cfg_file' - $@");
         }
+
+	if($subtree){
+	    $L->logdie('$Cfg{'.$subtree.'} does not exists') unless exists $Cfg{$subtree};
+	    $L->logdie('$Cfg{'.$subtree.'} is not a HASHREF - currently only hash subtrees are supported') unless ref $Cfg{$subtree} eq 'HASH';
+	    
+	    return %{$Cfg{$subtree}};
+	}
 
 	return %Cfg;
 }
