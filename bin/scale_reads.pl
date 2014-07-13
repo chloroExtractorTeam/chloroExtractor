@@ -141,12 +141,17 @@ if($opt{version}){
 ##----------------------------------------------------------------------------##
 # Config
 
-# core
-my $core_cfg = "$RealBin/../cfg/".basename($Script, qw(.pl)).".cfg";
-my %cfg = Cfg->Read($core_cfg) if -e $core_cfg; 
+my %cfg;
 
-if ($opt{config} && @{$opt{config}}){
-    %cfg = (%cfg, Cfg->Read(@{$opt{config}}));
+# core
+my $core_cfg = "$RealBin/../".basename($Script, qw(.pl)).".cfg";
+unshift (@{$opt{config}}, $core_cfg) if -e $core_cfg;
+
+# read all configs
+if (@{$opt{config}}){
+    foreach my $cfg ( @{$opt{config}} ){
+	%cfg = (%cfg, Cfg->Read(split(':', $cfg, 2)));
+    }
 }
 
 # create template for user cfg
