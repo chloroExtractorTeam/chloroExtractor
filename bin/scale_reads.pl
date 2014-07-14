@@ -100,32 +100,36 @@ use Bowtie2;
 
 our $VERSION = 0.01;
 
+our $ID = 'scr';
+
 # get a logger
 my $L = Log::Log4perl::get_logger();
-Log::Log4perl->init( \q(
+Log::Log4perl->init( \(q(
 	log4perl.rootLogger                     = INFO, Screen
 	log4perl.appender.Screen                = Log::Log4perl::Appender::Screen
 	log4perl.appender.Screen.stderr         = 1
 	log4perl.appender.Screen.layout         = PatternLayout
-	log4perl.appender.Screen.layout.ConversionPattern = [%d{yy-MM-dd HH:mm:ss}] [scr] %m%n
-));
+	log4perl.appender.Screen.layout.ConversionPattern = [%d{yy-MM-dd HH:mm:ss}] [).$ID.q(] %m%n
+)));
 
 
 #-----------------------------------------------------------------------------#
 # GetOptions
 
-my %opt;
+my %opt = (config => []);
 
 GetOptions( # use %opt (Cfg) as defaults
 	\%opt, qw(
-                target_coverage|coverage=i
+                target_coverage|target-coverage|coverage=i
                 reads|1=s
                 mates|2=s
-		ref_cluster|r=s
+		ref_cluster|ref-cluster|r=s
+		out|o=s
+		threads=i
 		version|V!
 		debug|D!
 		help|h!
-		config|c=s{1,2}
+		config|c=s{,}
 	)
 ) or $L->logcroak('Failed to "GetOptions"');
 
@@ -145,12 +149,20 @@ my %cfg;
 
 # core
 my $core_cfg = "$RealBin/../".basename($Script, qw(.pl)).".cfg";
-unshift (@{$opt{config}}, $core_cfg) if -e $core_cfg;
+
+if( -e $core_cfg){
+    $opt{core_config} = File::Spec->rel2abs($core_cfg);
+    %cfg = (%cfg, Cfg->Read($opt{core_config}, $ID));
+}
+
+
 
 # read all configs
 if (@{$opt{config}}){
     foreach my $cfg ( @{$opt{config}} ){
-	%cfg = (%cfg, Cfg->Read(split(':', $cfg, 2)));
+	# $L->info("Reading config $cfg");
+	$cfg=File::Spec->rel2abs($cfg);
+	%cfg = (%cfg, Cfg->Read($cfg, $ID));
     }
 }
 
@@ -162,10 +174,14 @@ if(defined $opt{create_config}){
 	exit 0;
 }
 
+
+# Merge opt and cfg
+%opt = (%cfg, %opt);
+
 ##----------------------------------------------------------------------------##
 # required stuff  
 for(qw(reads mates ref_cluster)){
-        pod2usage("required: --$_") unless defined ($opt{$_})
+    pod2usage("required: --$_") unless defined ($opt{$_}) || $opt{$_} eq ""
 };
 
 
@@ -206,8 +222,10 @@ $bowtie2->run(
     "-1" => $opt{reads},
     "-2" => $opt{mates},
     "-x" => $opt{ref_cluster},
-    "-p" => $cfg{threads},
+    "-p" => $opt{threads} || 1,
 );
+
+$L->debug(Dumper($opt{bowtie2_params}));
 
 # read output on the fly
 my $sp = Sam::Parser->new(
@@ -244,25 +262,26 @@ my $c;
 my $tlen_sum; 
 my $seqwithtlen;
 
-while(my $aln = $sp->next_aln){
-    print BAM "$aln","\n";
-    my $id = $aln->rname();
-    if (abs($aln->tlen) > 0)
-    {
-	$tlen_sum+= abs($aln->tlen); # compute isize
-	$seqwithtlen++;
-    }
-    $seqs{$id}->add_aln($aln);
 
-    $c++;
-    unless ($c % $opt{coverage_check_interval}){
-	$current_cov = estimate_coverage(\%seqs);
-	$L->debug("Coverage: ",$current_cov);
-	$last_id = $aln->qname;
-	if ($current_cov >= $opt{target_coverage}) { 
-	    last;
-	}
+while(my $aln = $sp->next_aln()){
+    print BAM "$aln\n";
+my $id = $aln->rname();
+if (abs($aln->tlen) > 0){
+    $tlen_sum+= abs($aln->tlen); # compute isize
+    $seqwithtlen++;
+}
+$L->logdie($id, ": $aln") unless exists $seqs{$id};
+$seqs{$id}->add_aln($aln);
+
+$c++;
+unless ($c % $opt{coverage_check_interval}){
+    $current_cov = estimate_coverage(\%seqs);
+    $L->debug("Coverage: ",$current_cov);
+    $last_id = $aln->qname;
+    if ($current_cov >= $opt{target_coverage}) { 
+	last;
     }
+}
 }
 
 #what if not enough coverage in entire file.
