@@ -1,0 +1,348 @@
+#!/usr/bin/env perl
+
+=head1 NAME
+
+ptx
+
+=head1 DESCRIPTION
+
+plastid assembly pipeline
+
+=head1 SYNOPSIS
+
+  $ ./ptx [<OPTIONS>] -1 <FQ_1> -2 <FQ_2> -o <ID> 
+
+=head1 OPTIONS
+
+=over
+
+=item -1|--reads
+
+Input reads file, first of pair.
+
+=item -2|--mates
+
+Input reads file, second of pair
+
+=item -d|--dir [.]
+
+Path to a working directory. Will be created. If exists, needs to be
+empty.
+
+=item -o|--out
+
+Output file basename, e.g. species id.
+
+=item --create-config
+
+Create a config file with default settings for user customization.
+
+=item -c|--config
+
+Use user customized config file. Superseeds default config.
+
+=item --continue=[TASKID TASKID ...] [TRUE]
+
+By default, the pipeline will check for a incomplete previous run and
+if possible continue after the last successful task of that run.
+Additionally you may provide task ids to specify a specific task -
+instead of the last task - to continue from. 
+
+=item --redo [FALSE]
+
+Force pipeline to restart from the beginning, ignoring and overwriting
+previous results. Supersedes --continue.
+
+=item --stop-after=<TASKID>
+
+Stop the pipeline after the specified task.
+
+=item --skip=<TASKID/PATTERN TASKID/PATTERN ...>
+
+Skip specified tasks or tasks matching specified patterns (perl
+regex). If other tasks request results from skipped tasks, the
+pipeline will try to reuse results from previous runs. You need to
+take care, that these results still make sence in the current run.
+
+=item -V|--version
+
+Display version.
+
+=item -h|--help
+
+Display this help.
+
+=back
+
+=head1 CHANGELOG
+
+see git log.
+
+=head1 CODE
+
+=cut
+
+##----------------------------------------------------------------------------##
+# Modules
+
+# core
+use strict;
+use warnings;
+no warnings 'qw';
+
+use Carp;
+use Getopt::Long qw(:config no_ignore_case);
+use Pod::Usage;
+use Log::Log4perl qw(:no_extra_logdie_message);
+use Log::Log4perl::Level;
+
+use Data::Dumper;
+$Data::Dumper::Sortkeys = 1;
+
+use FindBin qw($RealBin $Script);
+use lib "$RealBin/../lib/";
+
+use File::Basename;
+use File::Copy;
+use File::Path;
+use File::Spec;
+
+use List::MoreUtils;
+# additional modules
+use Cfg;
+
+use PipeWrap;
+
+##----------------------------------------------------------------------------##
+# Globals
+
+our $VERSION = 0.01;
+
+# get a logger
+my $L = Log::Log4perl::get_logger();
+Log::Log4perl->init( \q(
+	log4perl.rootLogger                     = INFO, Screen
+	log4perl.appender.Screen                = Log::Log4perl::Appender::Screen
+	log4perl.appender.Screen.stderr         = 1
+	log4perl.appender.Screen.layout         = PatternLayout
+	log4perl.appender.Screen.layout.ConversionPattern = [%d{yy-MM-dd HH:mm:ss}] [PipeWrap] %m%n
+));
+
+
+##----------------------------------------------------------------------------##
+# GetOptions
+my %opt = (skip => [], config => [], core_config => undef); 
+
+GetOptions( # use %opt (Cfg) as defaults
+	    \%opt, qw(
+                out|o=s
+                dir|d=s
+		threads|t=i
+		continue:s
+		redo!
+		skip=s{,}
+		stop-after=s
+		create_config|create-config:s
+      		reads=s
+		mates=s
+		config|c=s{,}
+		version|V!
+		debug|D!
+		help|h!
+	)
+) or $L->logcroak('Failed to "GetOptions"');
+
+# help
+$opt{help} && pod2usage(1);
+
+# version
+if($opt{version}){
+	print "$VERSION\n"; 
+	exit 0;
+}
+
+$opt{redo} && ($opt{continue} = undef);
+
+
+##----------------------------------------------------------------------------##
+# Config
+
+my %cfg;
+
+# core
+my $core_cfg = "$RealBin/../".basename($Script, qw(.pl)).".cfg";
+
+if( -e $core_cfg){
+    $opt{core_config} = File::Spec->rel2abs($core_cfg);
+    %cfg = (%cfg, Cfg->Read($opt{core_config}, $Script));
+}
+
+
+# read all configs
+if (@{$opt{config}}){
+    foreach my $cfg ( @{$opt{config}} ){
+	$cfg=File::Spec->rel2abs($cfg);
+	%cfg = (%cfg, Cfg->Read($cfg, $Script));
+    }
+}
+
+
+# create template for user cfg
+if(defined $opt{create_config}){
+	pod2usage(-msg => 'To many arguments', -exitval=>1) if @ARGV > 1;
+	my $user_cfg = Cfg->Copy($core_cfg, $opt{create_config}) or $L->logdie("Creatring config failed: $!");
+	$L->info("Created config file: $user_cfg");
+	exit 0;
+}
+
+##----------------------------------------------------------------------------##
+# Config + Opt
+
+%opt = (%cfg, %opt);
+
+
+
+# required stuff  
+for(qw(mates reads)){
+    if(ref $opt{$_} eq 'ARRAY'){
+	pod2usage("required: --$_") unless @{$opt{$_}}
+    }else{
+	pod2usage("required: --$_") unless defined ($opt{$_})
+    }
+};
+
+
+# debug level
+$L->level($DEBUG) if $opt{debug};
+$L->debug('Verbose level set to DEBUG');
+
+$L->debug(Dumper(\%opt));
+
+
+
+##----------------------------------------------------------------------------##
+# Main
+##----------------------------------------------------------------------------##
+
+##- Prep run -----------------------------------------------------------------##
+
+$opt{reads} = File::Spec->rel2abs($opt{reads}) if defined $opt{reads};  
+$opt{mates} = File::Spec->rel2abs($opt{mates}) if defined $opt{mates};  
+
+$opt{data_cds} = File::Spec->rel2abs($RealBin.'/../data/cds.nr98.fa');
+
+# prepare folder structure
+prep_dir($opt{dir} || '.', $opt{redo});
+
+if($opt{dir}){
+    chdir($opt{dir}) || $L->logcroak("'$opt{dir}' ",$!);
+}
+
+
+
+##- run pipeline -------------------------------------------------------------##
+
+my $pl = PipeWrap->new(
+    tasks => $opt{tasks},
+    continue => $opt{continue},
+    skip => $opt{skip},
+    opt => \%opt
+);
+
+while(my $tid = $pl->run()){
+    last if $opt{stop} && $tid eq $opt{stop};
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##----------------------------------------------------------------------------##
+# Subs
+##----------------------------------------------------------------------------##
+
+# PipeWrap extension
+sub PipeWrap::ParseCsv{
+    my ($self, $fh) = @_;
+    my %re;
+    while(<$fh>){
+	my ($k, $v) = split(/\s+/, $_, 2);
+	$re{$k} = $v;
+    }
+    return \%re;
+}
+
+# prep_dir(dirname=s, overwrite!)
+sub prep_dir{
+    my ($dir, $overwrite) = (@_, 0);
+    if(-e $dir){
+	if(-d $dir){
+	    if($overwrite){
+		$L->debug("Clearing output '$dir'");
+		File::Path::remove_tree($dir);
+		File::Path::make_path(
+		    $opt{dir}, 
+		    {verbose => $opt{debug} ? 1 : 0}
+		    );
+
+	    }else{
+		$L->debug("'$dir' present and ready for use");
+		# DEPRECATED: handled by PipeWrap continue
+		# $L->logdie("'$dir': directory already exists and is not empty")
+		#    unless is_empty_dir($dir);
+
+		
+	    }
+	}else{
+	    $L->logdie("'$dir': already exists, yet is no directory")
+	}
+    }else{
+	$L->debug("Creating output '$dir'");
+	File::Path::make_path(
+	    $opt{dir}, 
+	    {verbose => $opt{debug} ? 1 : 0}
+	    );
+    }
+}
+
+
+# is_empty_dir( dir )                                                                   # Check whether a folder contains any files.                                            
+
+sub is_empty_dir {
+    my $dirname = shift;
+    opendir(my $dh, $dirname) or die "Not a directory";
+    return scalar(grep { $_ ne "." && $_ ne ".." } readdir($dh)) == 0;
+}
+
+
+#-----------------------------------------------------------------------------#
+
+=head1 AUTHOR
+
+Thomas Hackl S<thomas.hackl@uni-wuerzburg.de>
+
+Markus Ankenbrand S<markus.ankenbrand@stud-mail.uni-wuerzburg.de>
+
+Niklas Terhoeven S<niklaus.terhoeven@stud-mail.uni-wuerzburg.de>
+
+Clemens Weiss S<clemens.weiss@stud-mail.uni-wuerzburg.de>
+
+Frank Foerster S<frank.foerster@biozentrum.uni-wuerzburg.de>
+
+=cut

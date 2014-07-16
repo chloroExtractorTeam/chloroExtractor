@@ -120,7 +120,10 @@ sub Read{
         }
 
 	if($subtree){
-	    $L->logdie('$Cfg{'.$subtree.'} does not exists') unless exists $Cfg{$subtree};
+	    unless(exists $Cfg{$subtree}){
+		$L->info('$Cfg{'.$subtree.'} does not exists, reading nothing');
+		return;
+	    }
 	    $L->logdie('$Cfg{'.$subtree.'} is not a HASHREF - currently only hash subtrees are supported') unless ref $Cfg{$subtree} eq 'HASH';
 	    
 	    return %{$Cfg{$subtree}};

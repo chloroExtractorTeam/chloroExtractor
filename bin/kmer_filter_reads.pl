@@ -164,7 +164,7 @@ use File::Basename;
 use Log::Log4perl qw(:no_extra_logdie_message);
 use Log::Log4perl::Level;
 
-use FindBin qw($RealBin);
+use FindBin qw($RealBin $Script);
 use lib "$RealBin/../lib/";
 
 use Data::Dumper;
@@ -183,36 +183,21 @@ use Verbose::ProgressBar;
 #------------------------------------------------------------------------------#
 # Globals
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
+
+our $ID = 'kfr';
 
 # get a logger
 my $L = Log::Log4perl::get_logger();
 Log::Log4perl->init(\<<'CFG');
 	log4perl.rootLogger                 = DEBUG, Screen
 	log4perl.appender.Screen			= Log::Log4perl::Appender::Screen
-	log4perl.appender.Screen.stderr		= 0
+	log4perl.appender.Screen.stderr		= 1
 	log4perl.appender.Screen.layout		= PatternLayout
 	log4perl.appender.Screen.layout.ConversionPattern = [%d{MM-dd HH:mm:ss}] [kfr] %m%n
 CFG
 $L->level($INFO);
 
-#-----------------------------------------------------------------------------#
-# Config
-
-# core
-my $core_cfg = "$RealBin/../chloroExtractor.cfg";
-my %cfg = Cfg->Read_Cfg($core_cfg); 
-
-# user defaults and overwrite core
-my $user_cfg;
-for(my $i=0; $i<@ARGV; $i++){
-        if($ARGV[$i] =~ /-c$|--config$/){
-                $user_cfg = $ARGV[$i+1];
-                last;
-        }
-}
-
-%cfg = (%cfg, Cfg->Read_Cfg($user_cfg)) if $user_cfg; # simple overwrite
 
 my %opt = (
     reads => [],
@@ -223,7 +208,7 @@ my %opt = (
     cutoff => '95%',
     penalize_N => 1,
     perl_hash => 1,
-    %{$cfg{kfr}}
+    config => [],
 );
 
 
@@ -245,7 +230,7 @@ GetOptions(\%opt, qw(
         quiet
 	debug
 	help|h
-config|c=s
+	config|c=s{,}
 )) or $L->logcroak($!);
 
 pod2usage(1) if $opt{help};
@@ -260,6 +245,42 @@ $opt{quiet} && $L->level($WARN);
 $opt{debug} && $L->level($DEBUG);
 
 $L->debug("GetOptions:\n", Dumper(\%opt));
+
+##----------------------------------------------------------------------------##
+# Config
+
+my %cfg;
+
+# core
+my $core_cfg = "$RealBin/../".basename($Script, qw(.pl)).".cfg";
+
+if( -e $core_cfg){
+    $opt{core_config} = File::Spec->rel2abs($core_cfg);
+    %cfg = (%cfg, Cfg->Read($opt{core_config}, $ID));
+}
+
+
+
+# read all configs
+if (@{$opt{config}}){
+    foreach my $cfg ( @{$opt{config}} ){
+	# $L->info("Reading config $cfg");
+	$cfg=File::Spec->rel2abs($cfg);
+	%cfg = (%cfg, Cfg->Read($cfg, $ID));
+    }
+}
+
+# create template for user cfg
+if(defined $opt{create_config}){
+	pod2usage(-msg => 'To many arguments', -exitval=>1) if @ARGV > 1;
+	my $user_cfg = Cfg->Copy($core_cfg, $opt{create_config}) or $L->logdie("Creatring config failed: $!");
+	$L->info("Created config file: $user_cfg");
+	exit 0;
+}
+
+
+# Merge opt and cfg
+%opt = (%cfg, %opt);
 
 
 ##------------------------------------------------------------------------##	
