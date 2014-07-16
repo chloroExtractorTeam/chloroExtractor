@@ -257,6 +257,7 @@ close BED;
 
 my $current_cov;
 my $last_id;
+my $closest_ref;
 
 my $c;
 my $tlen_sum; 
@@ -278,11 +279,24 @@ unless ($c % $opt{coverage_check_interval}){
     $current_cov = estimate_coverage(\%seqs);
     $L->debug("Coverage: ",$current_cov);
     $last_id = $aln->qname;
-    if ($current_cov >= $opt{target_coverage}) { 
+    if ($current_cov >= $opt{target_coverage}) {
+	my %refwise_coverage;
+	foreach my $prot_id (keys %seqs){
+	    my ($ref) = $prot_id =~ /^([^_]+_[^_]+)_/;
+	    $refwise_coverage{$ref}+= median($seqs{$prot_id}) || 0;
+	}
+	$L->debug(Dumper(\%refwise_coverage));
+	$closest_ref = (sort{$refwise_coverage{$b} <=> $refwise_coverage{$a}}keys %refwise_coverage)[0];
 	last;
     }
 }
 }
+
+
+print "coverage\t", $current_cov, "\n";
+print "insert_size\t", int($tlen_sum/$seqwithtlen), "\n";
+print "closest_ref\t", $closest_ref || 'NA', "\n";
+
 
 #what if not enough coverage in entire file.
 if(! $current_cov || $current_cov < $opt{target_coverage}){
@@ -326,8 +340,7 @@ if ($opt{mates}) {
 
 }
 
-print "Estimated coverage: ", $current_cov, "\n";
-print "Estimated insert size: ", int($tlen_sum/$seqwithtlen), "\n";
+
 
 
 
