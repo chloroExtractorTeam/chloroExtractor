@@ -94,9 +94,9 @@ pdf("ptx.pdf", width=10, height=5);
     };
 
     # kmer filter
-    scr<-read.table(pipe('jellyfish histo scr.jf'), header=F);
-    kfr<-read.table(pipe('jellyfish histo kfr.jf'), header=F);
-    kfr2<-read.table(pipe('jellyfish histo kfr2.jf'), header=F);
+    scr<-read.table(pipe('jellyfish histo scr.jf_0'), header=F);
+    kfr<-read.table(pipe('jellyfish histo kfr.jf_0'), header=F);
+    kfr2<-read.table(pipe('jellyfish histo kfr.jf_0'), header=F);
 
     kfr2.ex = get_extrema(kfr2, peaks=c(200));
   
