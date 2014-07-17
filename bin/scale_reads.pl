@@ -277,7 +277,6 @@ $seqs{$id}->add_aln($aln);
 $c++;
 unless ($c % $opt{coverage_check_interval}){
     $current_cov = estimate_coverage(\%seqs);
-    $L->debug("Coverage: ",$current_cov);
     $last_id = $aln->qname;
     if ($current_cov >= $opt{target_coverage}) {
 	
@@ -436,14 +435,14 @@ sub estimate_coverage {
   close COV;
 
   $L->debug(Dumper(\%medians));
-  $L->debug("Coverage Array ","@median_array"," -- ",scalar @median_array);
+  my $median_cov = @median_array > $opt{min_covered_CDS} 
+  	? median(\@median_array)
+	    : -1;
 
-  if (@median_array > $opt{min_covered_CDS}) {
-    return median(\@median_array);
-  }
-  else {
-    return -1;
-  }
+
+  $L->info("Cov: ", $median_cov < 0 ? 'NA' : $median_cov, "Prots: ", scalar @median_array, "[@median_array]");
+  
+  return $median_cov;
 
 }
 
