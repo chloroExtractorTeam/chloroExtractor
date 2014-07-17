@@ -407,7 +407,7 @@ sub estimate_coverage {
 
   if($L->level <= $DEBUG){
       foreach (sort keys %protein_wise_coverage){
-	  $L->debug("$_\t@$_\n");
+	  $L->debug("$_\t@{$protein_wise_coverage{$_}}\n");
       }
   }
 
