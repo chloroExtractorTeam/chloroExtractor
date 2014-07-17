@@ -280,6 +280,11 @@ unless ($c % $opt{coverage_check_interval}){
     $L->debug("Coverage: ",$current_cov);
     $last_id = $aln->qname;
     if ($current_cov >= $opt{target_coverage}) {
+	
+	$bowtie2->cancel();
+	close BAM;
+
+
 	my %refwise_coverage;
 
 	foreach my $prot_id (keys %seqs){
@@ -315,9 +320,6 @@ if(! $current_cov || $current_cov < $opt{target_coverage}){
     exit 1;
 }
 
-$bowtie2->cancel();
-
-close BAM;
 
 #$L->info("Recalculating accurate per base coverages");
 #bam_coverage($opt{out});
