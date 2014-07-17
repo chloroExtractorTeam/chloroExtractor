@@ -440,7 +440,7 @@ sub estimate_coverage {
 	    : -1;
 
 
-  $L->info("Cov: ", $median_cov < 0 ? 'NA' : $median_cov, "Prots: ", scalar @median_array, "[@median_array]");
+  $L->info("Cov: ", $median_cov < 0 ? 'NA' : $median_cov, " Prots: ", scalar @median_array, " [@median_array]");
   
   return $median_cov;
 
