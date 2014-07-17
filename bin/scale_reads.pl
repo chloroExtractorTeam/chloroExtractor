@@ -242,6 +242,8 @@ my $ss;
 
 my %seqs;
 
+Sam::Seq->Trim(0); # disable trimming of read 
+
 while(%h = $sp->next_header_line('@SQ')){
   $seqs{$h{'SN'}} = Sam::Seq->new(
     id => $h{'SN'},
