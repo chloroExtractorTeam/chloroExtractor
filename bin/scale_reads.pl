@@ -405,6 +405,12 @@ sub estimate_coverage {
     @{$protein_wise_coverage{$protein}} = pairwise_sum(\@{$protein_wise_coverage{$protein}}, \@covs);
   }
 
+  if($L->level <= $DEBUG){
+      foreach (sort keys %protein_wise_coverage){
+	  $L->debug("$_\t@$_\n");
+      }
+  }
+
   # print proteinwise coverage // omitting 
   # zeros and empty proteins // also trim
   # both ends
