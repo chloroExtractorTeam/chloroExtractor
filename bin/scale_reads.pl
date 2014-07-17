@@ -289,7 +289,7 @@ unless ($c % $opt{coverage_check_interval}){
 	foreach my $prot_id (keys %seqs){
 	    my ($ref) = $prot_id =~ /^([^_]+_[^_]+)_/;
 	    $refwise_coverage{$ref}+= median([$seqs{$prot_id}->coverage]) || 0;
-	    $L->debug(Dumper(\%seqs, \%refwise_coverage));
+	    # $L->debug(Dumper(\%seqs, \%refwise_coverage));
 	}
 	$closest_ref = (sort{$refwise_coverage{$b} <=> $refwise_coverage{$a}}keys %refwise_coverage)[0];
 	last;
