@@ -244,7 +244,6 @@ if($opt{version}){
 $opt{quiet} && $L->level($WARN);
 $opt{debug} && $L->level($DEBUG);
 
-$L->debug("GetOptions:\n", Dumper(\%opt));
 
 ##----------------------------------------------------------------------------##
 # Config
@@ -281,6 +280,9 @@ if(defined $opt{create_config}){
 
 # Merge opt and cfg
 %opt = (%cfg, %opt);
+
+$L->debug("GetOptions:\n", Dumper(\%opt));
+
 
 
 ##------------------------------------------------------------------------##	
