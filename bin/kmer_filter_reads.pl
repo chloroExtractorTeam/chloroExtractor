@@ -423,7 +423,7 @@ unless(@opt_mates){
 
 			# skip reads shorter kmer
 			if (length($fq1->seq) <= $opt{'kmer-size'}){
-			    $L->debug("Skipping short seqs: 1:", length($fq1->seq)," 2", length($fq2->seq));
+			    $L->debug("Skipping short seqs: 1:", length($fq1->seq));
 			    next;
 }
 			
