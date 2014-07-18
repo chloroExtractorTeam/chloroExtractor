@@ -208,7 +208,7 @@ my %opt = (
 my %def = (
     'kmer-shift' => 1,
     cutoff => '95%',
-    penalize_N => 1,
+    "penalize-N" => 1,
     perl_hash => 1,
     lower => 5,
     upper => 200,
@@ -227,7 +227,7 @@ GetOptions(\%opt, qw(
 	lower|l=i
 	upper|u=i
 	kmer-shift|x=i
-	penalize_N|penalize-N!
+	penalize-N!
 	histogram=s
         quiet
 	debug
@@ -360,7 +360,7 @@ if($khash){
 	    $opt_u ? ("-U", $opt_u) : (), # upper cutoff
 	    $opt{'kmer-hash'}             # hash
 			    ]);
-	if($opt{penalize_N}){
+	if($opt{'penalize-N'}){
 		while(<$kfh>){
 			my ($k, $v) = split("\t", $_);
 			$K{$k} = $v	unless $k =~ tr/N//;
