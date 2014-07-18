@@ -202,15 +202,17 @@ $L->level($INFO);
 my %opt = (
     reads => [],
     mates => [],
-    lower => 5,
-    upper => 200,
+    config => [],
+);
+
+my %def = (
     'kmer-shift' => 1,
     cutoff => '95%',
     penalize_N => 1,
     perl_hash => 1,
-    config => [],
-);
-
+    lower => 5,
+    upper => 200,
+    );
 
 #------------------------------------------------------------------------------#
 # GetOptions
@@ -279,7 +281,7 @@ if(defined $opt{create_config}){
 
 
 # Merge opt and cfg
-%opt = (%cfg, %opt);
+%opt = (%def, %cfg, %opt);
 
 $L->debug("GetOptions:\n", Dumper(\%opt));
 
