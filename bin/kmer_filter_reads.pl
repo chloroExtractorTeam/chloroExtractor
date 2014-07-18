@@ -420,6 +420,12 @@ unless(@opt_mates){
 		while(my $fq1 = $fp1->next_seq){
 			$rct++;
 			$pg->update unless $pgc++%10000;
+
+			# skip reads shorter kmer
+			if (length($fq1->seq) <= $opt{'kmer-size'}){
+			    $L->debug("Skipping short seqs: 1:", length($fq1->seq)," 2", length($fq2->seq));
+			    next;
+}
 			
 			my $c=0;
 			my @kmers = $km->cmerize($fq1->seq);
@@ -473,6 +479,14 @@ unless(@opt_mates){
 			
 			my $c1=0;
 			my $c2=0;
+	
+			# skip reads shorter kmer
+			if (length($fq2->seq) <= $opt{'kmer-size'} 
+			    || length($fq1->seq) <= $opt{'kmer-size'}){
+			    $L->debug("Skipping short seqs: 1:", length($fq1->seq)," 2", length($fq2->seq));
+			    next;
+}
+
 			
 			my @kmers1 = $km->cmerize($fq1->seq);
 			my @kmers2 = $km->cmerize($fq2->seq);
