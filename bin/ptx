@@ -149,6 +149,7 @@ GetOptions( # use %opt (Cfg) as defaults
 		version|V!
 		debug|D!
 		help|h!
+		force!
 	)
 ) or $L->logcroak('Failed to "GetOptions"');
 
@@ -245,6 +246,7 @@ if($opt{dir}){
 my $pl = PipeWrap->new(
     tasks => $opt{tasks},
     continue => $opt{continue},
+    force => $opt{force},
     skip => $opt{skip},
     opt => \%opt
 );
