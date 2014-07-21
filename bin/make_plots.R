@@ -80,14 +80,14 @@ pdf("ptx.pdf", width=10, height=5);
     	id=df[1,1];
 	if(id == "genome") next;
     	dt=df[,2:3]
-  	dt.ex = get_extrema(dt, peaks=c(200));
+  	dt.ex = get_extrema(dt, peaks=c(50,100,150,200));
     	plot(dt, 
     	     type="n", 
     	     main=paste("per-base coverage of reference (", id, ")", sep=""),
     	     xlab="coverage",
     	     ylab="frequency",
 	     xlim=c(1,dt.ex$cov[length(dt.ex$cov)]*3),
-	     ylim=c(0,dt[,2][dt.ex$cov]*1.6)
+	     ylim=c(0,dt[,2][dt.ex$cov]*2)
     	    );
     	lines(dt, col=cl[2], lwd=3);
 	add_psizes(dt.ex);
@@ -96,9 +96,9 @@ pdf("ptx.pdf", width=10, height=5);
     # kmer filter
     scr<-read.table(pipe('jellyfish histo scr.jf_0'), header=F);
     kfr<-read.table(pipe('jellyfish histo kfr.jf_0'), header=F);
-    kfr2<-read.table(pipe('jellyfish histo kfr.jf_0'), header=F);
+    kfr2<-read.table(pipe('jellyfish histo kfr2.jf_0'), header=F);
 
-    kfr2.ex = get_extrema(kfr2, peaks=c(200));
+    kfr2.ex = get_extrema(kfr2, peaks=c(50, 100, 150, 200));
   
     plot(kfr2, 
     	      type="n", 
@@ -106,7 +106,7 @@ pdf("ptx.pdf", width=10, height=5);
     	      xlab="coverage",
     	      ylab="frequency",
 	      xlim=c(1,kfr2.ex$cov[length(kfr2.ex$cov)]*3),
-	      ylim=c(0,kfr2[,2][kfr2.ex$cov]*1.6)
+	      ylim=c(0,kfr2[,2][kfr2.ex$cov]*2)
     );
 
     lines(scr, col=cl[1], lwd=3);
