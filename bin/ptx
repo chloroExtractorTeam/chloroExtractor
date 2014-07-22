@@ -141,10 +141,10 @@ GetOptions( # use %opt (Cfg) as defaults
 		continue:s
 		redo!
 		skip=s{,}
-		stop-after=s
+		stop|stop-after=s
 		create_config|create-config:s
-      		reads=s
-		mates=s
+      		reads|1=s
+		mates|2=s
 		config|c=s{,}
 		version|V!
 		debug|D!
