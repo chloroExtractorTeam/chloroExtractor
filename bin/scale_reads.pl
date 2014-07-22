@@ -91,6 +91,8 @@ use Sam::Parser;
 use Sam::Seq;
 use Sam::Alignment;
 
+use Jellyfish;
+
 #enable in script mapping
 use Bowtie2;
 
@@ -104,13 +106,16 @@ our $ID = 'scr';
 
 # get a logger
 my $L = Log::Log4perl::get_logger();
-Log::Log4perl->init( \(q(
-	log4perl.rootLogger                     = INFO, Screen
-	log4perl.appender.Screen                = Log::Log4perl::Appender::Screen
-	log4perl.appender.Screen.stderr         = 1
-	log4perl.appender.Screen.layout         = PatternLayout
-	log4perl.appender.Screen.layout.ConversionPattern = [%d{yy-MM-dd HH:mm:ss}] [).$ID.q(] %m%n
-)));
+
+my $log_cfg = 'log4perl.rootLogger                     = INFO, Screen
+log4perl.appender.Screen                = Log::Log4perl::Appender::Screen
+log4perl.appender.Screen.stderr         = 1
+log4perl.appender.Screen.layout         = PatternLayout
+log4perl.appender.Screen.layout.ConversionPattern = [%d{yy-MM-dd HH:mm:ss}] ['.$ID.'] %m%n
+';
+
+Log::Log4perl->init( \$log_cfg );
+
 
 
 #-----------------------------------------------------------------------------#
@@ -119,27 +124,31 @@ Log::Log4perl->init( \(q(
 my %opt = (config => []);
 
 GetOptions( # use %opt (Cfg) as defaults
-	\%opt, qw(
+	    \%opt, qw(
                 target_coverage|target-coverage|coverage=i
                 reads|1=s
                 mates|2=s
 		ref_cluster|ref-cluster|r=s
+		kmer_hash|kmer-hash=s
+		max_reads|max-reads=i
 		out|o=s
+		bowtie2_bin|bowtie2-bin=s
+		jellyfish_bin|jellyfish-bin=s
 		threads=i
 		version|V!
 		debug|D!
 		help|h!
 		config|c=s{,}
 	)
-) or $L->logcroak('Failed to "GetOptions"');
+    ) or $L->logcroak('Failed to "GetOptions"');
 
 # help
 $opt{help} && pod2usage(1);
 
 # version
 if($opt{version}){
-	print "$VERSION\n"; 
-	exit 0;
+    print "$VERSION\n"; 
+    exit 0;
 }
 
 ##----------------------------------------------------------------------------##
@@ -150,7 +159,7 @@ my %cfg;
 # core
 my $core_cfg = "$RealBin/../".basename($Script, qw(.pl)).".cfg";
 
-if( -e $core_cfg){
+if(-e $core_cfg){
     $opt{core_config} = File::Spec->rel2abs($core_cfg);
     %cfg = (%cfg, Cfg->Read($opt{core_config}, $ID));
 }
@@ -168,10 +177,10 @@ if (@{$opt{config}}){
 
 # create template for user cfg
 if(defined $opt{create_config}){
-	pod2usage(-msg => 'To many arguments', -exitval=>1) if @ARGV > 1;
-	my $user_cfg = Cfg->Copy($core_cfg, $opt{create_config}) or $L->logdie("Creatring config failed: $!");
-	$L->info("Created config file: $user_cfg");
-	exit 0;
+    pod2usage(-msg => 'To many arguments', -exitval=>1) if @ARGV > 1;
+    my $user_cfg = Cfg->Copy($core_cfg, $opt{create_config}) or $L->logdie("Creatring config failed: $!");
+    $L->info("Created config file: $user_cfg");
+    exit 0;
 }
 
 
@@ -180,8 +189,8 @@ if(defined $opt{create_config}){
 
 ##----------------------------------------------------------------------------##
 # required stuff  
-for(qw(reads mates ref_cluster)){
-    pod2usage("required: --$_") unless defined ($opt{$_}) || $opt{$_} eq ""
+for(qw(reads mates ref_cluster kmer_hash)){
+    pod2usage("required: --$_") unless defined ($opt{$_}) || $opt{$_} eq "";
 };
 
 
@@ -203,10 +212,11 @@ my $opt_o2 = $opt{out}."_2.fq";
 
 
 my $bowtie2 = Bowtie2->new(
-    path => $opt{bowtie2_path},
-);
+    path => $opt{bowtie2_bin}
+    );
 
-# TODO: bowtie2 generate db -> prevent issues with different indices on different architectures or bowtie2 versions
+# TODO: bowtie2 generate db -> prevent issues with different indices
+# on different architectures or bowtie2 versions
 
 unless(-e $opt{ref_cluster}.'.1.bt2'){
     $L->info("Building bowtie2 index");
@@ -222,37 +232,37 @@ $bowtie2->run(
     "-1" => $opt{reads},
     "-2" => $opt{mates},
     "-x" => $opt{ref_cluster},
-    "-p" => $opt{threads} || 1,
-);
+    "-p" => $opt{threads} || 1
+    );
 
 $L->debug(Dumper($opt{bowtie2_params}));
 
 # read output on the fly
 my $sp = Sam::Parser->new(
-  fh => $bowtie2->stdout
-);
+    fh => $bowtie2->stdout
+    );
 
-my $bam = $opt{out}.".bam";
+my $bam = $opt{out}."-cds.bam";
 open(BAM, "| samtools view -Sbu /dev/fd/0 > $bam") or $L->logdie($!);
-open(BED, ">", $opt{out}.".bed") or $L->logdie($!);
-
+open(BED, ">", $opt{out}."-cds.bed") or $L->logdie($!);
+open(FQ, ">", $opt{out}."-cds.fq") or $L->logdie($!);
 
 my %h; 
 my $ss;
 
 my %seqs;
 
-Sam::Seq->Trim(0); # disable trimming of read 
+Sam::Seq->Trim(0); # disable trimming of read
 
+# read output on the fly
 while(%h = $sp->next_header_line('@SQ')){
-  $seqs{$h{'SN'}} = Sam::Seq->new(
-    id => $h{'SN'},
-    len => $h{'LN'},
-  );  
+    $seqs{$h{'SN'}} = Sam::Seq->new(
+	id => $h{'SN'},
+	len => $h{'LN'}
+	);
 
-  print BAM '@SQ'."\tSN:$h{'SN'}\tLN:$h{'LN'}\n";
-  print BED "$h{'SN'}\t$h{'LN'}\n";
-
+    print BAM '@SQ'."\tSN:$h{'SN'}\tLN:$h{'LN'}\n";
+    print BED "$h{'SN'}\t$h{'LN'}\n";
 }
 
 close BED;
@@ -260,6 +270,7 @@ close BED;
 my $current_cov;
 my $last_id;
 my $closest_ref;
+my %refs;
 
 my $c;
 my $tlen_sum; 
@@ -268,86 +279,82 @@ my $seqwithtlen;
 
 while(my $aln = $sp->next_aln()){
     print BAM "$aln\n";
-my $id = $aln->rname();
-if (abs($aln->tlen) > 0){
-    $tlen_sum+= abs($aln->tlen); # compute isize
-    $seqwithtlen++;
-}
-$L->logdie($id, ": $aln") unless exists $seqs{$id};
-$seqs{$id}->add_aln($aln);
+    print FQ "@",$aln->qname,"\n", $aln->seq, "\n+\n",$aln->qual,"\n";
+    
+    # closest ref
+    my $id = $aln->rname();
+    my ($ref_id) = $id =~ /(NC_\d+)/;
+    $refs{$ref_id}++; # increment mapping on ref count
 
-$c++;
-unless ($c % $opt{coverage_check_interval}){
-    $current_cov = estimate_coverage(\%seqs);
-    $last_id = $aln->qname;
-    if ($current_cov >= $opt{target_coverage}) {
-	
-	$bowtie2->cancel();
-	close BAM;
-
-
-	my %refwise_coverage;
-
-	foreach my $prot_id (keys %seqs){
-	    my ($ref) = $prot_id =~ /^([^_]+_[^_]+)_/;
-	    $refwise_coverage{$ref}+= median([$seqs{$prot_id}->coverage]) || 0;
-	}
-	
-	$L->debug(Dumper(\%refwise_coverage));
-	$closest_ref = (sort{$refwise_coverage{$b} <=> $refwise_coverage{$a}}keys %refwise_coverage)[0];
-	last;
+    # insert size
+    if (abs($aln->tlen) > 0){
+	$tlen_sum+= abs($aln->tlen); # compute isize
+	$seqwithtlen++;
     }
-}
+
+    $c++;
+    last if $c >= $opt{max_reads}
+}       
+
+
+$bowtie2->cancel();
+close BAM;
+close FQ;
+
+
+$L->info("Recalculating accurate per base coverages");
+bam_coverage($opt{out});
+
+
+if($c < $opt{max_reads}){
+    $L->warn("Could not detect sufficient plastid data in input reads");	
+    $L->info("You might need to increase the amount of input data");
+    $L->info("Also make sure, your library contains plastid reads at all");
+
+    exit 1;
 }
 
+$current_cov = estimate_kmer_coverage($c);
+
+# what if not enough coverage in entire file.
+if(! $current_cov || $current_cov < $opt{target_coverage}){
+    $L->warn("Could not detect sufficient plastid data in input reads");	
+    $L->info("You might need to increase the amount of input data");
+    $L->info("Also make sure, your library contains plastid reads at all");
+
+    exit 1;
+}
+
+
+
+$closest_ref = (sort{$refs{$b} <=> $refs{$a}}keys %refs)[0];
 
 print "coverage\t", $current_cov, "\n";
 print "insert_size\t", int($tlen_sum/$seqwithtlen), "\n";
 print "closest_ref\t", $closest_ref || 'NA', "\n";
 
 
-#what if not enough coverage in entire file.
-if(! $current_cov || $current_cov < $opt{target_coverage}){
-    close BAM;
-
-    #$L->info("Recalculating accurate per base coverages");
-    #bam_coverage($opt{out});
-
-    $current_cov 
-	? $L->info("Ran out of reads at estimated coverage of $current_cov")
-	: $L->info("Could not detect chloroplast reads in input data");
-    $L->info("You might need to increase the amount of input data");
-    $L->info("Also make sure, your library contains chloroplast sequences");
-
-    exit 1;
-}
-
-
-#$L->info("Recalculating accurate per base coverages");
-#bam_coverage($opt{out});
-
 
 $L->info("Creating libraries");
 
-$last_id =~ s?/[12]$??;
 
-my $sed_cmd1 = 'sed "1~4 {/^\@'.$last_id.'\(\/[12]\)*\s/{N;N;N;q}}" '.$opt{reads}." >".$opt_o1;
+
+my $current_reads = qx/wc -l <$opt{reads}/ / 4;
+my $target_reads = int($current_reads / $current_cov * $opt{target_coverage});
+
+$L->debug("Got $current_reads reads, extracting $target_reads reads");
+
+my $target_lines = $target_reads * 4;
+
+my $sed_cmd1 = "sed '".$target_lines."q' ".$opt{reads}." >".$opt_o1;
 
 $L->debug($sed_cmd1);
 qx($sed_cmd1);
 
-if ($opt{mates}) {
+my $sed_cmd2 = "sed '".$target_lines."q' ".$opt{mates}." >".$opt_o2;
 
-  my $sed_cmd2 = 'sed "1~4 {/^\@'.$last_id.'\(\/[12]\)*\s/{N;N;N;q}}" '.$opt{mates}." >".$opt_o2;
-
-  $L->debug($sed_cmd2);
-  qx($sed_cmd2);
-
-}
-
-
-
-
+$L->debug($sed_cmd2);
+qx($sed_cmd2);
 
 
 
@@ -358,32 +365,6 @@ if ($opt{mates}) {
 
 
 
-sub pairwise_sum {
-  my @array1 = @{$_[0]};
-  my @array2 = @{$_[1]};
-
-  my @len;
-  push @len, scalar @array1;
-  push @len, scalar @array2;
-
-  my @sort = sort {$a <=> $b} @len;
-
-  my @added;
-
-  for (my $i=0;$i<=$sort[-1];$i++) {
-
-    if (exists $array1[$i] && exists $array2[$i]) {
-      $added[$i] = $array1[$i] + $array2[$i];
-    }
-    elsif (exists $array1[$i]) {
-      $added[$i] = $array1[$i];
-    }
-    elsif (exists $array2[$i]) {
-      $added[$i] = $array2[$i];
-    }
-  }
-  return @added;
-}
 
 sub median {
   my @array = @{$_[0]};
@@ -392,66 +373,50 @@ sub median {
 }
 
 
-sub estimate_coverage {
+sub estimate_kmer_coverage{
+    my $c = shift;
+    my ($reads) = $opt{out}."-cds.fq";
+    
+    my $jf = Jellyfish->new(
+	$opt{jellyfish_bin} ? (bin => $opt{jellyfish_bin}."/jellyfish") : ()
+	);
 
-  # get coverages for complete sam file
-  # and build hash with protein name as key
-  # and protein wise sum of coverage in
-  # array
+    $L->debug("Running jellyfish");
 
-  open(COV, ">", $opt{out}."-cov.tsv") or $L->logdie($!);
+    # hashing collapses ident. kmers
+    my %counts = $jf->query(["--sequence", $reads, $opt{kmer_hash}]); 
 
-  my %protein_wise_coverage;
-  for my $ss(values %{$_[0]}){
-    my @covs=$ss->coverage();
-    my $protein = (split /_/, $ss->id())[-1];
-    @{$protein_wise_coverage{$protein}} = pairwise_sum(\@{$protein_wise_coverage{$protein}}, \@covs);
-  }
-
-  if($L->level <= $DEBUG){
-      foreach (sort keys %protein_wise_coverage){
-	  $L->debug("$protein_wise_coverage{$_}\t@{$protein_wise_coverage{$_}}\n");
-      }
-  }
-
-  # print proteinwise coverage // omitting 
-  # zeros and empty proteins // also trim
-  # both ends
-
-  my %medians;
-  my @median_array;
-
-  for (keys%protein_wise_coverage) {
-    @{$protein_wise_coverage{$_}} = grep { $_ != 0 } @{$protein_wise_coverage{$_}};
-    if (@{$protein_wise_coverage{$_}}-100>200) {
-      @{$protein_wise_coverage{$_}} = @{$protein_wise_coverage{$_}}[100..@{$protein_wise_coverage{$_}}-100];
+    my %hist;
+    while(my ($k,$v) = each %counts){
+	
+	if($v){
+	    $hist{$v}++;
+	}else{
+	    delete $counts{$k}
+	}
     }
-    else { # ignore to short CDS
-      @{$protein_wise_coverage{$_}} = (); 
+
+    my $total_count = 0;
+    $total_count += $_ for values %hist;
+
+    open(HIST, ">", $opt{out}."-cds-kmer-cov.tsv") or $L->logdie($!);
+    
+    my $cum_count = 0;
+    my $med_cov;
+    foreach (sort{$a<=>$b}keys %hist){
+	$cum_count += $hist{$_};
+	$med_cov = $_ if $cum_count < $total_count/2;
+	$L->debug($med_cov," ", $cum_count," ",$total_count);
+	print HIST $_,"\t",$hist{$_},"\n";
     }
-    if (@{$protein_wise_coverage{$_}}) {
-      my $prot_median = median(\@{$protein_wise_coverage{$_}});
 
-      for my $cov (@{$protein_wise_coverage{$_}}){ 
-	  print COV $_,"\t",$cov,"\n"; 
-      }
+    close HIST;
 
-      $medians{$_} = $prot_median;
-      push @median_array, $prot_median if ($prot_median > $opt{min_single_coverage});
-    }
-  }
+    my $cov = $med_cov * 1.1;  # kmer cov underestimates
 
-  close COV;
+    $L->debug("Estimated coverage of $cov based on ",scalar keys %counts," kmers");
 
-  $L->debug(Dumper(\%medians));
-  my $median_cov = @median_array > $opt{min_covered_CDS} 
-  	? median(\@median_array)
-	    : -1;
-
-
-  $L->info("Cov: ", $median_cov < 0 ? 'NA' : $median_cov, " Prots: ", scalar @median_array, " [@median_array]");
-  
-  return $median_cov;
+    return $cov;
 
 }
 
@@ -465,15 +430,16 @@ Compute per contig coverage using bedtools and write to file.
 
 sub bam_coverage{
     my ($pre) = @_;
-    my $bam = $pre.".bam";
-    my $bed = $pre.".bed";
-    my $pre_sorted = $pre."-sorted";
-    my $bam_sorted = $pre."-sorted.bam";
-    my $tsv = $pre."-cov.tsv";
+    my $bam = $pre."-cds.bam";
+    my $bed = $pre."-cds.bed";
+    my $pre_sorted = $pre."-cds-sorted";
+    my $bam_sorted = $pre."-cds-sorted.bam";
+    my $tsv = $pre."-cds-bp-cov.tsv";
     my $head = '"id\tposition\tcoverage"';
-    $L->info(qx/samtools sort $bam $pre_sorted/);
-    $L->info(qx/echo $head > $tsv/);
-    $L->info(qx/bedtools genomecov -d -ibam $bam_sorted -g $bed >> $tsv/);
+    my $re;
+    $re = qx/samtools sort $bam $pre_sorted/ && $L->warn($re);
+    $re = qx/echo $head > $tsv/ && $L->warn($re);
+    $re = qx/bedtools genomecov -d -ibam $bam_sorted -g $bed >> $tsv/ && $L->warn($re);
 }
 
 #-----------------------------------------------------------------------------#
