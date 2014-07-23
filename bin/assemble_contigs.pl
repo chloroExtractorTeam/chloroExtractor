@@ -54,7 +54,7 @@ use warnings;
 no warnings 'qw';
 
 use Carp;
-use Getopt::Long qw(:config no_ignore_case bundling);
+use Getopt::Long qw(:config no_ignore_case);
 use Pod::Usage;
 use Log::Log4perl qw(:no_extra_logdie_message);
 use Log::Log4perl::Level;
@@ -62,7 +62,7 @@ use Log::Log4perl::Level;
 use Data::Dumper;
 $Data::Dumper::Sortkeys = 1;
 
-use FindBin qw($RealBin);
+use FindBin qw($RealBin $Script);
 use lib "$RealBin/../lib/";
 
 use File::Basename;
@@ -78,54 +78,47 @@ use File::Spec;  # is a filename absolut or relative? Is needed for the output f
 #-----------------------------------------------------------------------------#
 # Globals
 
-our $VERSION = 0.01;
+our $VERSION = 0.02;
+
+our $ID = 'asc';
 
 # get a logger
 my $L = Log::Log4perl::get_logger();
-Log::Log4perl->init( \q(
-	log4perl.rootLogger                     = INFO, Screen
-	log4perl.appender.Screen                = Log::Log4perl::Appender::Screen
-	log4perl.appender.Screen.stderr         = 1
-	log4perl.appender.Screen.layout         = PatternLayout
-	log4perl.appender.Screen.layout.ConversionPattern = [%d{yy-MM-dd HH:mm:ss}] [%C] %m%n
-));
 
+my $log_cfg = 'log4perl.rootLogger                     = INFO, Screen
+log4perl.appender.Screen                = Log::Log4perl::Appender::Screen
+log4perl.appender.Screen.stderr         = 1
+log4perl.appender.Screen.layout         = PatternLayout
+log4perl.appender.Screen.layout.ConversionPattern = [%d{yy-MM-dd HH:mm:ss}] ['.$ID.'] %m%n
+';
 
-#-----------------------------------------------------------------------------#
-# Config
-
-# core
-my $core_cfg = "$RealBin/../chloroExtractor.cfg";
-my %cfg = Cfg->Read_Cfg($core_cfg);
-
-# user defaults and overwrite core
-my $user_cfg;
-for(my $i=0; $i<@ARGV; $i++){
-        if($ARGV[$i] =~ /-c$|--config$/){
-                $user_cfg = $ARGV[$i+1];
-                last;
-        }
-}
-
-%cfg = (%cfg, Cfg->Read_Cfg($user_cfg)) if $user_cfg; # simple overwrite
-my %opt = %{$cfg{asc}};
-
-#TODO: custom config
+Log::Log4perl->init( \$log_cfg );
 
 
 #-----------------------------------------------------------------------------#
 # GetOptions
+
+# opt: multi-params need to be initiated with ARRAYREF!
+my %opt = (
+    config => [],
+    in => [],
+    );
+
+# Setup defaults
+my %def = (
+    );
 
 GetOptions( # use %opt (Cfg) as defaults
 	\%opt, qw(
 		version|V!
 		debug|D!
 		help|h!
-		config|c=s
+		config|c=s{,}
                 out|o=s
 		workingdir|wd|w=s
 		overwrite!
-		in|i=s@
+		phrap_path=s
+		in|i=s{,}
 	)
 ) or $L->logcroak('Failed to "GetOptions"');
 
@@ -138,16 +131,62 @@ if($opt{version}){
 	exit 0;
 }
 
-# required stuff  
-for(qw(workingdir in out)){
-        pod2usage("required: --$_") unless defined ($opt{$_})
-};
+
+##----------------------------------------------------------------------------##
+# Config
+
+my %cfg;
+
+# core
+my $core_cfg = "$RealBin/../".basename($Script, qw(.pl)).".cfg";
+
+if(-e $core_cfg){
+    $opt{core_config} = File::Spec->rel2abs($core_cfg);
+    %cfg = (%cfg, Cfg->Read($opt{core_config}, $ID));
+}
+
+
+
+# read all configs
+if (@{$opt{config}}){
+    foreach my $cfg ( @{$opt{config}} ){
+	# $L->info("Reading config $cfg");
+	$cfg=File::Spec->rel2abs($cfg);
+	%cfg = (%cfg, Cfg->Read($cfg, $ID));
+    }
+}
+
+# create template for user cfg
+if(defined $opt{create_config}){
+    pod2usage(-msg => 'To many arguments', -exitval=>1) if @ARGV > 1;
+    my $user_cfg = Cfg->Copy($core_cfg, $opt{create_config}) or $L->logdie("Creatring config failed: $!");
+    $L->info("Created config file: $user_cfg");
+    exit 0;
+}
+
+
+# Merge opt and cfg
+%opt = (%cfg, %opt);
+
 
 # debug level
-$L->level($DEBUG) if $opt{debug};
-$L->debug('Verbose level set to DEBUG');
+$opt{quiet} && $L->level($WARN);
+$opt{debug} && $L->level($DEBUG);
 
 $L->debug(Dumper(\%opt));
+
+
+
+##----------------------------------------------------------------------------##
+# required	
+for(qw(in out workingdir)){
+    if(ref $opt{$_} eq 'ARRAY'){
+	pod2usage("required: --$_") unless @{$opt{$_}}
+    }else{
+	pod2usage("required: --$_") unless defined ($opt{$_})
+    }
+};
+
 
 
 
@@ -178,7 +217,7 @@ if (-e $renamedfile)
     {
 	$L->logdie("The file '$renamedfile' already exists! Use --overwrite in case you want to overwrite the file");
     } else {
-	$L->warning("The file '$renamedfile' already exists and will be overwritten");
+	$L->warn("The file '$renamedfile' already exists and will be overwritten");
     }
 }
 my $renamed = Fasta::Parser->new(
@@ -210,7 +249,7 @@ foreach my $inputfile (@{$opt{in}})
 
 $L->info("Running phrap...");
 my @cmd = (
-    $opt{phrap_path}."/phrap", 
+    $opt{phrap_path} ? $opt{phrap_path}."/phrap" : "phrap", 
     "-retain_duplicates", 
     $renamedfile
     );
