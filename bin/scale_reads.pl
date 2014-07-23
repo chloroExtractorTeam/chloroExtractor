@@ -151,6 +151,11 @@ if($opt{version}){
     exit 0;
 }
 
+# debug level
+$opt{quiet} && $L->level($WARN);
+$opt{debug} && $L->level($DEBUG);
+
+
 ##----------------------------------------------------------------------------##
 # Config
 
@@ -187,10 +192,15 @@ if(defined $opt{create_config}){
 # Merge opt and cfg
 %opt = (%cfg, %opt);
 
+
 ##----------------------------------------------------------------------------##
-# required stuff  
+# required	
 for(qw(reads mates ref_cluster kmer_hash)){
-    pod2usage("required: --$_") unless defined ($opt{$_}) || $opt{$_} eq "";
+    if(ref $opt{$_} eq 'ARRAY'){
+	pod2usage("required: --$_") unless @{$opt{$_}}
+    }else{
+	pod2usage("required: --$_") unless defined ($opt{$_})
+    }
 };
 
 
