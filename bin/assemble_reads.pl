@@ -83,14 +83,15 @@ our $ID = 'asr';
 
 # get a logger
 my $L = Log::Log4perl::get_logger();
-Log::Log4perl->init( \(q(
-	log4perl.rootLogger                     = INFO, Screen
-	log4perl.appender.Screen                = Log::Log4perl::Appender::Screen
-	log4perl.appender.Screen.stderr         = 1
-	log4perl.appender.Screen.layout         = PatternLayout
-	log4perl.appender.Screen.layout.ConversionPattern = [%d{yy-MM-dd HH:mm:ss}] [).$ID.q(] %m%n
-)));
 
+my $log_cfg = 'log4perl.rootLogger                     = INFO, Screen
+log4perl.appender.Screen                = Log::Log4perl::Appender::Screen
+log4perl.appender.Screen.stderr         = 1
+log4perl.appender.Screen.layout         = PatternLayout
+log4perl.appender.Screen.layout.ConversionPattern = [%d{yy-MM-dd HH:mm:ss}] ['.$ID.'] %m%n
+';
+
+Log::Log4perl->init( \$log_cfg );
 
 
 #-----------------------------------------------------------------------------#
@@ -124,7 +125,7 @@ GetOptions( # use %opt (Cfg) as defaults
  		velvet_out=s
 		velvet_path=s
  		extendmode
- 		append!
+		append!
 	)
 ) or $L->logcroak('Failed to "GetOptions"');
 
