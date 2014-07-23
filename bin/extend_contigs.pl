@@ -64,7 +64,7 @@ use Log::Log4perl::Level;
 use Data::Dumper;
 $Data::Dumper::Sortkeys = 1;
 
-use FindBin qw($RealBin);
+use FindBin qw($RealBin $Script);
 use lib "$RealBin/../lib/";
 
 use File::Basename;
@@ -81,43 +81,36 @@ use Cwd;
 #-----------------------------------------------------------------------------#
 # Globals
 
-our $VERSION = 0.01;
+our $VERSION = 0.02;
+
+our $ID = 'exc';
 
 # get a logger
 my $L = Log::Log4perl::get_logger();
-Log::Log4perl->init( \q(
-	log4perl.rootLogger                     = INFO, Screen
-	log4perl.appender.Screen                = Log::Log4perl::Appender::Screen
-	log4perl.appender.Screen.stderr         = 1
-	log4perl.appender.Screen.layout         = PatternLayout
-	log4perl.appender.Screen.layout.ConversionPattern = [%d{yy-MM-dd HH:mm:ss}] [%C] %m%n
-));
 
+my $log_cfg = 'log4perl.rootLogger                     = INFO, Screen
+log4perl.appender.Screen                = Log::Log4perl::Appender::Screen
+log4perl.appender.Screen.stderr         = 1
+log4perl.appender.Screen.layout         = PatternLayout
+log4perl.appender.Screen.layout.ConversionPattern = [%d{yy-MM-dd HH:mm:ss}] ['.$ID.'] %m%n
+';
 
-#-----------------------------------------------------------------------------#
-# Config
-
-# core
-my $core_cfg = "$RealBin/../chloroExtractor.cfg";
-my %cfg = Cfg->Read_Cfg($core_cfg);
-
-# user defaults and overwrite core
-my $user_cfg;
-for(my $i=0; $i<@ARGV; $i++){
-        if($ARGV[$i] =~ /-c$|--config$/){
-                $user_cfg = $ARGV[$i+1];
-                last;
-        }
-}
-
-%cfg = (%cfg, Cfg->Read_Cfg($user_cfg)) if $user_cfg; # simple overwrite
-my %opt = %{$cfg{exc}};
-
-#TODO: custom config
+Log::Log4perl->init( \$log_cfg );
 
 
 #-----------------------------------------------------------------------------#
 # GetOptions
+
+# opt: multi-params need to be initiated with ARRAYREF!
+my %opt = (
+    config => [],
+    in => [],
+    );
+
+# Setup defaults
+my %def = (
+    );
+
 
 GetOptions( # use %opt (Cfg) as defaults
 	\%opt, qw(
@@ -132,6 +125,7 @@ GetOptions( # use %opt (Cfg) as defaults
 		in|i=s
 		out|o=s
 		coverage=s
+		threads=i
 	)
 ) or $L->logcroak('Failed to "GetOptions"');
 
@@ -144,23 +138,68 @@ if($opt{version}){
 	exit 0;
 }
 
-# required stuff  
+
+##----------------------------------------------------------------------------##
+# Config
+
+my %cfg;
+
+# core
+my $core_cfg = "$RealBin/../".basename($Script, qw(.pl)).".cfg";
+
+if(-e $core_cfg){
+    $opt{core_config} = File::Spec->rel2abs($core_cfg);
+    %cfg = (%cfg, Cfg->Read($opt{core_config}, $ID));
+}
+
+
+
+# read all configs
+if (@{$opt{config}}){
+    foreach my $cfg ( @{$opt{config}} ){
+	# $L->info("Reading config $cfg");
+	$cfg=File::Spec->rel2abs($cfg);
+	%cfg = (%cfg, Cfg->Read($cfg, $ID));
+    }
+}
+
+# create template for user cfg
+if(defined $opt{create_config}){
+    pod2usage(-msg => 'To many arguments', -exitval=>1) if @ARGV > 1;
+    my $user_cfg = Cfg->Copy($core_cfg, $opt{create_config}) or $L->logdie("Creatring config failed: $!");
+    $L->info("Created config file: $user_cfg");
+    exit 0;
+}
+
+
+# Merge opt and cfg
+%opt = (%cfg, %opt);
+
+
+# debug level
+$opt{quiet} && $L->level($WARN);
+$opt{debug} && $L->level($DEBUG);
+
+$L->debug(Dumper(\%opt));
+
+
+
+##----------------------------------------------------------------------------##
+# required	
 for(qw(in out insert_size mates reads)){
-        pod2usage("required: --$_") unless defined ($opt{$_})
+    if(ref $opt{$_} eq 'ARRAY'){
+	pod2usage("required: --$_") unless @{$opt{$_}}
+    }else{
+	pod2usage("required: --$_") unless defined ($opt{$_})
+    }
 };
+
 
 ## check if the border was set, otherwise use 2x insert_size as default value
 unless (exists $opt{border} && $opt{border} > 0)
 {
     $opt{border} = $opt{insert_size}*2;
 }
-
-# debug level
-$L->level($DEBUG) if $opt{debug};
-$L->debug('Verbose level set to DEBUG');
-
-$L->debug(Dumper(\%opt));
-
 
 
 #-----------------------------------------------------------------------------#
@@ -172,7 +211,7 @@ $L->info("Generating 5' and 3' ends of contigs");
 
 #### first generate a FASTA file for 5' and 3' ends from input file
 my $fasta_in = Fasta::Parser->new(
-    file => $opt{in}
+    file => $opt{in}[0]
     );
 my $fasta_contig_ends=$opt{in}.'_contig_ends';
 my $fasta_out = Fasta::Parser->new(
@@ -193,33 +232,26 @@ while (my $contig=$fasta_in->next_seq())
     store_sequence_and_create_folder(name => $contig->id()."_3prime", seq => substr($contig->seq(), -$opt{border}), file_out => $fasta_out, seen_names => \%contig_ends_seen, filehandle => \%filehandles);
 }
 
-$L->info("Building bowtie2 index");
 
-my $bowtie2_db = $opt{in}.'_bowtie2_db';
 my $bowtie2 = Bowtie2->new(
     path => $opt{bowtie2_path},
-    log => $opt{bowtie2_log},
-    ref => $fasta_contig_ends,
-    pre => $bowtie2_db,
 );
 
-# TODO: bowtie2 generate db -> prevent issues with different indices on different architectures or bowtie2 versions
-$bowtie2->bowtie2_build();
-my $bis = $bowtie2->stdout;
-my $bie = $bowtie2->stderr;
+$L->info("Building bowtie2 index");
 
-$L->debug(<$bis>, <$bie>);
+$bowtie2->build($opt{in}[0]);
 
-$bowtie2->finish();
+##
+$L->info("FILEHANDLES:", Dumper(\%filehandles));
 
 $L->info("Running bowtie2");
 
-$bowtie2->bowtie2(
-    %{$opt{bowtie2_params}},
-    ref => undef,
+$bowtie2->run(
+    @{$opt{bowtie2_params}},
     "-1" => $opt{reads},
     "-2" => $opt{mates},
-    "-x" => $bowtie2_db,
+    "-x" => $fasta_contig_ends,
+    "-p" => $opt{threads} || 1,
 #    "--all" => '',           # generate all alignments
 );
 
@@ -291,11 +323,14 @@ while( my ($aln1, $aln2) = $sp->next_pair() ){
 
     foreach my $contig (@contig_name)
     {
+	$L->debug($contig);
 	$filehandles{$contig}{reads}->append_seq($first_read);
 	$filehandles{$contig}{mates}->append_seq($second_read);
 	$filehandles{$contig}{$mappingtype}++;
     }
 }
+
+$bowtie2->finish;
 
 $L->info("Border mapping statistics");
 
