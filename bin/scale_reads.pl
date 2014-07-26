@@ -6,11 +6,21 @@ scale_reads.pl
 
 =head1 DESCRIPTION
 
-Generate fastq library files with sufficient chloroplast coverage (200X). Coverage is deduced from coverage distributions of read mapping onto cluster of conserved CDS sequences. The mapping will be terminated as soon as enough chloroplast sequences have been found and fastq library files subsets will be created accordingly.
+Determine coverage of a target sequence population within a NGS read
+data set. Target sequence typically are host genome, organelle
+genomes, bacterial contaminants, plasmids, transposable elements ...
+
+Requirement for the estimation is reference library of representative
+sequences. This can be fragments either form the target organism, a
+close relative or a collection of homologs. The library should contain
+sequences of regular abundance with in the target sequence, abundance
+in the reference library does not play a role. Also the sequences
+should be unique to the target sequence and at best not occur in any
+other sequences within the sample.
 
 =head1 SYNOPSIS
 
-  $ perl scale_reads.pl -1 lib_1.fq -2 lib_2.fq -ref_cluster cds.fa -t 200
+  $ perl ngs_coverage.pl -1 lib_1.fq -2 lib_2.fq -r reference.fa -t 200
 
 =head1 OPTIONS
 
@@ -28,13 +38,28 @@ Input reads file, second of pair
 
 Output prefix.
 
-=item -r|--ref-cluster
+=item -r|--reference
 
-Reference sequences for mapping. Fasta or already created bowtie2 index prefix.
+Reference sequences for mapping. Fasta or already created bowtie2
+index prefix.
 
-=item -t|--target-coverage [200]
+=item -t|--target-coverage [0]
 
-Return read files with this estimated coverage.
+Return subsetted read files with this estimated coverage. 0 disables
+the feature.
+
+=item -m|--max-reads [10000]
+
+Use this many mapped reads for coverage computation.
+
+=item --[no]-ref-cov-hist [TRUE]
+
+Generate a coverage histgram from reads mapped onto
+reference.
+
+=item --threads [1]
+
+Number of threads in parallelizable steps.
 
 =item -c|--config
 
@@ -43,6 +68,10 @@ Use user customized config file. Superseeds default config.
 =item -V|--version
 
 Display version.
+
+=item --debug
+
+Report debug messages.
 
 =item -h|--help
 
@@ -107,40 +136,44 @@ our $ID = 'scr';
 # get a logger
 my $L = Log::Log4perl::get_logger();
 
-my $log_cfg = 'log4perl.rootLogger                     = INFO, Screen
-log4perl.appender.Screen                = Log::Log4perl::Appender::Screen
-log4perl.appender.Screen.stderr         = 1
-log4perl.appender.Screen.layout         = PatternLayout
-log4perl.appender.Screen.layout.ConversionPattern = [%d{yy-MM-dd HH:mm:ss}] ['.$ID.'] %m%n
-';
-
-Log::Log4perl->init( \$log_cfg );
-
+Log::Log4perl->init( \(q(
+	log4perl.rootLogger                     = INFO, Screen
+	log4perl.appender.Screen                = Log::Log4perl::Appender::Screen
+	log4perl.appender.Screen.stderr         = 1
+	log4perl.appender.Screen.layout         = PatternLayout
+	log4perl.appender.Screen.layout.ConversionPattern = [%d{yy-MM-dd HH:mm:ss}] [).$ID.q(] %m%n
+)));
 
 
 #-----------------------------------------------------------------------------#
 # GetOptions
 
+my %def = (
+    threads => 1,
+    target_coverage => 0,
+    max_reads => 10000,
+    rev_cov_hist => 1,
+);
+
+
 my %opt = (config => []);
 
 GetOptions( # use %opt (Cfg) as defaults
-	    \%opt, qw(
-                target_coverage|target-coverage|coverage=i
-                reads|1=s
-                mates|2=s
-		ref_cluster|ref-cluster|r=s
-		kmer_hash|kmer-hash=s
-		max_reads|max-reads=i
-		out|o=s
-		bowtie2_bin|bowtie2-bin=s
-		jellyfish_bin|jellyfish-bin=s
-		threads=i
-		version|V!
-		debug|D!
-		help|h!
-		config|c=s{,}
-	)
-    ) or $L->logcroak('Failed to "GetOptions"');
+    \%opt, qw(
+                 reads|1=s
+                 mates|2=s
+                 out|o=s
+                 reference|ref-cluster|r=s
+                 target_coverage|target-coverage|coverage=i
+                 max_reads|max-reads|m=i
+                 rev_cov_hist|rev-cov-hist!
+                 threads=i
+                 config|c=s{,}
+                 version|V!
+                 debug|D!
+                 help|h!
+         )
+) or $L->logcroak('Failed to "GetOptions"');
 
 # help
 $opt{help} && pod2usage(1);
@@ -190,18 +223,21 @@ if(defined $opt{create_config}){
 
 
 # Merge opt and cfg
-%opt = (%cfg, %opt);
+%opt = (%def, %cfg, %opt);
 
 
 ##----------------------------------------------------------------------------##
 # required	
-for(qw(reads mates ref_cluster kmer_hash)){
+for(qw(reads mates reference target_coverage max_reads)){
     if(ref $opt{$_} eq 'ARRAY'){
 	pod2usage("required: --$_") unless @{$opt{$_}}
     }else{
 	pod2usage("required: --$_") unless defined ($opt{$_})
     }
 };
+
+# required binaries
+Cfg->Check_binaries(qw(bowtie2 jellyfish samtools bedtools));     
 
 
 # debug level
@@ -228,11 +264,11 @@ my $bowtie2 = Bowtie2->new(
 # TODO: bowtie2 generate db -> prevent issues with different indices
 # on different architectures or bowtie2 versions
 
-unless(-e $opt{ref_cluster}.'.1.bt2'){
+unless(-e $opt{reference}.'.1.bt2'){
     $L->info("Building bowtie2 index");
-    $bowtie2->build($opt{ref_cluster});
+    $bowtie2->build($opt{reference});
 }else{
-    $L->info("Using existing bowtie2 index $opt{ref_cluster}.*.bt2");
+    $L->info("Using existing bowtie2 index $opt{reference}.*.bt2");
 }
 
 $L->info("Running bowtie2");
@@ -241,7 +277,7 @@ $bowtie2->run(
     @{$opt{bowtie2_params}},
     "-1" => $opt{reads},
     "-2" => $opt{mates},
-    "-x" => $opt{ref_cluster},
+    "-x" => $opt{reference},
     "-p" => $opt{threads} || 1
     );
 
@@ -252,10 +288,10 @@ my $sp = Sam::Parser->new(
     fh => $bowtie2->stdout
     );
 
-my $bam = $opt{out}."-cds.bam";
+my $bam = $opt{out}."-ref.bam";
 open(BAM, "| samtools view -Sbu /dev/fd/0 > $bam") or $L->logdie($!);
-open(BED, ">", $opt{out}."-cds.bed") or $L->logdie($!);
-open(FQ, ">", $opt{out}."-cds.fq") or $L->logdie($!);
+open(BED, ">", $opt{out}."-ref.bed") or $L->logdie($!);
+open(FQ, ">", $opt{out}."-ref.fq") or $L->logdie($!);
 
 my %h; 
 my $ss;
@@ -312,8 +348,10 @@ close BAM;
 close FQ;
 
 
-$L->info("Recalculating accurate per base coverages");
-bam_coverage($opt{out});
+if ($opt{rev_cov_hist}){
+    $L->info("Recalculating accurate per base coverages");
+    bam_coverage($opt{out});
+}
 
 
 if($c < $opt{max_reads}){
@@ -344,31 +382,27 @@ print "insert_size\t", int($tlen_sum/$seqwithtlen), "\n";
 print "closest_ref\t", $closest_ref || 'NA', "\n";
 
 
+if($opt{target_coverage}){
+    $L->info("Creating libraries");
 
-$L->info("Creating libraries");
-
-
-
-my $current_reads = qx/wc -l <$opt{reads}/ / 4;
-my $target_reads = int($current_reads / $current_cov * $opt{target_coverage});
-
-$L->debug("Got $current_reads reads, extracting $target_reads reads");
-
-my $target_lines = $target_reads * 4;
-
-my $sed_cmd1 = "sed '".$target_lines."q' ".$opt{reads}." >".$opt_o1;
-
-$L->debug($sed_cmd1);
-qx($sed_cmd1);
-
-my $sed_cmd2 = "sed '".$target_lines."q' ".$opt{mates}." >".$opt_o2;
-
-$L->debug($sed_cmd2);
-qx($sed_cmd2);
-
-
-
-
+    my $current_reads = qx/wc -l <$opt{reads}/ / 4;
+    my $target_reads = int($current_reads / $current_cov * $opt{target_coverage});
+    
+    $L->info("Got $current_reads reads, extracting $target_reads reads");
+    
+    my $target_lines = $target_reads * 4;
+    
+    my $sed_cmd1 = "sed '".$target_lines."q' ".$opt{reads}." >".$opt_o1;
+    
+    $L->debug($sed_cmd1);
+    qx($sed_cmd1);
+    
+    my $sed_cmd2 = "sed '".$target_lines."q' ".$opt{mates}." >".$opt_o2;
+    
+    $L->debug($sed_cmd2);
+    qx($sed_cmd2);
+}
+    
 
 
 #-- SUBS ----------------------------------------------------------------------#
@@ -385,49 +419,36 @@ sub median {
 
 sub estimate_kmer_coverage{
     my $c = shift;
-    my ($reads) = $opt{out}."-cds.fq";
+    my $core_reads = $opt{out}."-ref.fq";
+    my $jff = $opt{out}.".jf";
+
+    # jellyfish pt counts
+    $L->info("Running jellyfish");
+    my $jf_count = join(" ", $opt{jellyfish_bin} ? $opt{jellyfish_bin}."/jellyfish" : "jellyfish",
+			qw(count -m 19 -s 10M -C -L 20),
+			"-t" => $opt{threads},
+			"--if" => $core_reads, 
+			"--output" => $jff, 
+			$opt{reads},
+			$opt{mates});
+
+    my $jf_count_re = qx/$jf_count/;
     
-    my $jf = Jellyfish->new(
-	$opt{jellyfish_bin} ? (bin => $opt{jellyfish_bin}."/jellyfish") : ()
-	);
+    $L->logdie($jf_count_re) if $jf_count_re;
 
-    $L->debug("Running jellyfish");
+    # dump and R stat counts
+    my $R = q/counts <- read.table(pipe('jellyfish dump -c --tab /.$jff.q/ | cut -f2 '), header=F);/
+	.q/summary(counts[,1])/;
+    $L->debug("Running R: '$R'");
+    my @Rr = qx(echo "$R" | R --vanilla --slave);
 
-    # hashing collapses ident. kmers
-    my %counts = $jf->query(["--sequence", $reads, $opt{kmer_hash}]); 
+    $L->logdie(@Rr) unless $Rr[0] =~ /^\s+Min./;
 
-    my %hist;
-    while(my ($k,$v) = each %counts){
-	
-	if($v){
-	    $hist{$v}++;
-	}else{
-	    delete $counts{$k}
-	}
-    }
+    my ($min, $q25, $med, $q75, $max) = split(/\s+/, $Rr[1]);
 
-    my $total_count = 0;
-    $total_count += $_ for values %hist;
+    $L->info("\n", @Rr);
 
-    open(HIST, ">", $opt{out}."-cds-kmer-cov.tsv") or $L->logdie($!);
-    
-    my $cum_count = 0;
-    my $med_cov;
-    foreach (sort{$a<=>$b}keys %hist){
-	$cum_count += $hist{$_};
-	$med_cov = $_ if $cum_count < $total_count/2;
-	$L->debug($med_cov," ", $cum_count," ",$total_count);
-	print HIST $_,"\t",$hist{$_},"\n";
-    }
-
-    close HIST;
-
-    my $cov = $med_cov * 1.1;  # kmer cov underestimates
-
-    $L->debug("Estimated coverage of $cov based on ",scalar keys %counts," kmers");
-
-    return $cov;
-
+    return $med;
 }
 
 
@@ -440,11 +461,11 @@ Compute per contig coverage using bedtools and write to file.
 
 sub bam_coverage{
     my ($pre) = @_;
-    my $bam = $pre."-cds.bam";
-    my $bed = $pre."-cds.bed";
-    my $pre_sorted = $pre."-cds-sorted";
-    my $bam_sorted = $pre."-cds-sorted.bam";
-    my $tsv = $pre."-cds-bp-cov.tsv";
+    my $bam = $pre."-ref.bam";
+    my $bed = $pre."-ref.bed";
+    my $pre_sorted = $pre."-ref-sorted";
+    my $bam_sorted = $pre."-ref-sorted.bam";
+    my $tsv = $pre."-ref-bp-cov.tsv";
     my $head = '"id\tposition\tcoverage"';
     my $re;
     $re = qx/samtools sort $bam $pre_sorted/ && $L->warn($re);
