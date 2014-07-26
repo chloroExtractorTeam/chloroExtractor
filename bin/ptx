@@ -215,6 +215,7 @@ for(qw(mates reads)){
 
 # debug level
 $L->level($DEBUG) if $opt{debug};
+$opt{_log_level} = $opt{debug} ? '--debug' : '';
 $L->debug('Verbose level set to DEBUG');
 
 $L->debug(Dumper(\%opt));
@@ -252,6 +253,9 @@ my $pl = PipeWrap->new(
 );
 
 while(my $tid = $pl->run()){
+    if(my $re =$pl->trace_task_results->{$tid}){
+	$L->info("$tid returned:\n", Dumper($re));
+    }
     last if $opt{stop} && $tid eq $opt{stop};
 }
 
