@@ -420,17 +420,19 @@ sub median {
 sub estimate_kmer_coverage{
     my $c = shift;
     my $core_reads = $opt{out}."-ref.fq";
-    my $jff = $opt{out}.".jf";
+    my $jff = $opt{out}."-ref.jf";
 
     # jellyfish pt counts
     $L->info("Running jellyfish");
-    my $jf_count = join(" ", $opt{jellyfish_bin} ? $opt{jellyfish_bin}."/jellyfish" : "jellyfish",
+    my $jf_count = join(" ",
+                        "jellyfish",
 			qw(count -m 19 -s 10M -C -L 20),
 			"-t" => $opt{threads},
 			"--if" => $core_reads, 
 			"--output" => $jff, 
-			$opt{reads},
-			$opt{mates});
+                        $opt{reads},
+			$opt{mates}
+                       );
 
     my $jf_count_re = qx/$jf_count/;
     
