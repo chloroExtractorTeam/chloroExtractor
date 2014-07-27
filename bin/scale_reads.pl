@@ -378,6 +378,7 @@ if(! $current_cov || $current_cov < $opt{target_coverage}){
 $closest_ref = (sort{$refs{$b} <=> $refs{$a}}keys %refs)[0];
 
 print "coverage\t", $current_cov, "\n";
+print "target_coverage\t", $opt{target_coverage}, "\n";
 print "insert_size\t", int($tlen_sum/$seqwithtlen), "\n";
 print "closest_ref\t", $closest_ref || 'NA', "\n";
 

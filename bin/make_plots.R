@@ -26,8 +26,8 @@ scr <-function(){
     data <- data[data < 4*med]
     data.hist <- hist(data, breaks=200, plot=F);
     data.hist.df <- data.frame(coverage=data.hist$mids, frequency=data.hist$counts)
-    print(data.hist.df)
-    # from histo
+
+    # DEPRECATED: from histo
     #data.raw <- read.table(pipe('jellyfish histo scr-ref.jf'), header=F);
     #med <- data.raw[,1][cumsum(data.raw[,2]) > sum(data.raw[,2])/2][1];
 
@@ -38,8 +38,6 @@ scr <-function(){
     #data <- data.raw
     
     data.ex = get_extrema(data.hist.df, peaks=c(med));
-    print(med);
-    print(data.ex);
     plot(data.hist.df, 
     	      type="n", 
     	      main="kmer-coverage of seed reads",
