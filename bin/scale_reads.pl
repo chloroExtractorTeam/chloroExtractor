@@ -439,14 +439,21 @@ sub estimate_kmer_coverage{
     $L->logdie($jf_count_re) if $jf_count_re;
 
     # dump and R stat counts
-    my $R = q/counts <- read.table(pipe('jellyfish dump -c --tab /.$jff.q/ | cut -f2 '), header=F);/
-	.q/summary(counts[,1])/;
+    # my $R = q/counts <- read.table(pipe('jellyfish dump -c --tab /.$jff.q/ | cut -f2 '), header=F);/   #   .q/summary(counts[,1])/;
+
+    my $R = <<'RSCRIPT';
+data <- read.table(pipe('jellyfish histo -h 1000000 scr-ref.jf'), header=F);
+med = data[,1][cumsum(data[,2]) > sum(data[,2])/2][1];
+print(med);
+RSCRIPT
+
     $L->debug("Running R: '$R'");
     my @Rr = qx(echo "$R" | R --vanilla --slave);
+    $L->debug("R:\n", @Rr);
 
-    $L->logdie(@Rr) unless $Rr[0] =~ /^\s+Min./;
-
-    my ($min, $q25, $med, $q75, $max) = split(/\s+/, $Rr[1]);
+    $L->logdie(@Rr) unless $Rr[0] =~ /^\[1\]/;
+    
+    my ($r, $med) = split(/\s+/, $Rr[0]);
 
     $L->info("\n", @Rr);
 
