@@ -52,6 +52,10 @@ the feature.
 
 Use this many mapped reads for coverage computation.
 
+=item --kmer-size [31]
+
+Utilized kmer size.
+
 =item --[no]-ref-cov-hist [TRUE]
 
 Generate a coverage histgram from reads mapped onto
@@ -149,10 +153,11 @@ Log::Log4perl->init( \(q(
 # GetOptions
 
 my %def = (
-    threads => 1,
-    target_coverage => 0,
-    max_reads => 10000,
-    rev_cov_hist => 1,
+           threads => 1,
+           target_coverage => 0,
+           max_reads => 10000,
+           rev_cov_hist => 1,
+           kmer_size => 31,
 );
 
 
@@ -167,6 +172,7 @@ GetOptions( # use %opt (Cfg) as defaults
                  target_coverage|target-coverage|coverage=i
                  max_reads|max-reads|m=i
                  rev_cov_hist|rev-cov-hist!
+                 kmer_size|kmer-size
                  threads=i
                  config|c=s{,}
                  version|V!
@@ -427,7 +433,8 @@ sub estimate_kmer_coverage{
     $L->info("Running jellyfish");
     my $jf_count = join(" ",
                         "jellyfish",
-			qw(count -m 19 -s 10M -C -L 20),
+			qw(count -s 10M -C -L 20),
+                        "-m" => $opt{kmer_size},
 			"-t" => $opt{threads},
 			"--if" => $core_reads, 
 			"--output" => $jff, 
