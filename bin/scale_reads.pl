@@ -442,11 +442,11 @@ sub estimate_kmer_coverage{
     # dump and R stat counts
     # my $R = q/counts <- read.table(pipe('jellyfish dump -c --tab /.$jff.q/ | cut -f2 '), header=F);/   #   .q/summary(counts[,1])/;
 
-    my $R = <<'RSCRIPT';
-data <- read.table(pipe('jellyfish histo -h 1000000 scr-ref.jf'), header=F);
-med = data[,1][cumsum(data[,2]) > sum(data[,2])/2][1];
-print(med);
-RSCRIPT
+    my $R = q{data <- read.table(pipe('jellyfish histo -h 1000000 }
+      .$opt{out}."-ref.jf"
+        .q{'), header=F);}
+          .q{med = data[,1][cumsum(data[,2]) > sum(data[,2])/2][1];}
+            .q{print(med);};
 
     $L->debug("Running R: '$R'");
     my @Rr = qx(echo "$R" | R --vanilla --slave);
@@ -456,7 +456,7 @@ RSCRIPT
     
     my ($r, $med) = split(/\s+/, $Rr[0]);
 
-    $L->info("\n", @Rr);
+    $L->info("Estimated coverage\n", @Rr);
 
     return $med;
 }
