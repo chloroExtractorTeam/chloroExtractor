@@ -21,6 +21,7 @@ scr <-function(){
     pdf("scr-seeds.pdf", width=10, height=6);
 
     # from seed reads
+    print("Reading seed kmers");
     scr <- read.table(pipe('jellyfish dump -c --tab scr-ref.jf | cut -f2'), header=F);
     med <- median(scr[,1]);
     scr <- scr[scr < 4*med]
@@ -29,6 +30,7 @@ scr <-function(){
     scr.ex = get_extrema(scr.hist.df, peaks=c(med));
     
     # from entire input
+    print("Reading total kmers");
     raw <- read.table(pipe('jellyfish dump -c --tab jf0.jf | cut -f2'), header=F);
     raw <- raw[raw < 4*med]
     raw.hist <- hist(raw, breaks=600, plot=F);
@@ -45,7 +47,7 @@ scr <-function(){
     # cut(scr, breaks=, labels= ...)
     #scr <- scr.raw
     
-
+    print("Plotting seed and total kmers");
     plot(scr.hist.df, 
     	      type="n", 
     	      main="kmer-coverage of seed reads",
