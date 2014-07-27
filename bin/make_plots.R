@@ -18,46 +18,56 @@ unknown_task <- function(task){
 
 scr <-function(){
 
-    pdf("scr-seeds.pdf", width=10, height=5);
+    pdf("scr-seeds.pdf", width=10, height=6);
 
-    # from dump
-    data <- read.table(pipe('jellyfish dump -c --tab scr-ref.jf | cut -f2'), header=F);
-    med <- median(data[,1]);
-    data <- data[data < 4*med]
-    data.hist <- hist(data, breaks=200, plot=F);
-    data.hist.df <- data.frame(coverage=data.hist$mids, frequency=data.hist$counts)
-
+    # from seed reads
+    scr <- read.table(pipe('jellyfish dump -c --tab scr-ref.jf | cut -f2'), header=F);
+    med <- median(scr[,1]);
+    scr <- scr[scr < 4*med]
+    scr.hist <- hist(scr, breaks=200, plot=F);
+    scr.hist.df <- data.frame(coverage=scr.hist$mids, frequency=scr.hist$counts)
+    scr.ex = get_extrema(scr.hist.df, peaks=c(med));
+    
+    # from entire input
+    raw <- read.table(pipe('jellyfish dump -c --tab jf0.jf | cut -f2'), header=F);
+    raw <- raw[raw < 4*med]
+    raw.hist <- hist(raw, breaks=600, plot=F);
+    raw.hist.df <- data.frame(coverage=raw.hist$mids, frequency=raw.hist$counts)
+    raw.ex = get_extrema(raw.hist.df, peaks=c(med));
+    
     # DEPRECATED: from histo
-    #data.raw <- read.table(pipe('jellyfish histo scr-ref.jf'), header=F);
-    #med <- data.raw[,1][cumsum(data.raw[,2]) > sum(data.raw[,2])/2][1];
+    #scr.raw <- read.table(pipe('jellyfish histo scr-ref.jf'), header=F);
+    #med <- scr.raw[,1][cumsum(scr.raw[,2]) > sum(scr.raw[,2])/2][1];
 
     # TODO
     # bin the median to 100 for plotting
     # binsize <- med/100
-    # cut(data, breaks=, labels= ...)
-    #data <- data.raw
+    # cut(scr, breaks=, labels= ...)
+    #scr <- scr.raw
     
-    data.ex = get_extrema(data.hist.df, peaks=c(med));
-    plot(data.hist.df, 
+
+    plot(scr.hist.df, 
     	      type="n", 
     	      main="kmer-coverage of seed reads",
     	      xlab="coverage",
     	      ylab="frequency",
-    	      xlim=c(1,data.ex$cov*3),
-    	      ylim=c(0,data.ex$freq*1.5)
+    	      xlim=c(1,scr.ex$cov*3),
+    	      ylim=c(0,raw.ex$freq*1.5)
     );
 
-    lines(data.hist.df, col=cl[2], lwd=3);
+    lines(scr.hist.df, col=cl[2], lwd=3);
+    lines(raw.hist.df, col=cl[4], lwd=3);
     abline(v=med);
-    add_psizes(data.ex);
+    add_psizes(scr.ex);
+    add_psizes(raw.ex);
 
     legend(
     	"topright",
-    	c("scr-seeds"),
+    	c("scr-seeds", "total data (x 1/3)"),
     	lwd=3,
-    	lty=c(1),
+    	lty=c(1,1),
     	seg.len=2, 
-    	col=cl[c(2)]
+    	col=cl[c(2,4)]
     );
 
     dev.off()
