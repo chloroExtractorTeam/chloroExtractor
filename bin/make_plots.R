@@ -69,20 +69,23 @@ scr <-function(){
 kfr <- function(coverage){
 
     pdf("kfr.pdf", width=10, height=5);
-    
+    coverage <- as.integer(coverage)
     # kmer filter
-    scr<-read.table(pipe('jellyfish histo scr.jf'), header=F);
-    kfr1<-read.table(pipe('jellyfish histo kfr1.jf'), header=F);
-    kfr2<-read.table(pipe('jellyfish histo kfr2.jf'), header=F);
+    scr <- read.table(pipe('jellyfish histo scr.jf'), header=F);
+    scr <- scr[scr[,1]<4*coverage,]
+    kfr1 <- read.table(pipe('jellyfish histo kfr1.jf'), header=F);
+    kfr1 <- kfr1[kfr1[,1]<4*coverage,]
+    kfr2 <- read.table(pipe('jellyfish histo kfr2.jf'), header=F);
+    kfr2 <- kfr2[kfr2[,1]<4*coverage,]
 
-    kfr2.ex = get_extrema(kfr2, peaks=c(coverage));
-  
+    kfr2.ex <- get_extrema(kfr2, peaks=c(coverage/2, coverage));
+
     plot(kfr2, 
     	      type="n", 
     	      main="kmer-coverage of subsetted and filtered data sets",
     	      xlab="coverage",
     	      ylab="frequency",
-	      xlim=c(1,kfr2.ex$cov*3),
+	      xlim=c(1,coverage*3),
 	      ylim=c(0,kfr2.ex$freq*2)
     );
 
@@ -184,8 +187,8 @@ get_extrema <- function(data,peaks){
         psizes=c(psizes,sum(apply(data[p2p,], MARGIN=1, FUN=prod)))
     }
   
-    cov=max(cmaxs)
-    freq=fmaxs[which.max(cmaxs)]
+    cov=cmaxs[which.max(fmaxs)]
+    freq=max(fmaxs)
     
     tbp=sum(apply(data, MARGIN=1, FUN=prod))
     
