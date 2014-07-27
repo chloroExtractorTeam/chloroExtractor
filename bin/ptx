@@ -231,7 +231,10 @@ $L->debug(Dumper(\%opt));
 $opt{reads} = File::Spec->rel2abs($opt{reads}) if defined $opt{reads};  
 $opt{mates} = File::Spec->rel2abs($opt{mates}) if defined $opt{mates};  
 
-$opt{data_cds} = File::Spec->rel2abs($RealBin.'/../data/cds.nr98.fa');
+for($opt{reads}, $opt{mates}){
+  $L->logdie("Cannot find file $_") unless -e $_;
+}
+
 
 # prepare folder structure
 prep_dir($opt{dir} || '.', $opt{redo});
