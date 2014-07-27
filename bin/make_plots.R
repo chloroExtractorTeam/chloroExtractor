@@ -19,15 +19,28 @@ unknown_task <- function(task){
 scr <-function(){
 
     pdf("scr-seeds.pdf", width=10, height=5);
+
+    # from dump
+    data <- read.table(pipe('jellyfish dump -c --tab scr-ref.jf | cut -f2'), header=F);
+    med <- median(data[,1]);
+    data <- data[data < 4*med]
+    data.hist <- hist(data, breaks=200, plot=F);
+    data.hist.df <- data.frame(coverage=data.hist$mids, frequency=data.hist$counts)
+    print(data.hist.df)
+    # from histo
+    #data.raw <- read.table(pipe('jellyfish histo scr-ref.jf'), header=F);
+    #med <- data.raw[,1][cumsum(data.raw[,2]) > sum(data.raw[,2])/2][1];
+
+    # TODO
+    # bin the median to 100 for plotting
+    # binsize <- med/100
+    # cut(data, breaks=, labels= ...)
+    #data <- data.raw
     
-    # cds cluster
-    data <- read.table(pipe('jellyfish histo scr-ref.jf'), header=F);
-
-    med = data[,1][cumsum(data[,2]) > sum(data[,2])/2][1];
-
-    data.ex = get_extrema(data, peaks=c(med));
-
-    plot(data, 
+    data.ex = get_extrema(data.hist.df, peaks=c(med));
+    print(med);
+    print(data.ex);
+    plot(data.hist.df, 
     	      type="n", 
     	      main="kmer-coverage of seed reads",
     	      xlab="coverage",
@@ -36,7 +49,7 @@ scr <-function(){
     	      ylim=c(0,data.ex$freq*1.5)
     );
 
-    lines(data, col=cl[2], lwd=3);
+    lines(data.hist.df, col=cl[2], lwd=3);
     abline(v=med);
     add_psizes(data.ex);
 
@@ -85,7 +98,7 @@ kfr <- function(coverage){
 
     legend(
 	"topright",
-    	c("scr","kfr2","kfr2" ),
+    	c("scr","kfr1","kfr2" ),
     	lwd=3,
     	lty=c(1,1,1),
     	seg.len=2, 
@@ -139,8 +152,9 @@ get_extrema <- function(data,peaks){
             p1=0
         }
         p2=peaks[i];
-        cmins=c(cmins,data[,1][p1:p2][which.min(data[,2][p1:p2])])
-        fmins=c(fmins,data[,2][p1:p2][which.min(data[,2][p1:p2])])
+        p2p=data[,1] >= p1 & data[,1] < p2;
+        cmins=c(cmins,data[,1][p2p][which.min(data[,2][p2p])])
+        fmins=c(fmins,data[,2][p2p][which.min(data[,2][p2p])])
     }
     
                                         # peak max
@@ -149,28 +163,31 @@ get_extrema <- function(data,peaks){
     for ( i in 1:length(cmins) ){
         p1=cmins[i];
         if(i==length(cmins)){ 
-            p2=length(data[,2])
+            p2=data[,1][length(data[,1])]
         }else{ 
             p2=cmins[i+1]
         }
-        cmaxs=c(cmaxs,data[,1][p1:p2][which.max(data[,2][p1:p2])])
-        fmaxs=c(fmaxs,data[,2][p1:p2][which.max(data[,2][p1:p2])])
+
+        p2p=data[,1] >= p1 & data[,1] < p2;
+        cmaxs=c(cmaxs,data[,1][p2p][which.max(data[,2][p2p])])
+        fmaxs=c(fmaxs,data[,2][p2p][which.max(data[,2][p2p])])
     }
     
     psizes=c();
     for ( i in 1:length(cmins) ){
         p1= cmins[i];
-        if(i==length( cmins)){ 
-            p2=length(data[,2])
+        if(i==length( cmins)){
+            p2=data[,1][length(data[,1])]
         }else{ 
             p2= cmins[i+1]
         }
-        
-        psizes=c(psizes,sum(apply(data[p1:p2,], MARGIN=1, FUN=prod)))
+
+        p2p=data[,1] >= p1 & data[,1] < p2;
+        psizes=c(psizes,sum(apply(data[p2p,], MARGIN=1, FUN=prod)))
     }
   
-    cov=cmaxs[which.max(data[,2][cmaxs])]
-    freq=fmaxs[which.max(data[,2][cmaxs])]
+    cov=max(cmaxs)
+    freq=fmaxs[which.max(cmaxs)]
     
     tbp=sum(apply(data, MARGIN=1, FUN=prod))
     
