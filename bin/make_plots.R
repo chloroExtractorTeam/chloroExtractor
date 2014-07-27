@@ -10,7 +10,7 @@ run_task <- function(task, ...){
 
 
 unknown_task <- function(task){
-    print(paste("Unknown task:", task), quote=F); 
+    write(paste("Unknown task:", task), stderr()); 
     quit(status = 1);
 }
 
@@ -21,7 +21,7 @@ scr <-function(){
     pdf("scr-seeds.pdf", width=10, height=6);
 
     # from seed reads
-    print("Reading seed kmers");
+    write("Reading seed kmers", stderr());
     scr <- read.table(pipe('jellyfish dump -c --tab scr-ref.jf | cut -f2'), header=F);
     med <- median(scr[,1]);
     scr <- scr[scr < 4*med]
@@ -30,7 +30,7 @@ scr <-function(){
     scr.ex = get_extrema(scr.hist.df, peaks=c(med));
     
     # from entire input
-    print("Reading total kmers");
+    write("Reading total kmers", stderr());
     raw <- read.table(pipe('jellyfish dump -c --tab jf0.jf | cut -f2'), header=F);
     raw <- raw[raw < 4*med]
     raw.hist <- hist(raw, breaks=600, plot=F);
@@ -47,14 +47,14 @@ scr <-function(){
     # cut(scr, breaks=, labels= ...)
     #scr <- scr.raw
     
-    print("Plotting seed and total kmers");
+    write("Plotting seed and total kmers", stderr());
     plot(scr.hist.df, 
     	      type="n", 
     	      main="kmer-coverage of seed reads",
     	      xlab="coverage",
     	      ylab="frequency",
     	      xlim=c(1,scr.ex$cov*3),
-    	      ylim=c(0,raw.ex$freq*1.5)
+    	      ylim=c(0,scr.ex$freq*3)
     );
 
     lines(scr.hist.df, col=cl[2], lwd=3);
