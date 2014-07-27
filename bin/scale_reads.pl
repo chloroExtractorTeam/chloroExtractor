@@ -172,7 +172,7 @@ GetOptions( # use %opt (Cfg) as defaults
                  target_coverage|target-coverage|coverage=i
                  max_reads|max-reads|m=i
                  rev_cov_hist|rev-cov-hist!
-                 kmer_size|kmer-size
+                 kmer_size|kmer-size=i
                  threads=i
                  config|c=s{,}
                  version|V!
@@ -442,6 +442,7 @@ sub estimate_kmer_coverage{
 			$opt{mates}
                        );
 
+    $L->debug($jf_count);
     my $jf_count_re = qx/$jf_count/;
     
     $L->logdie($jf_count_re) if $jf_count_re;
