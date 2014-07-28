@@ -37,7 +37,7 @@ scr <-function(){
     raw.hist.df <- data.frame(coverage=raw.hist$mids, frequency=raw.hist$counts/3)
     #raw.ex = get_extrema(raw.hist.df, peaks=c(med, med/2));
 
-    raw.scr.peak = max(raw.hist.df$frequency[raw.hist.df$cov > scr.ex$cov/2 & raw.hist.df$cov <= scr.ex$cov*1.2])
+    raw.scr.peak = max(raw.hist.df$frequency[raw.hist.df$coverage > scr.ex$cov/2 & raw.hist.df$coverage <= scr.ex$cov*1.2])
     # DEPRECATED: from histo
     #scr.raw <- read.table(pipe('jellyfish histo scr-ref.jf'), header=F);
     #med <- scr.raw[,1][cumsum(scr.raw[,2]) > sum(scr.raw[,2])/2][1];
