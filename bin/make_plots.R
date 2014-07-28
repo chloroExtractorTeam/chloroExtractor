@@ -34,8 +34,9 @@ scr <-function(){
     raw <- read.table(pipe('jellyfish dump -c --tab jf0.jf | cut -f2'), header=F);
     raw <- raw[raw < 4*med]
     raw.hist <- hist(raw, breaks=200, plot=F);
-    raw.hist.df <- data.frame(coverage=raw.hist$mids, frequency=raw.hist$counts)
-    raw.ex = get_extrema(raw.hist.df, peaks=c(med, med/2));
+    raw.hist.df <- data.frame(coverage=raw.hist$mids, frequency=raw.hist$counts/3)
+    #raw.ex = get_extrema(raw.hist.df, peaks=c(med, med/2));
+
     raw.scr.peak = max(raw.hist.df$frequency[raw.hist.df$cov > scr.ex$cov/2 & raw.hist.df$cov <= scr.ex$cov*1.2])
     # DEPRECATED: from histo
     #scr.raw <- read.table(pipe('jellyfish histo scr-ref.jf'), header=F);
@@ -50,28 +51,37 @@ scr <-function(){
     # TODO -> max(raw:med raw:med/2)
     
     write("Plotting seed and total kmers", stderr());
-    plot(scr.hist.df, 
-    	      type="n", 
-    	      main="kmer-coverage of seed reads",
-    	      xlab="coverage",
-    	      ylab="frequency",
-    	      xlim=c(1,scr.ex$cov*3),
-    	      ylim=c(0,raw.scr.peak*1.5)
-    );
+    ## plot(scr.hist.df, 
+    ##      type="n", 
+    ##      main="kmer-coverage of seed reads",
+    ##      xlab="coverage",
+    ##      ylab="frequency",
+    ##      xlim=c(1,scr.ex$cov*3),
+    ##      ylim=c(0,raw.scr.peak*1.5)
+    ##      );
 
-    lines(scr.hist.df, col=cl[2], lwd=3);
+    plot(scr.hist,
+         main="kmer-coverage of plastid seed reads",
+         xlab="coverage",
+         ylab="frequency",
+         xlim=c(1,scr.ex$cov*3),
+         ylim=c(0,raw.scr.peak*1.5),
+         col=cl[2]
+         );
+    
+    #lines(scr.hist.df, col=cl[2], lwd=3);
     lines(raw.hist.df, col=cl[4], lwd=3);
-    abline(v=med);
+    abline(v=med, lwd=3, col=cl[1]);
     add_psizes(scr.ex);
-    add_psizes(raw.ex);
+    #add_psizes(raw.ex);
 
     legend(
     	"topright",
-    	c("scr-seeds", "total data (x 1/3)"),
+    	c("plastid seed kmers", "total data kmers (30%)", "plastid coverage"),
     	lwd=3,
-    	lty=c(1,1),
+    	lty=c(1,1,1),
     	seg.len=2, 
-    	col=cl[c(2,4)]
+    	col=cl[c(2,4,1)]
     );
 
     dev.off()
