@@ -33,10 +33,10 @@ scr <-function(){
     write("Reading total kmers", stderr());
     raw <- read.table(pipe('jellyfish dump -c --tab jf0.jf | cut -f2'), header=F);
     raw <- raw[raw < 4*med]
-    raw.hist <- hist(raw, breaks=600, plot=F);
+    raw.hist <- hist(raw, breaks=200, plot=F);
     raw.hist.df <- data.frame(coverage=raw.hist$mids, frequency=raw.hist$counts)
-    raw.ex = get_extrema(raw.hist.df, peaks=c(med));
-    
+    raw.ex = get_extrema(raw.hist.df, peaks=c(med, med/2));
+    raw.scr.peak = max(raw.hist.df$frequency[raw.hist.df$cov > scr.ex$cov/2 & raw.hist.df$cov <= scr.ex$cov*1.2])
     # DEPRECATED: from histo
     #scr.raw <- read.table(pipe('jellyfish histo scr-ref.jf'), header=F);
     #med <- scr.raw[,1][cumsum(scr.raw[,2]) > sum(scr.raw[,2])/2][1];
@@ -46,6 +46,8 @@ scr <-function(){
     # binsize <- med/100
     # cut(scr, breaks=, labels= ...)
     #scr <- scr.raw
+
+    # TODO -> max(raw:med raw:med/2)
     
     write("Plotting seed and total kmers", stderr());
     plot(scr.hist.df, 
@@ -54,7 +56,7 @@ scr <-function(){
     	      xlab="coverage",
     	      ylab="frequency",
     	      xlim=c(1,scr.ex$cov*3),
-    	      ylim=c(0,scr.ex$freq*3)
+    	      ylim=c(0,raw.scr.peak*1.5)
     );
 
     lines(scr.hist.df, col=cl[2], lwd=3);
