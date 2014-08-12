@@ -320,6 +320,7 @@ while(%h = $sp->next_header_line('@SQ')){
 close BED;
 
 my $current_cov;
+my $genome_size;
 my $last_id;
 my $closest_ref;
 my %refs;
@@ -368,7 +369,7 @@ if($c < $opt{max_reads}){
     exit 1;
 }
 
-$current_cov = estimate_kmer_coverage($c);
+($current_cov, $genome_size) = estimate_kmer_coverage($c);
 
 # what if not enough coverage in entire file.
 if(! $current_cov || $current_cov < $opt{target_coverage}){
@@ -379,11 +380,13 @@ if(! $current_cov || $current_cov < $opt{target_coverage}){
     exit 1;
 }
 
+# TODO: check size
 
 
 $closest_ref = (sort{$refs{$b} <=> $refs{$a}}keys %refs)[0];
 
 print "coverage\t", $current_cov, "\n";
+print "genome_size\t", $genome_size, "\n";
 print "target_coverage\t", $opt{target_coverage}, "\n";
 print "insert_size\t", int($tlen_sum/$seqwithtlen), "\n";
 print "closest_ref\t", $closest_ref || 'NA', "\n";
@@ -450,23 +453,37 @@ sub estimate_kmer_coverage{
     # dump and R stat counts
     # my $R = q/counts <- read.table(pipe('jellyfish dump -c --tab /.$jff.q/ | cut -f2 '), header=F);/   #   .q/summary(counts[,1])/;
 
-    my $R = q{data <- read.table(pipe('jellyfish histo -h 1000000 }
-      .$opt{out}."-ref.jf"
-        .q{'), header=F);}
-          .q{med = data[,1][cumsum(data[,2]) > sum(data[,2])/2][1];}
-            .q{print(med);};
+    # my $R = q{data <- read.table(pipe('jellyfish histo -h 1000000 }
+    #   .$opt{out}."-ref.jf"
+    #     .q{'), header=F);}
+    #       .q{med = data[,1][cumsum(data[,2]) > sum(data[,2])/2][1];}
+    #         .q{print(med);};
 
-    $L->debug("Running R: '$R'");
-    my @Rr = qx(echo "$R" | R --vanilla --slave);
-    $L->debug("R:\n", @Rr);
+    # $L->debug("Running R: '$R'");
+    # my @Rr = qx(echo "$R" | R --vanilla --slave);
+    # $L->debug("R:\n", @Rr);
 
-    $L->logdie(@Rr) unless $Rr[0] =~ /^\[1\]/;
+    # $L->logdie(@Rr) unless $Rr[0] =~ /^\[1\]/;
     
-    my ($r, $med) = split(/\s+/, $Rr[0]);
+    # my ($r, $med) = split(/\s+/, $Rr[0]);
 
-    $L->info("Estimated coverage\n", @Rr);
+    # $L->info("Estimated coverage\n", @Rr);
 
-    return $med;
+    # return $med;
+
+    my $R = 'R --vanilla --slave --args scr jf0.jf scr-ref.jf <../../code/chloroExtractor/bin/make_plots.R |';
+    $L->debug("Running R: '$R'");
+    open(R, $R) or $L->logdie($!);
+
+    my %Rr;
+    while(<R>){
+	my ($k, @v) = split("\t", $_);
+	$Rr{$k} = @v > 1 ? \@v : $v[0];
+    }
+    $L->debug("R:\n", Dumper(\%Rr));
+
+    return $Rr{coverage}, $Rr{size};
+    
 }
 
 
