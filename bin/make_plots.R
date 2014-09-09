@@ -127,50 +127,43 @@ scr <-function(reads.hash, seeds.hash, do.plot=TRUE){
 
 #-- task kfr --#
 
-kfr <- function(coverage=NULL){
+kfr <- function(..., coverage=NULL){
+
+    coverage <- as.integer(coverage)
+    sets <- c(...);
+
+    # kmer filter
+    data <- list();
+    lims <- list();
+    for (set in sets){
+        write(paste("Reading kmers", set), stderr());
+        data[[set]]  <- kmerPeaks(read.table(pipe(paste('jellyfish histo -l 10', set, sep=" ")), header=F));
+        lims$covs <- c(lims$covs, max(data[[set]]$peaks$covs[1]))
+        lims$freqs <- c(lims$freqs, max(data[[set]]$peaks$freqs[1]))
+        write(paste(set, max(data[[set]]$peaks$covs[1]), sep="\t"), stdout());
+    }
 
     pdf("kfr.pdf", width=10, height=6);
-    coverage <- as.integer(coverage)
-    # kmer filter
 
-    write("Reading kmers", stderr());
-    ## from hist
-    # scr <- kmerPeaks(read.table("Dm_GenIl_019-035-PE.trimmed.ada-qual-w10-ml10-histo.tsv", header=F));
-    # kfr1 <- kfr2 <- scr;
-    scr  <- kmerPeaks(read.table(pipe('jellyfish histo -l 10 scr.jf'), header=F));
-    kfr1 <- kmerPeaks(read.table(pipe('jellyfish histo -l 10 kfr1.jf'), header=F));
-    kfr2 <- kmerPeaks(read.table(pipe('jellyfish histo -l 10 kfr2.jf'), header=F));
-    
-    #print(kfr2)
-    
     write("Plotting filtered kmers", stderr());
-    plot(kfr2$data, 
+    plot(c(1,1), 
          type="n", 
          main="kmer-coverage of subsetted and filtered data sets",
          #log="xy",
-         xlim=c(0,scr$peak.max.cov*3),
-         #xlim=c(0, 3000),
-         ylim=c(1,scr$peak.max.freq*1.5),
-         #ylim=c(0,1e7),
+         xlim=c(0,max(lims$covs)*3),
+         ylim=c(1,max(lims$freqs)*1.5),
          xlab="coverage",
          ylab="frequency"
          );
+
+
+    i=1;
+    for (set in sets){
+        i=i+1;
+        lines(data[[set]]$data, col=cl[i], lwd=3);
+        abline(v=data[[set]]$peaks$covs[1], lty=5, lwd=2, col=cl[i]);
+    }
     
-    lines(scr$data, col=cl[4], lwd=3);
-    #scr.med  <- kmerPeaks(read.table(pipe('jellyfish histo -l 10 scr.jf'), header=F), smooth="medAdj");
-    #lines(scr.med$data, col=cl[4], lwd=3);
-
-    lines(kfr1$data, col=cl[3], lwd=3);
-#    lines(kfr1.med$data, col=cl[3], lwd=3);
-
-    lines(kfr2$data, col=cl[2], lwd=3);
-#    lines(kfr2.med$data, col=cl[2], lwd=3);
-
-
-    abline(v=scr$peak.max.cov, lty=5, lwd=2, col=cl[1]);
-    abline(v=kfr1$peak.max.cov, lty=3, lwd=2, col=cl[1]);
-    abline(v=kfr2$peak.max.cov, lty=4, lwd=2, col=cl[1]);
-
     if(!is.null(coverage)){
         abline(v=coverage, lwd=2, col=cl[5])
     }
@@ -178,14 +171,14 @@ kfr <- function(coverage=NULL){
 
     legend(
 	"topright",
-    	c("scr","kfr1","kfr2"),
+    	sets,
     	lwd=3,
-    	lty=c(1,1,1),
+    	lty=1,
     	seg.len=2, 
-    	col=cl[c(4,3,2)]
+    	col=cl[(1:length(sets))+1]
     );
 
-    dev.off()
+    msg <- dev.off()
   
 }
 
