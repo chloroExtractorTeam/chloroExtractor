@@ -471,7 +471,7 @@ sub estimate_kmer_coverage{
 
     # return $med;
 
-    my $R = 'R --vanilla --slave --args scr jf0.jf scr-ref.jf <../../code/chloroExtractor/bin/make_plots.R |';
+    my $R = 'R --vanilla --slave --args scr jf0.jf scr-ref.jf <$RealBin/make_plots.R |';
     $L->debug("Running R: '$R'");
     open(R, $R) or $L->logdie($!);
 
