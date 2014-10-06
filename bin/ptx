@@ -24,7 +24,7 @@ Input reads file, first of pair.
 
 Input reads file, second of pair
 
-=item -d|--dir [.]
+=item -d|--dir [ptx]
 
 Path to a working directory. Will be created. If exists, needs to be
 empty.
@@ -237,7 +237,7 @@ for($opt{reads}, $opt{mates}){
 
 
 # prepare folder structure
-prep_dir($opt{dir} || '.', $opt{redo});
+prep_dir($opt{dir} || 'ptx', $opt{redo});
 
 if($opt{dir}){
     chdir($opt{dir}) || $L->logcroak("'$opt{dir}' ",$!);
