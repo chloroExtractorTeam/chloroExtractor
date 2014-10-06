@@ -156,7 +156,7 @@ my %def = (
            threads => 1,
            target_coverage => 0,
            max_reads => 10000,
-           rev_cov_hist => 1,
+           ref_cov_hist => 0,
            kmer_size => 31,
 );
 
@@ -171,7 +171,7 @@ GetOptions( # use %opt (Cfg) as defaults
                  reference|ref-cluster|r=s
                  target_coverage|target-coverage|coverage=i
                  max_reads|max-reads|m=i
-                 rev_cov_hist|rev-cov-hist!
+                 ref_cov_hist|ref-cov-hist!
                  kmer_size|kmer-size=i
                  threads=i
                  config|c=s{,}
@@ -355,7 +355,7 @@ close BAM;
 close FQ;
 
 
-if ($opt{rev_cov_hist}){
+if ($opt{ref_cov_hist}){
     $L->info("Recalculating accurate per base coverages");
     bam_coverage($opt{out});
 }
