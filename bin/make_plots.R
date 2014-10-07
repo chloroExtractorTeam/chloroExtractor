@@ -96,7 +96,7 @@ scr <-function(reads.hash, seeds.hash, do.plot=TRUE){
 
         # scale raw kmer frequency of seed peak surrounding area to fit the plot area
         raw.i <- which.min(abs(raw$data$covs - seeds$peaks$covs[1]))
-        raw.sf <- seeds$peaks$freqs[1] / log(max(raw$data$frels[(raw.i-5):(raw.i+5)]))
+        raw.sf <- seeds$peaks$freqs[1] / log(max(raw$data$frels[(ifelse(raw.i-5 > 0, raw.i-5, 0)):(raw.i+5)]))
         raw$peaks.scaled <- raw$peaks
         raw$peaks.scaled$frels <- log(raw$peaks$frels)*raw.sf
 
