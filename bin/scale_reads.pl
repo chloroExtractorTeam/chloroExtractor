@@ -363,7 +363,7 @@ if ($opt{ref_cov_hist}){
 
 
 if($c < $opt{max_reads}){
-    $L->warn("Could not detect sufficient plastid data in input reads");	
+    $L->warn("Failed to align minimum amount of reads ($opt{max_reads}) to reference clusters");	
     $L->info("You might need to increase the amount of input data");
     $L->info("Also make sure, your library contains plastid reads at all");
 
@@ -374,9 +374,9 @@ if($c < $opt{max_reads}){
 
 # what if not enough coverage in entire file.
 if(! $current_cov || $current_cov < $opt{target_coverage}){
-    $L->warn("Could not detect sufficient plastid data in input reads");	
+    $L->warn("Insufficient plastid coverage detected: ${current_cov}X. At least $opt{target_coverage}X required");	
     $L->info("You might need to increase the amount of input data");
-    $L->info("Also make sure, your library contains plastid reads at all");
+    $L->info("If values are very low, make sure your library contains plastid reads");
 
     exit 1;
 }
@@ -479,6 +479,7 @@ sub estimate_kmer_coverage{
     my %Rr;
     while(<R>){
 	my ($k, @v) = split("\t", $_);
+        chomp(@v);
 	$Rr{$k} = @v > 1 ? \@v : $v[0];
     }
     $L->debug("R:\n", Dumper(\%Rr));
