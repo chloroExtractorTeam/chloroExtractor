@@ -331,7 +331,7 @@ my $seqwithtlen;
 
 
 while(my $aln = $sp->next_aln()){
-    print BAM "$aln\n";
+    print BAM "$aln";
     print FQ "@",$aln->qname,"\n", $aln->seq, "\n+\n",$aln->qual,"\n";
     
     # closest ref
@@ -349,6 +349,7 @@ while(my $aln = $sp->next_aln()){
     last if $c >= $opt{max_reads}
 }       
 
+  
 
 $bowtie2->cancel();
 close BAM;
