@@ -104,7 +104,6 @@ Log::Log4perl->init( \$log_cfg );
 # opt: multi-params need to be initiated with ARRAYREF!
 my %opt = (
     config => [],
-    in => [],
     );
 
 # Setup defaults
@@ -211,7 +210,7 @@ $L->info("Generating 5' and 3' ends of contigs");
 
 #### first generate a FASTA file for 5' and 3' ends from input file
 my $fasta_in = Fasta::Parser->new(
-    file => $opt{in}[0]
+    file => $opt{in}
     );
 my $fasta_contig_ends=$opt{in}.'_contig_ends';
 my $fasta_out = Fasta::Parser->new(
@@ -239,10 +238,10 @@ my $bowtie2 = Bowtie2->new(
 
 $L->info("Building bowtie2 index");
 
-$bowtie2->build($opt{in}[0]);
+$bowtie2->build($fasta_contig_ends);
 
 ##
-$L->info("FILEHANDLES:", Dumper(\%filehandles));
+$L->debug("FILEHANDLES:", Dumper(\%filehandles));
 
 $L->info("Running bowtie2");
 
@@ -380,6 +379,7 @@ my $patchfilename = cwd()."/extended_asc.fa";
 
 my @cmd = (
     $RealBin."/assemble_reads.pl",
+    "-c", @{$opt{config}},
     "--workingdir ./",
     "--isize", $opt{insert_size},
     "--extendmode", 
