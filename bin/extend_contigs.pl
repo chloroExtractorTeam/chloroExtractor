@@ -231,6 +231,19 @@ while (my $contig=$fasta_in->next_seq())
     store_sequence_and_create_folder(name => $contig->id()."_3prime", seq => substr($contig->seq(), -$opt{border}), file_out => $fasta_out, seen_names => \%contig_ends_seen, filehandle => \%filehandles);
 }
 
+# create a sequence store for each border combination
+# therefore I need to retrieve a list of all sequence names
+my @seq_names = sort keys %filehandles;
+# now prepare each combination
+for (my $i=0; $i < @seq_names - 1; $i++)
+{
+    for (my $j=$i+1; $j < @seq_names; $j++)
+    {
+	my $mergename = join("_", ("merged", $seq_names[$i], $seq_names[$j]));
+
+	store_sequence_and_create_folder(name => $mergename, file_out => $fasta_out, seen_names => \%contig_ends_seen, filehandle => \%filehandles);
+    }
+}
 
 my $bowtie2 = Bowtie2->new(
     path => $opt{bowtie2_path},
@@ -284,6 +297,9 @@ while( my ($aln1, $aln2) = $sp->next_pair() ){
 	    $L->debug(sprintf("Found joining pair for contigs %s and %s", $aln1->rname, $aln2->rname));
 	    $mappingtype = 'overlapping';
 	    @contig_name=($aln1->rname(), $aln2->rname());
+
+	    # add a merged name to fill the corresponding folder
+	    push(@contig_name, join("_", ("merged", sort @contig_name)));
 
 	    # store the information in the joined_with hash
 	    $filehandles{$aln1->rname()}{joined_with}{$aln2->rname()}++;
@@ -443,27 +459,32 @@ sub store_sequence_and_create_folder
     mkdir($name) || $L->logdie("Unable to create folder '$name'");
 
     # generate an empty set for statistics and overlapping mappings
-    $params{filehandle}{$params{name}} = {
+    $params{filehandle}{$name} = {
 	overlapping => 0,
 	half => 0,
 	complete => 0,
 	joined_with => {}
     };
 
-    $params{filehandle}{$params{name}}{reads}=Fasta::Parser->new(
+    $params{filehandle}{$name}{reads}=Fasta::Parser->new(
 	file => $name.'/'.'reads.fq',
 	mode => '>'                    # overwrite an existing file
 	);
-    $params{filehandle}{$params{name}}{mates}=Fasta::Parser->new(
+    $params{filehandle}{$name}{mates}=Fasta::Parser->new(
 	file => $name.'/'.'mates.fq',
 	mode => '>'                    # overwrite an existing file
 	);
 
-    my $seq_obj = Fasta::Seq->new(
-	id => $params{name},
-	seq => $params{seq}
-	);
-    $params{file_out}->append_seq($seq_obj);
+    # generate a sequence object if name and seq are given
+    if ($name ne "" && exists $params{seq} && $params{seq} ne "")
+    {
+	my $seq_obj = Fasta::Seq->new(
+	    id => $params{name},
+	    seq => $params{seq}
+	    );
+	$params{file_out}->append_seq($seq_obj);
+    }
+
     return 1;
 }
 
