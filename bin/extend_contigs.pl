@@ -69,6 +69,7 @@ use lib "$RealBin/../lib/";
 
 use File::Basename;
 use File::Copy;
+use File::Path qw(make_path);
 
 # additional modules
 use Cfg;
@@ -165,7 +166,7 @@ if (@{$opt{config}}){
 # create template for user cfg
 if(defined $opt{create_config}){
     pod2usage(-msg => 'To many arguments', -exitval=>1) if @ARGV > 1;
-    my $user_cfg = Cfg->Copy($core_cfg, $opt{create_config}) or $L->logdie("Creatring config failed: $!");
+    my $user_cfg = Cfg->Copy($core_cfg, $opt{create_config}) or $L->logdie("Creating config failed: $!");
     $L->info("Created config file: $user_cfg");
     exit 0;
 }
@@ -240,7 +241,7 @@ for (my $i=0; $i < @seq_names - 1; $i++)
     for (my $j=$i+1; $j < @seq_names; $j++)
     {
 	my $mergename = join("_", ("merged", $seq_names[$i], $seq_names[$j]));
-
+	
 	store_sequence_and_create_folder(name => $mergename, file_out => $fasta_out, seen_names => \%contig_ends_seen, filehandle => \%filehandles);
     }
 }
@@ -456,7 +457,7 @@ sub store_sequence_and_create_folder
 	$L->logdie("The folder '$name' already exists! One possibility are multiple occurence of the same sequence name in the input file");
     }
     $params{seen_names}{$name}++;
-    mkdir($name) || $L->logdie("Unable to create folder '$name'");
+    make_path($name) || $L->logdie("Unable to create folder '$name' $!");
 
     # generate an empty set for statistics and overlapping mappings
     $params{filehandle}{$name} = {
