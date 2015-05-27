@@ -247,6 +247,17 @@ for (my $i=0; $i < @seq_names - 1; $i++)
     }
 }
 
+#delete empty directories
+my $dir = './merged_ass';
+my @dirs;
+find(\&get_dir,$dir);
+
+rmdir($_) for(reverse(@dirs));
+
+sub get_dir{
+  push(@dirs,$File::Find::name) if(-d $_);
+}
+
 my $bowtie2 = Bowtie2->new(
     path => $opt{bowtie2_path},
 );
