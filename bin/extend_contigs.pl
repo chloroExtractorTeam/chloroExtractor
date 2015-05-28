@@ -70,6 +70,7 @@ use lib "$RealBin/../lib/";
 use File::Basename;
 use File::Copy;
 use File::Path qw(make_path);
+use File::Find;
 
 # additional modules
 use Cfg;
