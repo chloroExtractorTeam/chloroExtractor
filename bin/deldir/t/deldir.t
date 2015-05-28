@@ -16,7 +16,6 @@ use Cwd;
 my $dir = getcwd;
 remove_tree( 't/emptyfiles/' , {verbose => 1}) or die "Cannot remove_tree 't/emptyfiles/' : $!";
 
-warn("$dir\n");
 dircopy("t/testdata/emptyfiles","$dir"."/t/emptyfiles") or die "Copy failed: $!";
 
 use Test::More;# tests => 1;
@@ -30,9 +29,21 @@ BEGIN { use_ok('deldir') };
 # its man page ( perldoc Test::More ) for help writing this test script.
 
 
-can_ok('deldir', ('getemptyfilesdir'));
+can_ok('deldir', ('getemptyfilesdirs'));
 
+my @expectedemptyfiles = ("empty1/file1" , "empty1/file2" , "empty2/file1" , "empty2/file2" , "empty3/file1" , "empty3/file2");
 
+my @emptyfiles = deldir::getemptyfilesdirs();
+
+is_deeply( [sort @emptyfiles], [sort @expectedemptyfiles] , 'Are found empty files correct?');
+
+my $filesize;
+
+foreach my $file (@emptyfiles)
+{
+	$filesize = -s "t/$file";
+	ok($filesize==0, 'Is $file empty');
+}
 
 
 done_testing();

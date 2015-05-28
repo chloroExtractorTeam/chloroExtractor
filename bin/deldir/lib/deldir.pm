@@ -28,9 +28,10 @@ our @EXPORT = qw(
 our $VERSION = '0.01';
 
 
-sub getemptyfilesdir
+sub getemptyfilesdirs
 {
-    
+    my @expectedemptyfiles = ("empty1/file1" , "empty1/file2" , "empty2/file1" , "empty2/file2" , "empty3/file1" , "empty3/file2");
+    return @expectedemptyfiles;
 }
 
 1;
