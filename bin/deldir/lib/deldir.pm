@@ -62,8 +62,8 @@ foreach my $file (@allfiles)
     if ( -s "$file" == 0)
     {
 	#remove searchdir from found paths
-	$file =~ /^$dir(.+)/;
-	push( @emptyfiles , $1 )
+	#$file =~ /^$dir(.+)/;
+	push( @emptyfiles , $file )
     }
 	
 }
@@ -72,11 +72,11 @@ return @emptyfiles;
 
 }
 
-sub removeemptyfiledirs
+sub removeemptyfiles
 {
     my @dirs = @{$_[0]};
 
-    print STDERR "\n\n@dirs\n\n";
+    unlink @dirs;
 }
 
 1;

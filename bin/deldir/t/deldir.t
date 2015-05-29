@@ -30,7 +30,7 @@ BEGIN { use_ok('deldir') };
 
 can_ok('deldir', ('getemptyfiledirs'));
 
-my @expectedemptyfiles = ("empty1/file1" , "empty1/file2" , "empty2/file1" , "empty2/file2" , "empty3/file1" , "empty3/file2");
+my @expectedemptyfiles = ("t/emptyfiles/empty1/file1" , "t/emptyfiles/empty1/file2" , "t/emptyfiles/empty2/file1" , "t/emptyfiles/empty2/file2" , "t/emptyfiles/empty3/file1" , "t/emptyfiles/empty3/file2");
 
 my $testdir = "t/emptyfiles/";
 
@@ -42,14 +42,18 @@ my $filesize = 0;
 
 foreach my $file (@emptyfiles)
 {
-	ok( -e "$testdir$file" , "Is $file existing?" );
+	is( -e "$file" , 1 , "Is $file existing?" );
 	$filesize = -s "$file";
-	ok( $filesize == 0 , "Is $file empty?" );
+	is( $filesize == 0 , 1 , "Is $file empty?" );
 }
 
-can_ok('deldir', ('removeemptyfiledirs'));
+can_ok('deldir', ('removeemptyfiles'));
 
-deldir::removeemptyfiledirs(\@emptyfiles);
+deldir::removeemptyfiles(\@emptyfiles);
 
+foreach my $file (@emptyfiles)
+{
+        is( -e "$testdir$file" , undef , "Is $file existing after removing it?" );
+}
 
 done_testing();
