@@ -44,7 +44,7 @@ sub getalldirs
 
     our @allfiles = ();
     
-    #find all dir and files
+    #find all dirs and files
     find(\&wanted,  $dir);
 
     sub wanted
@@ -56,20 +56,19 @@ sub getalldirs
 my @emptyfiles = ();
 my $dir = $_[0];
 
+#filter out not empty paths and files
 foreach my $file (@allfiles)
 {
     if ( -s "$file" == 0)
     {
+	#remove searchdir from found paths
 	$file =~ /^$dir(.+)/;
 	push( @emptyfiles , $1 )
     }
 	
 }
 
-print STDERR "@emptyfiles\n";
-
 return @emptyfiles;
-
 
 }
 
