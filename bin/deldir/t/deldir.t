@@ -47,5 +47,9 @@ foreach my $file (@emptyfiles)
 	ok( $filesize == 0 , "Is $file empty?" );
 }
 
+can_ok('deldir', ('removeemptyfiledirs'));
+
+deldir::removeemptyfiledirs(\@emptyfiles);
+
 
 done_testing();
