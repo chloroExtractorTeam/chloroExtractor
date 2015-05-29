@@ -36,7 +36,7 @@ Expects directory as parameter and returns a list of paths to empty files in dir
 =cut
 
 
-sub getalldirs
+sub getemptyfiledirs
 {
 
 
@@ -78,7 +78,7 @@ __END__
 
 =head1 NAME
 
-deldir - Perl extension for blah blah blah
+deldir - Perl extension for deleting empty files and their paths
 
 =head1 SYNOPSIS
 

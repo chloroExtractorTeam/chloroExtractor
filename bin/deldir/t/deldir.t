@@ -28,13 +28,13 @@ BEGIN { use_ok('deldir') };
 # Insert your test code below, the Test::More module is use()ed here so read
 # its man page ( perldoc Test::More ) for help writing this test script.
 
-can_ok('deldir', ('getalldirs'));
+can_ok('deldir', ('getemptyfiledirs'));
 
 my @expectedemptyfiles = ("empty1/file1" , "empty1/file2" , "empty2/file1" , "empty2/file2" , "empty3/file1" , "empty3/file2");
 
 my $testdir = "t/emptyfiles/";
 
-my @emptyfiles = deldir::getalldirs($testdir);
+my @emptyfiles = deldir::getemptyfiledirs($testdir);
 
 is_deeply( [sort @emptyfiles], [sort @expectedemptyfiles] , 'Are found empty files correct?');
 
