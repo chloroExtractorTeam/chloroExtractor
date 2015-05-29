@@ -3,6 +3,7 @@ package deldir;
 use 5.014002;
 use strict;
 use warnings;
+use File::Find;
 
 require Exporter;
 
@@ -27,11 +28,49 @@ our @EXPORT = qw(
 
 our $VERSION = '0.01';
 
+=pod
+=head2 sub add
 
-sub getemptyfilesdirs
+Expects directory as parameter and returns a list of paths to empty files in dir and subdirs.
+
+=cut
+
+
+sub getalldirs
 {
-    my @expectedemptyfiles = ("empty1/file1" , "empty1/file2" , "empty2/file1" , "empty2/file2" , "empty3/file1" , "empty3/file2");
-    return @expectedemptyfiles;
+
+
+    my $dir = $_[0];
+
+    our @allfiles = ();
+    
+    #find all dir and files
+    find(\&wanted,  $dir);
+
+    sub wanted
+    {
+	push( @allfiles , "$File::Find::name");
+    }
+
+
+my @emptyfiles = ();
+my $dir = $_[0];
+
+foreach my $file (@allfiles)
+{
+    if ( -s "$file" == 0)
+    {
+	$file =~ /^$dir(.+)/;
+	push( @emptyfiles , $1 )
+    }
+	
+}
+
+print STDERR "@emptyfiles\n";
+
+return @emptyfiles;
+
+
 }
 
 1;

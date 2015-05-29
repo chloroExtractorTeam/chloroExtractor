@@ -32,7 +32,9 @@ can_ok('deldir', ('getalldirs'));
 
 my @expectedemptyfiles = ("empty1/file1" , "empty1/file2" , "empty2/file1" , "empty2/file2" , "empty3/file1" , "empty3/file2");
 
-my @emptyfiles = deldir::getalldirs("t/emptyfiles/");
+my $testdir = "t/emptyfiles/";
+
+my @emptyfiles = deldir::getalldirs($testdir);
 
 is_deeply( [sort @emptyfiles], [sort @expectedemptyfiles] , 'Are found empty files correct?');
 
@@ -40,9 +42,9 @@ my $filesize = 0;
 
 foreach my $file (@emptyfiles)
 {
-	ok( -e $file , 'Is $file existing?' );
+	ok( -e "$testdir$file" , "Is $file existing?" );
 	$filesize = -s "$file";
-	ok( $filesize == 0 , 'Is $file empty?' );
+	ok( $filesize == 0 , "Is $file empty?" );
 }
 
 
