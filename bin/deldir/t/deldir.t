@@ -53,9 +53,18 @@ deldir::removeemptyfiles(\@emptyfiles);
 
 foreach my $file (@emptyfiles)
 {
-        is( -e "$testdir$file" , undef , "Is $file existing after removing it?" );
+        is( -e "$file" , undef , "Is $file existing after removing it?" );
 }
 
 can_ok('deldir', ('rremoveemptyfiles'));
+
+my @emptyfolder = ("t/emptyfiles/empty1", "t/emptyfiles/empty2", "t/emptyfiles/empty3");
+
+deldir::rremoveemptyfiles("$testdir");
+
+foreach my $file (@emptyfolder)
+{
+	is( -e "$file", undef , "Are empty dirs removed?" );
+}
 
 done_testing();
