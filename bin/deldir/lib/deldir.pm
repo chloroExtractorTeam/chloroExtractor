@@ -31,7 +31,7 @@ our $VERSION = '0.01';
 =pod
 =head2 sub add
 
-Expects directory as parameter and returns a list of paths to empty files in dir and subdirs.
+reremovemptyfiles expects directory as parameter and removes all empty files in this directory and subdirectories, then deletes all empty directories.
 
 =cut
 
