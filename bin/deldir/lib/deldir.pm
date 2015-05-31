@@ -35,9 +35,22 @@ Expects directory as parameter and returns a list of paths to empty files in dir
 
 =cut
 
-sub rremoveemptyfiles
+sub reremoveemptyfiles
 {
+    my $dir = $_[0];
 
+    my @emptyfiles = getemptyfiledirs($dir);
+
+    while (@emptyfiles)
+    {
+	removeemptyfiles(\@emptyfiles);
+
+	print STDERR "\n\n@emptyfiles\n";
+	
+	@emptyfiles = getemptyfiledirs($dir);
+	
+	print STDERR "\n\n@emptyfiles\n";
+    }
 }
 
 

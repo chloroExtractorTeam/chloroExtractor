@@ -13,10 +13,15 @@ use Cwd;
 
 #prepare testfiles
 
-my $dir = getcwd;
-remove_tree( 't/emptyfiles/' , {verbose => 1}) or die "Cannot remove_tree 't/emptyfiles/' : $!";
+sub preptest
+{
+	my $dir = getcwd;
+	remove_tree( 't/emptyfiles/' , {verbose => 1}) or die "Cannot remove_tree 't/emptyfiles/' : $!";
 
-dircopy("t/testdata/emptyfiles","$dir"."/t/emptyfiles") or die "Copy failed: $!";
+	dircopy("t/testdata/emptyfiles","$dir"."/t/emptyfiles") or die "Copy failed: $!";
+}
+
+preptest();
 
 use Test::More;# tests => 1;
 BEGIN { use_ok('deldir') };
@@ -56,11 +61,14 @@ foreach my $file (@emptyfiles)
         is( -e "$file" , undef , "Is $file existing after removing it?" );
 }
 
-can_ok('deldir', ('rremoveemptyfiles'));
+can_ok('deldir', ('reremoveemptyfiles'));
 
 my @emptyfolder = ("t/emptyfiles/empty1", "t/emptyfiles/empty2", "t/emptyfiles/empty3");
 
-deldir::rremoveemptyfiles("$testdir");
+
+preptest();
+
+deldir::reremoveemptyfiles("$testdir");
 
 foreach my $file (@emptyfolder)
 {
