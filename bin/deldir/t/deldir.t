@@ -56,4 +56,6 @@ foreach my $file (@emptyfiles)
         is( -e "$testdir$file" , undef , "Is $file existing after removing it?" );
 }
 
+can_ok('deldir', ('rremoveemptyfiles'));
+
 done_testing();

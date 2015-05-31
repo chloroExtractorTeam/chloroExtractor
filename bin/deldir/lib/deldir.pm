@@ -35,6 +35,11 @@ Expects directory as parameter and returns a list of paths to empty files in dir
 
 =cut
 
+sub rremoveemptyfiles
+{
+
+}
+
 
 sub getemptyfiledirs
 {
