@@ -41,16 +41,9 @@ sub reremoveemptyfiles
 
     my @emptyfiles = getemptyfiledirs($dir);
 
-    while (@emptyfiles)
-    {
-	removeemptyfiles(\@emptyfiles);
+    removeemptyfiles(\@emptyfiles);
 
-	print STDERR "\n\n@emptyfiles\n";
-	
-	@emptyfiles = getemptyfiledirs($dir);
-	
-	print STDERR "\n\n@emptyfiles\n";
-    }
+    finddepth(sub { rmdir $_ if -d }, $dir);
 }
 
 
