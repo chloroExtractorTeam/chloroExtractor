@@ -49,44 +49,35 @@ sub reremoveemptyfiles
 
 sub getemptyfiledirs
 {
-
-
     my $dir = $_[0];
-
+    
     our @allfiles = ();
     
     #find all dirs and files
-    find(\&wanted,  $dir);
-
-    sub wanted
-    {
-	push( @allfiles , "$File::Find::name");
-    }
-
-
-my @emptyfiles = ();
-my $dir = $_[0];
-
+    find(sub { push( @allfiles , "$File::Find::name") },  $dir);
+    
+    my @emptyfiles = ();
+    my $dir = $_[0];
+    
 #filter out not empty paths and files
-foreach my $file (@allfiles)
-{
-    if ( -s "$file" == 0)
+    foreach my $file (@allfiles)
     {
-	#remove searchdir from found paths
-	#$file =~ /^$dir(.+)/;
-	push( @emptyfiles , $file )
-    }
+	if ( -s "$file" == 0)
+	{
+	    #remove searchdir from found paths
+	    #$file =~ /^$dir(.+)/;
+	    push( @emptyfiles , $file )
+	}
 	
-}
+    }
 
-return @emptyfiles;
+    return @emptyfiles;
 
 }
 
 sub removeemptyfiles
 {
     my @dirs = @{$_[0]};
-
     unlink @dirs;
 }
 
