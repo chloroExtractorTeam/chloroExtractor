@@ -224,6 +224,11 @@ my %contig_ends_seen = ();
 my %filehandles = ();
 while (my $contig=$fasta_in->next_seq())
 {
+    $fasta_out = Fasta::Parser->new(
+	file => $fasta_contig_ends,
+	mode => '>>'                    # append to an existing file
+	);
+    
     # filter for a minimum length
     next unless (length($contig->seq()) > $opt{min_seq_length});
 
@@ -231,6 +236,8 @@ while (my $contig=$fasta_in->next_seq())
     store_sequence_and_create_folder(name => $contig->id()."_5prime", seq => substr($contig->seq(), 0, $opt{border}), file_out => $fasta_out, seen_names => \%contig_ends_seen, filehandle => \%filehandles);
     # store 3' end
     store_sequence_and_create_folder(name => $contig->id()."_3prime", seq => substr($contig->seq(), -$opt{border}), file_out => $fasta_out, seen_names => \%contig_ends_seen, filehandle => \%filehandles);
+
+    $fasta_out->DESTROY();
 }
 
 # create a sequence store for each border combination
@@ -243,20 +250,26 @@ for (my $i=0; $i < @seq_names - 1; $i++)
     {
 	my $mergename = join("_", ("merged", $seq_names[$i], $seq_names[$j]));
 	
+	$fasta_out = Fasta::Parser->new(
+	    file => $fasta_contig_ends,
+	    mode => '>>'                    # append to an existing file
+	    );
+
 	store_sequence_and_create_folder(name => $mergename, file_out => $fasta_out, seen_names => \%contig_ends_seen, filehandle => \%filehandles);
+	$fasta_out->DESTROY();
     }
 }
 
 #delete empty directories
-my $dir = './merged_ass';
-my @dirs;
-find(\&get_dir,$dir);
+#my $dir = './merged_ass';
+#my @dirs;
+#find(\&get_dir,$dir);
 
-rmdir($_) for(reverse(@dirs));
+#rmdir($_) for(reverse(@dirs));
 
-sub get_dir{
-  push(@dirs,$File::Find::name) if(-d $_);
-}
+#sub get_dir{
+#  push(@dirs,$File::Find::name) if(-d $_);
+#}
 
 my $bowtie2 = Bowtie2->new(
     path => $opt{bowtie2_path},
@@ -352,8 +365,18 @@ while( my ($aln1, $aln2) = $sp->next_pair() ){
     foreach my $contig (@contig_name)
     {
 	$L->debug($contig);
+	$filehandles{$contig}{reads}=Fasta::Parser->new(
+            file => $fasta_contig_ends,
+            mode => '>>'                    # append to an existing file
+	    );
 	$filehandles{$contig}{reads}->append_seq($first_read);
+	$filehandles{$contig}{reads}->DESTROY();
+	$filehandles{$contig}{mates}=Fasta::Parser->new(
+            file => $fasta_contig_ends,
+            mode => '>>'                    # append to an existing file
+	    );
 	$filehandles{$contig}{mates}->append_seq($second_read);
+	$filehandles{$contig}{mates}->DESTROY();
 	$filehandles{$contig}{$mappingtype}++;
     }
 }
@@ -483,10 +506,15 @@ sub store_sequence_and_create_folder
 	file => $name.'/'.'reads.fq',
 	mode => '>'                    # overwrite an existing file
 	);
+    
+    $params{filehandle}{$name}{reads}->DESTROY();
+
     $params{filehandle}{$name}{mates}=Fasta::Parser->new(
 	file => $name.'/'.'mates.fq',
 	mode => '>'                    # overwrite an existing file
 	);
+
+    $params{filehandle}{$name}{mates}->DESTROY();
 
     # generate a sequence object if name and seq are given
     if ($name ne "" && exists $params{seq} && $params{seq} ne "")
