@@ -267,7 +267,7 @@ $L->info("Building bowtie2 index");
 $bowtie2->build($fasta_contig_ends);
 
 ##
-$L->debug("FILEHANDLES:", Dumper(\%filehandles));
+#$L->debug("FILEHANDLES:", Dumper(\%filehandles));
 
 $L->info("Running bowtie2");
 
@@ -284,6 +284,8 @@ $bowtie2->run(
 my $sp = Sam::Parser->new(
   fh => $bowtie2->stdout,
 );
+
+my @merged = ();
 
 # print sequences of read pairs with both reads mapped
 while( my ($aln1, $aln2) = $sp->next_pair() ){
@@ -348,7 +350,6 @@ while( my ($aln1, $aln2) = $sp->next_pair() ){
 	$aln2->qual(),
 	);
 
-
     foreach my $contig (@contig_name)
     {
 	$L->debug($contig);
@@ -359,7 +360,12 @@ while( my ($aln1, $aln2) = $sp->next_pair() ){
 	   $L->debug("Need to create folder '$contig' due to it does not exist");
 	   make_path($contig) || $L->logdie("Unable to create folder '$contig' $!");
         }
-
+	
+	if ( $contig =~ /merged/ )
+	{
+	    push( @merged, $contig );
+	}
+	
 	$filehandles{$contig}{reads}=Fasta::Parser->new(
             file => $contig.'/reads.fq',
             mode => '>>'                    # append to an existing file
@@ -390,11 +396,13 @@ foreach my $contig_border (keys %filehandles) {
 
     my $contig = $contig_border;
     $contig =~ s/_[53]prime$//;
+    
     if (scalar (keys %{$filehandles{$contig_border}{joined_with}}) > 0)
     {
 	foreach my $joined_contig (keys %{$filehandles{$contig_border}{joined_with}})
 	{
 	    $joined_contig =~ s/_[53]prime$//;
+
 	    if ($joined_contig eq $contig)
 	    {
 		$L->debug(sprintf("Contig %s mapped other contig border", $contig));
@@ -420,34 +428,42 @@ foreach my $contig_border (keys %filehandles) {
 $L->info(sprintf("Overall number of mapped reads (half/complete/overlapping): %d/%d/%d", $half, $complete, $overlapping));
 
 ## here we need to run a velvet assembly for each folder
-$L->info("Running assemble_reads.pl");
+$L->info("Running assemble_spades.pl");
 
-my $patchfilename = cwd()."/extended_asc.fa";
+#my $patchfilename = cwd()."/extended_asc.fa";
+
+# my @cmd = (
+#     $RealBin."/assemble_reads.pl",
+#     "-c", @{$opt{config}},
+#     "--workingdir ./",
+#     "--isize", $opt{insert_size},
+#     "--extendmode", 
+#     #"--out", $patchfilename,
+#     #"--velvet_out", "velvet_out_extend",
+#     '--velvetg_parameter', "'-cov_cutoff ".(0.25*$opt{coverage})." -exp_cov ".(0.9*$opt{coverage})."'",
+# );
 
 my @cmd = (
-    $RealBin."/assemble_reads.pl",
-    "-c", @{$opt{config}},
-    "--workingdir ./",
-    "--isize", $opt{insert_size},
-    "--extendmode", 
-    "--out", $patchfilename,
-    "--velvet_out", "velvet_out_extend",
-    '--velvetg_parameter', "'-cov_cutoff ".(0.25*$opt{coverage})." -exp_cov ".(0.9*$opt{coverage})."'",
-);
+    $RealBin."/assemble_spades.pl",
+    "--threads", $opt{threads},
+    );
 
-foreach my $contig_border (keys %filehandles)
+foreach my $contig_border (@merged)
 {
-    push(@cmd, ("--reads", $contig_border."/reads.fq"));
-    push(@cmd, ("--mates", $contig_border."/mates.fq"));
+    push(@cmd, ("-o", $contig_border."/extended_asc.fa"));
+    push(@cmd, ("-1", $contig_border."/reads.fq"));
+    push(@cmd, ("-2", $contig_border."/mates.fq"));
+
+    $L->debug("Running assemble_spades using the command '@cmd'");
+    qx(@cmd);
+    my $errorcode = $?;
+    if ($errorcode != 0)
+    {
+	$L->logdie("Errorcode for command '@cmd' was not 0!");
+    }
+    splice(@cmd, @cmd-6, @cmd-0);
 }
 
-$L->debug("Running assemle_reads using the command '@cmd'");
-qx(@cmd);
-my $errorcode = $?;
-if ($errorcode != 0)
-{
-    $L->logdie("Errorcode for command '@cmd' was not 0!");
-}
 
 ## filtering of the output sequences
 my $final_out = Fasta::Parser->new(
@@ -456,27 +472,27 @@ my $final_out = Fasta::Parser->new(
     );
 
 ## check if output file exists
-unless (-e $patchfilename)
-{
-    $L->debug("Skipping file '$patchfilename' because it does not exist");
-}
+# unless (-e $patchfilename)
+# {
+#     $L->debug("Skipping file '$patchfilename' because it does not exist");
+# }
 
-my $fasta_patches = Fasta::Parser->new(
-    file => $patchfilename
-    );
+# my $fasta_patches = Fasta::Parser->new(
+#     file => $patchfilename
+#     );
 
 
-while (my $patch=$fasta_patches->next_seq())
-{
-    # filter for a minimum length (1.5xinsert size)
-    unless (length($patch->seq()) > 1.5*$opt{insert_size})
-    {
-	$L->debug("Patch skipped because it is not long enough");
-	next;
-    }
+# while (my $patch=$fasta_patches->next_seq())
+# {
+#     # filter for a minimum length (1.5xinsert size)
+#     unless (length($patch->seq()) > 1.5*$opt{insert_size})
+#     {
+# 	$L->debug("Patch skipped because it is not long enough");
+# 	next;
+#     }
     
-    $final_out->append_seq($patch);
-}
+#     $final_out->append_seq($patch);
+# }
 
 sub store_sequence_and_create_folder
 {
