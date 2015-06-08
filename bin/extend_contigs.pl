@@ -285,7 +285,7 @@ my $sp = Sam::Parser->new(
   fh => $bowtie2->stdout,
 );
 
-my @merged = ();
+my %merged;
 
 # print sequences of read pairs with both reads mapped
 while( my ($aln1, $aln2) = $sp->next_pair() ){
@@ -363,7 +363,7 @@ while( my ($aln1, $aln2) = $sp->next_pair() ){
 	
 	if ( $contig =~ /merged/ )
 	{
-	    push( @merged, $contig );
+	    %merged = ($contig => 0);
 	}
 	
 	$filehandles{$contig}{reads}=Fasta::Parser->new(
@@ -448,9 +448,9 @@ my @cmd = (
     "--threads", $opt{threads},
     );
 
-foreach my $contig_border (@merged)
+foreach my $contig_border (keys(%merged))
 {
-    push(@cmd, ("-o", $contig_border."/extended_asc.fa"));
+    push(@cmd, ("-o", $contig_border."/extended_asc"));
     push(@cmd, ("-1", $contig_border."/reads.fq"));
     push(@cmd, ("-2", $contig_border."/mates.fq"));
 
@@ -461,7 +461,7 @@ foreach my $contig_border (@merged)
     {
 	$L->logdie("Errorcode for command '@cmd' was not 0!");
     }
-    splice(@cmd, @cmd-6, @cmd-0);
+    @cmd = @cmd[0,1,2];
 }
 
 
