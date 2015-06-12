@@ -363,7 +363,7 @@ while( my ($aln1, $aln2) = $sp->next_pair() ){
 	
 	if ( $contig =~ /merged/ )
 	{
-	    %merged = ($contig => 0);
+	    $merged{$contig} = 0;
 	}
 	
 	$filehandles{$contig}{reads}=Fasta::Parser->new(
