@@ -1,0 +1,147 @@
+package fir;
+
+use strict;
+use warnings;
+use File::Find;
+use Cwd;
+use Data::Dumper;
+use Graph;
+
+my %alldirs = ();
+my $dir = cwd();
+my $g = Graph::Undirected->new();
+my $n2inv;
+my $n4inv;
+my $edge1;
+my $edge2;
+my $edge3;
+
+#alle ordner in hash damit keine doppelten
+find(sub { $alldirs{ $File::Find::dir } = 0; },  $dir."/merged_ass" );
+
+#GRAPH aufbauen
+#testen ob reads auf gleiches ende mappen und dann contigpaarung speichern und contig auftreten zählen
+foreach (keys(%alldirs))
+{
+    if ( $_ =~ /.+\.(.+)_([53]prime).+\.(.+)_([53]prime)$/ ) #$1=contig1, $2=ende contig1, §3=contig2, $4 = ende contig2
+    {
+	print STDERR "$_\n";
+
+	if ( $2 eq "5prime")
+	{
+	    $n2inv = "3prime"
+	}
+	else
+	{
+	    $n2inv = "5prime"
+	}
+	if ( $4 eq "5prime")
+	{
+	    $n4inv = "3prime"
+	}
+	else
+	{
+	    $n4inv = "5prime"
+	}
+
+	$edge1 = 0;
+	$edge2 = 0;
+	$edge3 = 0;
+
+	#Knoten hinzufügen
+	$g->add_vertices( $1."_".$2, $3."_".$4, $1."_".$n2inv, $3."_".$n4inv );
+
+
+	#knoten verbinden und mit anderem contigende verbinden
+	unless ($g->has_edge($1."_".$2, $3."_".$4) || $g->has_edge($3."_".$4, $1."_".$2)) {$edge1 = $g->add_edge( $1."_".$2, $3."_".$4 )};
+	if ($edge1) {$edge1->undirected(1)};
+	unless ($g->has_edge($1."_".$n2inv, $1."_".$2) || $g->has_edge($1."_".$2, $1."_".$n2inv)) {$edge2 = $g->add_edge( $1."_".$n2inv, $1."_".$2 )};
+	if ($edge2) {$edge2->undirected(1)};
+	unless ($g->has_edge($3."_".$n4inv, $3."_".$4) || $g->has_edge($3."_".$4, $3."_".$n4inv)) {$edge3 = $g->add_edge( $3."_".$n4inv, $3."_".$4 )};
+	if ($edge3) {$edge3->undirected(1)};
+
+    }
+}
+
+print STDERR $g->is_directed() . "\n" . $g->is_undirected() . "\n";
+
+my @knoten = $g->vertices();
+my %knoten2go;
+
+#knoten in hash
+foreach (@knoten)
+{
+    $knoten2go{$_}++;
+}
+
+my $curknoten = $knoten[0];
+my @path = ($curknoten);
+my @nachbarn = ();
+my $last;
+my $curknotenend;
+my $nachbarend;
+my %pathsgone;
+my %ngone;
+
+#wie viele knoten müssen durhclaufen werden?
+my $nknoten = keys(%knoten2go)+0;
+#push(@path, $curknoten);
+
+
+while ( $nknoten >> keys(%ngone) ) # @path+0)
+{
+    #andres contigende
+    if ($curknoten =~ /(.+)5prime$/)
+    {
+	$last = $curknoten;
+	$curknoten = $1."3prime";
+	push(@path, $curknoten);
+	$ngone{$curknoten}++;
+#	print"next $curknoten\n";
+    }
+    elsif ($curknoten =~ /(.+)3prime$/)
+    {
+	$last = $curknoten;
+	$curknoten = $1."5prime";
+	push(@path, $curknoten);
+	$ngone{$curknoten}++;
+#	print"next $curknoten\n";
+    }
+
+    #contigende feststellen um zu passendem ende zu gehen 
+    $curknoten =~ /.+([35])prime$/;
+    $curknotenend = $1;
+
+    @nachbarn = $g->neighbours($curknoten);
+    print"nachbarn: @nachbarn\n";
+    
+    $pathsgone{$curknoten};
+    
+    #nachbarn durchsuchen nach nächstem knoten
+    foreach (@nachbarn)
+    {
+	$_ =~ /.+([35])prime$/;
+	$nachbarend = $1;
+	
+	#konten auswählen wenn es nicht der letzte knoten ist und das ende passt und der knoten von hier schonmal besucht wurde
+	if ( $_ ne $last && $curknotenend != $nachbarend && grep { $pathsgone{$curknoten} ne $_ } 0..@pathsgone{$curknoten}+0 )
+	{
+	    push(@{$pathsgone{$curknoten}}, $_);
+	    $curknoten = $_;
+	    print Dumper(%pathsgone);
+	    last();
+	}
+    }
+    push(@path, $curknoten);
+    $ngone{$curknoten}++;
+
+
+    my $npath = @path+0;
+    my $nngone = keys(%ngone);
+    print"\nPathlänge: $npath\n";
+    print"\nKnoten abgearbeitet: $nngone von $nknoten\n";
+    #my $pro = <>;
+}
+
+#print Dumper(%knoten2go);
+print"\n@path\n";
