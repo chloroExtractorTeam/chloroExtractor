@@ -111,7 +111,7 @@ while ( $nknoten >= 2 )
     while ( $nknoten >= $nngone + 1 )
     {
 
-        #andres contigende
+        #erstmal zum andren contigende
 	if ($curknoten =~ /(.+)5prime$/)
 	{
 	    $last = $curknoten;
@@ -149,7 +149,7 @@ while ( $nknoten >= 2 )
 	    #knoten auswählen wenn es nicht der letzte knoten ist und das ende passt und der knoten von hier schonmal besucht wurde
 	    if ( $_ ne $last && $curknotenend != $nachbarend && !exists($pathsgone{$curknoten}{$_}) )
 	    {
-		$pathsgone{$curknoten}{$_}++; #durch hash ersetzen
+		$pathsgone{$curknoten}{$_}++;
 		$curknoten = $_;
 		print Dumper(%pathsgone);
 		push(@path, $curknoten);
@@ -162,13 +162,13 @@ while ( $nknoten >= 2 )
 	print"Wähle $curknoten\n";
 	
 	#wenn im kreis dann abbrechen
-	$nngone = keys(%ngone);
+	$nngone = keys(%allpathsnodes);
 	
 	if ( $nngone == $lastnngone )
 	{
 	    print"Läuft im Kreis!\n";
 	    #noch offene knoten
-	    $nknoten = $nknoten - $nngone;
+	    #$nknoten = $nknoten - $nngone;
 	    $nngone = 0;
 	    %ngone = ();
 	    last();
@@ -182,7 +182,7 @@ while ( $nknoten >= 2 )
 	my $pro = <>;
     }
     
-    $nknoten = $nknoten - $nngone;
+    #$nknoten = $nknoten - $nngone;
     push(@paths, [@path]);
     @path = ();
 }
