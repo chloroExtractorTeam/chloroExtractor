@@ -74,7 +74,7 @@ my $nachbarend;
 my %pathsgone;
 my %ngone;
 my $nngone = 0;
-my $lastnngone;
+my $lastnngone = 1;
 my @paths;
 my %allpathsnodes;
 
@@ -85,11 +85,10 @@ $ngone{$curknoten}++;
 #wie viele knoten müssen durhclaufen werden?
 my $nknoten = @knoten+0;
 
-while ( $nknoten >= 2 )
+print"==================================\nStarte mit Knoten $curknoten\n==================================\n";
+    
+while ( $nknoten >= $nngone + 1 )
 {
-
-
-
     #wenn wenn schon pfade vorhanden neuen anfangsknoten wählen
     if (@paths && $nngone == 0)
     {
@@ -99,93 +98,94 @@ while ( $nknoten >= 2 )
 	    unless (exists($allpathsnodes{$_}))
 	    {
 		$curknoten = $_;
+		push(@path, $curknoten);
 		$allpathsnodes{$curknoten}++;                                                                                                              
 		print"Neuer knoten: $curknoten\n";
+		print"==================================\nStarte mit Knoten $curknoten\n==================================\n";
 		last();
 	    }
 	}
     }
-
-    print"==================================\nStarte mit Knoten $curknoten\n==================================\n";
     
-    while ( $nknoten >= $nngone + 1 )
+
+    
+    #erstmal zum andren contigende
+    if ($curknoten =~ /(.+)5prime$/)
     {
-
-        #erstmal zum andren contigende
-	if ($curknoten =~ /(.+)5prime$/)
+	$last = $curknoten;
+	$curknoten = $1."3prime";
+	push(@path, $curknoten);
+	$allpathsnodes{$curknoten}++;
+	$ngone{$curknoten}++;
+    }
+    elsif ($curknoten =~ /(.+)3prime$/)
+    {
+	$last = $curknoten;
+	$curknoten = $1."5prime";
+	push(@path, $curknoten);
+	$allpathsnodes{$curknoten}++;
+	$ngone{$curknoten}++;
+    }
+    
+    print"Aktueller Knoten: $curknoten\n";
+    
+    #contigende feststellen um zu passendem ende zu gehen 
+    $curknoten =~ /.+([35])prime$/;
+    $curknotenend = $1;
+    
+    @nachbarn = $g->neighbours($curknoten);
+    print"Nachbarn: @nachbarn\n";
+    
+    #$pathsgone{$curknoten};
+    
+    #nachbarn durchsuchen nach nächstem knoten
+    foreach (@nachbarn)
+    {
+	$_ =~ /.+([35])prime$/;
+	$nachbarend = $1;
+	
+	#knoten auswählen wenn es nicht der letzte knoten ist und das ende passt und der knoten von hier schonmal besucht wurde
+	if ( $_ ne $last && $curknotenend != $nachbarend && !exists($pathsgone{$curknoten}{$_}) )
 	{
-	    $last = $curknoten;
-	    $curknoten = $1."3prime";
+	    $pathsgone{$curknoten}{$_}++;
+	    $curknoten = $_;
+	    print Dumper(%pathsgone);
 	    push(@path, $curknoten);
 	    $allpathsnodes{$curknoten}++;
 	    $ngone{$curknoten}++;
-	}
-	elsif ($curknoten =~ /(.+)3prime$/)
-	{
-	    $last = $curknoten;
-	    $curknoten = $1."5prime";
-	    push(@path, $curknoten);
-	    $allpathsnodes{$curknoten}++;
-	    $ngone{$curknoten}++;
-	}
-	
-	print"Aktueller Knoten: $curknoten\n";
-
-	#contigende feststellen um zu passendem ende zu gehen 
-	$curknoten =~ /.+([35])prime$/;
-	$curknotenend = $1;
-	
-	@nachbarn = $g->neighbours($curknoten);
-	print"Nachbarn: @nachbarn\n";
-	
-	$pathsgone{$curknoten};
-	
-	#nachbarn durchsuchen nach nächstem knoten
-	foreach (@nachbarn)
-	{
-	    $_ =~ /.+([35])prime$/;
-	    $nachbarend = $1;
-	    
-	    #knoten auswählen wenn es nicht der letzte knoten ist und das ende passt und der knoten von hier schonmal besucht wurde
-	    if ( $_ ne $last && $curknotenend != $nachbarend && !exists($pathsgone{$curknoten}{$_}) )
-	    {
-		$pathsgone{$curknoten}{$_}++;
-		$curknoten = $_;
-		print Dumper(%pathsgone);
-		push(@path, $curknoten);
-		$allpathsnodes{$curknoten}++;
-		$ngone{$curknoten}++;
-		last();
-	    }
-	}
-	
-	print"Wähle $curknoten\n";
-	
-	#wenn im kreis dann abbrechen
-	$nngone = keys(%allpathsnodes);
-	
-	if ( $nngone == $lastnngone )
-	{
-	    print"Läuft im Kreis!\n";
-	    #noch offene knoten
-	    #$nknoten = $nknoten - $nngone;
-	    $nngone = 0;
-	    %ngone = ();
 	    last();
 	}
-	
-	$lastnngone = $nngone;
-	
-	#print Dumper(%ngone);
-	print"Pfad bis jetzt: @path\n";
-	print"\nKnoten abgearbeitet: $nngone von $nknoten\n";
-	my $pro = <>;
     }
     
-    #$nknoten = $nknoten - $nngone;
-    push(@paths, [@path]);
-    @path = ();
+    print"Wähle $curknoten\n";
+    
+    #wenn im kreis dann abbrechen
+    $nngone = keys(%allpathsnodes);
+    
+    if ( $nngone == $lastnngone )
+    {
+	print"Läuft im Kreis!\n";
+	#noch offene knoten
+	#$nkoten = $nknoten - $nngone;
+	push(@paths, [@path]);
+	@path = ();
+	$nngone = 0;
+	%ngone = ();
+	next();
+    }
+    
+    $lastnngone = $nngone;
+    
+    #print Dumper(%ngone);
+    print"Pfad bis jetzt: @path\n";
+    print"\nKnoten abgearbeitet: $nngone von $nknoten\n";
+    my $pro = <>;
 }
+
+#$nknoten = $nknoten - $nngone;
+push(@paths, [@path]);
+@path = ();
+
 
 print Dumper(@paths);
 
