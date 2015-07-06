@@ -80,7 +80,6 @@ my %allpathsnodes;
 
 
 $allpathsnodes{$curknoten}++;
-$ngone{$curknoten}++;
 
 #wie viele knoten müssen durhclaufen werden?
 my $nknoten = @knoten+0;
@@ -100,7 +99,6 @@ while ( $nknoten >= $nngone + 1 )
 		$curknoten = $_;
 		push(@path, $curknoten);
 		$allpathsnodes{$curknoten}++;                                                                                                              
-		print"Neuer knoten: $curknoten\n";
 		print"==================================\nStarte mit Knoten $curknoten\n==================================\n";
 		last();
 	    }
@@ -116,7 +114,6 @@ while ( $nknoten >= $nngone + 1 )
 	$curknoten = $1."3prime";
 	push(@path, $curknoten);
 	$allpathsnodes{$curknoten}++;
-	$ngone{$curknoten}++;
     }
     elsif ($curknoten =~ /(.+)3prime$/)
     {
@@ -124,7 +121,6 @@ while ( $nknoten >= $nngone + 1 )
 	$curknoten = $1."5prime";
 	push(@path, $curknoten);
 	$allpathsnodes{$curknoten}++;
-	$ngone{$curknoten}++;
     }
     
     print"Aktueller Knoten: $curknoten\n";
@@ -135,8 +131,6 @@ while ( $nknoten >= $nngone + 1 )
     
     @nachbarn = $g->neighbours($curknoten);
     print"Nachbarn: @nachbarn\n";
-    
-    #$pathsgone{$curknoten};
     
     #nachbarn durchsuchen nach nächstem knoten
     foreach (@nachbarn)
@@ -152,7 +146,6 @@ while ( $nknoten >= $nngone + 1 )
 	    print Dumper(%pathsgone);
 	    push(@path, $curknoten);
 	    $allpathsnodes{$curknoten}++;
-	    $ngone{$curknoten}++;
 	    last();
 	}
     }
@@ -170,7 +163,6 @@ while ( $nknoten >= $nngone + 1 )
 	push(@paths, [@path]);
 	@path = ();
 	$nngone = 0;
-	%ngone = ();
 	next();
     }
     
