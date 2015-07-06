@@ -25,6 +25,8 @@ my $seq_overlap;
 my $output;
 my $seqminuslength = 0;
 my $consensus;
+my $consensusendup;
+my $consensusenddown;
 my $consensusend;
 my $bestalign;
 
@@ -63,13 +65,21 @@ for ( my $i = 0; $i < @path+0; $i++ )
     #if ( ( $contigend1 eq "3prime" && $contigend2 eq "5prime" ) || ( $contigend1 eq "5prime" && $contigend2 eq "3prime" ) )
     #{
     print STDERR "Aligning $contig1 with Overlap\n";
-    $consensusend = substr($consensus, length($consensus)-1000, 1000);
-    $output = align( $consensusend, $seq_overlap );
-    #$consensusend = substr($consensus, 0, 1000);
-    
+    $consensusendup = substr($consensus, length($consensus)-1000, 1000);
+    #$output = align( $consensusend, $seq_overlap );
+    $consensusenddown = substr($consensus, 0, 1000);
+    $output = align( $consensusendup, $consensusenddown, $seq_overlap );
     $bestalign = find_bestalign();
     print STDERR "choosing $bestalign\n";
-    $consensus = substr($consensus, 0, length($consensus)-1000).find_consens($bestalign);
+    if ( $bestalign =~ /up/ )
+    {
+	$consensus = substr($consensus, 0, length($consensus)-1000).find_consens($bestalign);
+    }
+    else
+    {
+	$consensus = find_consens($bestalign).substr($consensus, 1000, length($consensus));
+    }
+
     my $bla = <>;
     print STDERR "Aligning $contig2 with Overlap\n";
     $consensusend = substr($consensus, length($consensus)-1000, 1000);
@@ -104,38 +114,56 @@ close $OUT;
 
 sub find_bestalign
 {
-    my $score;
-    my $score_rev;
+    my %scores;
+    my $up_score;
+    my $up_score_rev;
+    my $down_score;
+    my $down_score_rev;
 
-    open(my $FH, '<', 'needle_out_rev.fa') or die "Could not open file 'needle_out_rev.fa' $!";
+    open(my $FH, '<', 'needle_out_up_rev.fa') or die "Could not open file 'needle_out_up_rev.fa' $!";
     while ( <$FH> )
     {
 	if ( $_ =~ /Score: (.+)/ )
 	{
-	    $score_rev = $1;
+	    $scores{"needle_out_up_rev.fa"} = $1;
 	}
     }
     close $FH;
-    open($FH, '<', 'needle_out.fa') or die "Could not open file 'needle_out.fa' $!";
+    open($FH, '<', 'needle_out_up.fa') or die "Could not open file 'needle_out_up.fa' $!";
     while ( <$FH> )
     {
 	if ( $_ =~ /Score: (.+)/ )
 	{
-	    $score = $1;
+	    $scores{"needle_out_up.fa"} = $1;
 	}
     }
     close $FH;
+    open($FH, '<', 'needle_out_down.fa') or die "Could not open file 'needle_out_down.fa' $!";
+    while ( <$FH> )
+    {
+        if ( $_ =~ /Score: (.+)/ )
+        {
+            $scores{"needle_out_down.fa"} = $1;
+	}
+    }
+    close $FH;
+    open($FH, '<', 'needle_out_down_rev.fa') or die "Could not open file 'needle_out_down_rev.fa' $!";
+    while ( <$FH> )
+    {
+        if ( $_ =~ /Score: (.+)/ )
+        {
+            $scores{"needle_out_down_rev.fa"} = $1;
+	}
+    }
+    close $FH;
+
+
     
-    print STDERR "needle_out.fa Score: $score\nneedle_out_rev.fa Score: $score_rev\n";
+    print STDERR Dumper(%scores);
 
-    if ( $score >= $score_rev )
-    {
-	return "needle_out.fa";
-    }
-    else
-    {
-	return "needle_out_rev.fa";
-    }
+    my @sorted = sort {$scores{$b} <=> $scores{$a}} keys %scores;
+
+    return $sorted[0];
 
 }
     
@@ -176,15 +204,21 @@ sub readseq
 
 sub align
 {
-    open(my $FH, '>', 'forneedle1.fa') or die "Could not open file 'forneedle1.fa' $!";
+    open(my $FH, '>', 'forneedle_up.fa') or die "Could not open file 'forneedle1.fa' $!";
     print $FH $_[0];
     close $FH;
-    open($FH, '>', 'forneedle2.fa') or die "Could not open file 'forneedle2.fa' $!";
+    open($FH, '>', 'forneedle_down.fa') or die "Could not open file 'forneedle2.fa' $!";
     print $FH $_[1];
     close $FH;
+    open($FH, '>', 'forneedle_overlap.fa') or die "Could not open file 'forneedle2.fa' $!";
+    print $FH $_[2];
+    close $FH;
 
-    my $output = qx(needle -asequence forneedle1.fa -bsequence forneedle2.fa -aformat3 markx3 -outfile needle_out.fa -gapopen 10 -gapextend 0.5);
-    $output = qx(needle -asequence forneedle1.fa -sreverse_bsequence forneedle2.fa -aformat3 markx3 -outfile needle_out_rev.fa -gapopen 10 -gapextend 0.5);
+    my $output = qx(needle -asequence forneedle_up.fa -bsequence forneedle_overlap.fa -aformat3 markx3 -outfile needle_out_up.fa -gapopen 10 -gapextend 0.5);
+    $output = qx(needle -asequence forneedle_up.fa -sreverse_bsequence forneedle_overlap.fa -aformat3 markx3 -outfile needle_out_up_rev.fa -gapopen 10 -gapextend 0.5);
+
+    $output = qx(needle -asequence forneedle_down.fa -bsequence forneedle_overlap.fa -aformat3 markx3 -outfile needle_out_down.fa -gapopen 10 -gapextend 0.5);
+    $output = qx(needle -asequence forneedle_down.fa -sreverse_bsequence forneedle_overlap.fa -aformat3 markx3 -outfile needle_out_down_rev.fa -gapopen 10 -gapextend 0.5);
     return $output;
 }
 
