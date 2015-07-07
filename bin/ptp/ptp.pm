@@ -7,12 +7,16 @@ use Fasta::Parser;
 use Cwd;
 use FindBin;
 use lib "$FindBin::Bin/../../lib/";
+use lib "$FindBin::Bin";
 use File::Basename;
+use fir_wo_out;
 
 my $dir = getcwd();
 my $basename = basename($dir);
 
-my @path = qw(Contig2_3prime Contig2_5prime Contig3_3prime Contig3_5prime Contig1_3prime Contig1_5prime Contig3_5prime);
+my @path = fir_wo_out::get_path();
+@path = @{$path[0]};
+
 my $contig1;
 my $contig2;
 my $contigend1;
@@ -22,13 +26,9 @@ my $overlapdir;
 my $seq_contig1;
 my $seq_contig2;
 my $seq_overlap;
-my $output;
-my $seqminuslength = 0;
+#my $output;
+#my $seqminuslength = 0;
 my $consensus;
-my $consensusendup;
-my $consensusenddown;
-my $consensusend;
-my $bestalign;
 
 $contigsdir = $dir."/asc.fa";
 
@@ -62,47 +62,13 @@ for ( my $i = 0; $i < @path+0; $i++ )
     
     $seq_overlap = readseq($overlapdir, "NODE_1");
 
-    #if ( ( $contigend1 eq "3prime" && $contigend2 eq "5prime" ) || ( $contigend1 eq "5prime" && $contigend2 eq "3prime" ) )
-    #{
-    print STDERR "Aligning $contig1 with Overlap\n";
-    $consensusendup = substr($consensus, length($consensus)-1000, 1000);
-    #$output = align( $consensusend, $seq_overlap );
-    $consensusenddown = substr($consensus, 0, 1000);
-    $output = align( $consensusendup, $consensusenddown, $seq_overlap );
-    $bestalign = find_bestalign();
-    print STDERR "choosing $bestalign\n";
-    if ( $bestalign =~ /up/ )
-    {
-	$consensus = substr($consensus, 0, length($consensus)-1000).find_consens($bestalign);
-    }
-    else
-    {
-	$consensus = find_consens($bestalign).substr($consensus, 1000, length($consensus));
-    }
+    $consensus = do_it($consensus , $seq_overlap);
 
-    my $bla = <>;
-    print STDERR "Aligning $contig2 with Overlap\n";
-    $consensusend = substr($consensus, length($consensus)-1000, 1000);
-    $output = align( $consensusend, $seq_contig2 );
-    $bestalign = find_bestalign();
-    print STDERR "choosing $bestalign\n";
-    $consensus = substr($consensus, 0, length($consensus)-1000).find_consens($bestalign);
-    print STDERR "DONE\n";
-    #}
-    #else
-    #{
-    #     print"Aligning $contig1 with Overlap\n";
-    #     $consensusend = substr($consensus, 0, 1000);
-    #     $output = align( $consensusend, $seq_overlap );
-    #     $consensus = find_consens().substr($consensus, 1000, length($consensus));
-    #     print"Aligning $contig2 with Overlap\n";
-    #     $consensusend = substr($consensus, 0, 1000);
-    #     $output = align( $consensusend, $seq_contig2 );
-    #     $consensus = find_consens().substr($consensus, 1000, length($consensus));
-    #     print ">Chloroplast_Consensus\n$consensus";
-    #     print STDERR "DONE\n";
-    #}
-    my $bla = <>;
+    #my $bla = <>;
+    
+    $consensus = do_it($consensus , $seq_contig2);
+    
+    #my $bla = <>;
 }
 
 open(my $OUT, '>', 'pl_cons.fa') or die "Could not open file 'pl_cons.fa' $!";
@@ -111,6 +77,23 @@ close $OUT;
 
 
 
+sub do_it
+{
+    my $consensusendup = substr($_[0], length($_[0])-1000, 1000);
+    #$output = align( $consensusend, $seq_overlap );
+    my $consensusenddown = substr($_[0], 0, 1000);
+    my $output = align( $consensusendup, $consensusenddown, $_[1] );
+    my $bestalign = find_bestalign();
+    print STDERR "choosing $bestalign\n";
+    if ( $bestalign =~ /up/ )
+    {
+	return substr($consensus, 0, length($consensus)-1000).find_consens($bestalign);
+    }
+    else
+    {
+	return find_consens($bestalign).substr($consensus, 1000, length($consensus));
+    }
+}
 
 sub find_bestalign
 {
