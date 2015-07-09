@@ -265,6 +265,7 @@ if ($errorcode != 0)
 
 ## last step is copying the output file
 my $outputfasta=$opt{out};
+
 if (File::Spec->file_name_is_absolute($outputfasta))
 {
     $L->debug("Filename for output file is absolute");
@@ -273,7 +274,24 @@ if (File::Spec->file_name_is_absolute($outputfasta))
     $outputfasta = $oldpwd."/".$outputfasta;
     $L->debug(sprintf("Filename for output file is realtive, assuming to put it in the original directory. New absolut filename is '%s'", $outputfasta));
 }
-copy($renamedfile.".contigs", $outputfasta) || $L->logdie(sprintf("Copying the result ('%s') into the output file ('%s') failed: %s", $renamedfile.".contigs", $outputfasta, $!));
+
+
+open(my $FH1, "<", $renamedfile.".contigs") || $L->logdie(sprintf("Opening the result ('%s') failed: %s", $renamedfile.".contigs", $!));
+open(my $OUT, ">", $outputfasta) || $L->logdie(sprintf("Writing into the output file ('%s') failed: %s", $outputfasta, $!));
+while ( <$FH1> )
+{
+    print $OUT $_;
+}
+close $FH1;
+open my $FH2, "<", $renamedfile.".singlets" || $L->logdie(sprintf("Opening the result ('%s') failed: %s", $renamedfile.".singlets", $!));
+while ( <$FH2> )
+{
+    print $OUT $_;
+}
+close $FH2;
+close $OUT;
+
+#copy($renamedfile.".contigs", $outputfasta) || $L->logdie(sprintf("Copying the result ('%s') into the output file ('%s') failed: %s", $renamedfile.".contigs", $outputfasta, $!));
 
 #-----------------------------------------------------------------------------#
 
