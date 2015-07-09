@@ -284,9 +284,18 @@ while ( <$FH1> )
 }
 close $FH1;
 open my $FH2, "<", $renamedfile.".singlets" || $L->logdie(sprintf("Opening the result ('%s') failed: %s", $renamedfile.".singlets", $!));
+my $n = 1;
 while ( <$FH2> )
 {
-    print $OUT $_;
+    if ( $_ =~ /^>.+/ )
+    {
+	print $OUT ">ass/contigs.fasta_renamed.sContig".$n."\n";
+	$n++;
+    }
+    else
+    {
+	print $OUT $_;
+    }
 }
 close $FH2;
 close $OUT;
