@@ -17,6 +17,9 @@ my $basename = basename($dir);
 my @path = fir_wo_out::get_path();
 @path = @{$path[0]};
 
+print "using path:\n";
+print Dumper(@path);
+
 my $contig1;
 my $contig2;
 my $contigend1;
@@ -32,14 +35,17 @@ my $consensus;
 
 $contigsdir = $dir."/asc.fa";
 
+#init first path element as consensus
 $path[0] =~ /(.+)_[53]prime/;
 $contig1 = $1;
 $consensus = readseq($contigsdir, $contig1);
 $consensus =~ /.+\n(.+)/;
 $consensus = $1;
 
+#main loop
 for ( my $i = 0; $i < @path+0; $i++ )
 {
+    #get path elements (contigs) which will be connected
     $path[$i] =~ /(.+)_([53]prime)/;
     $contig1 = $1;
     $contigend1 = $2;
@@ -49,23 +55,29 @@ for ( my $i = 0; $i < @path+0; $i++ )
     $contig2 = $1;
     $contigend2 = $2;
     }
-
+    
+    #skip path element to next different contig
     if ($contig1 eq $contig2)
     {
 	next();
     }
     
+    #get sequence of elements
     $seq_contig1 = readseq($contigsdir, $contig1);
     $seq_contig2 = readseq($contigsdir, $contig2);
 
+    #get the directory of sequence which connects the two path elements
     $overlapdir = getoverlapdir($dir, $contig1, $contigend1, $contig2, $contigend2);
     
+    #read its sequence
     $seq_overlap = readseq($overlapdir, "NODE_1");
 
+    #merge consensus with connecting sequence 
     $consensus = do_it($consensus , $seq_overlap);
 
     #my $bla = <>;
     
+    #merge connecting sequnece with next path element (contig)
     $consensus = do_it($consensus , $seq_contig2);
     
     #my $bla = <>;
@@ -157,15 +169,21 @@ sub getoverlapdir
     {
 	$overlapdir = $_[0]."/merged_ass/contigs.fasta_renamed.".$_[1]."_".$_[2]."_ass/contigs.fasta_renamed.".$_[3]."_".$_[4]."/extended_asc/scaffolds.fasta";
     }
-    else
+    elsif ( -e $_[0]."/merged_ass/contigs.fasta_renamed.".$_[3]."_".$_[4]."_ass/contigs.fasta_renamed.".$_[1]."_".$_[2]."/extended_asc/scaffolds.fasta" )
     {
 	$overlapdir = $_[0]."/merged_ass/contigs.fasta_renamed.".$_[3]."_".$_[4]."_ass/contigs.fasta_renamed.".$_[1]."_".$_[2]."/extended_asc/scaffolds.fasta";
     }
+    else
+    {
+	die "Can not find contig merging $_[1]_$_[2] with $_[3]_$_[4]";
+    }
+
     return $overlapdir;
 }
 
 sub readseq
 {
+    print "Reading $_[1] from $_[0]\n";
     my $seq_contig;
     my $contig_in = Fasta::Parser->new(
 	file => $_[0],
