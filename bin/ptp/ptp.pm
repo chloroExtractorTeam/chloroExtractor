@@ -42,7 +42,7 @@ $consensus = readseq($contigsdir, $contig1);
 $consensus =~ /.+\n(.+)/;
 $consensus = $1;
 
-#main loop
+#main loop until path has ended
 for ( my $i = 0; $i < @path+0; $i++ )
 {
     #get path elements (contigs) which will be connected
@@ -56,17 +56,17 @@ for ( my $i = 0; $i < @path+0; $i++ )
     $contigend2 = $2;
     }
     
-    #skip path element to next different contig
+    #skip path element to next different element
     if ($contig1 eq $contig2)
     {
 	next();
     }
     
-    #get sequence of elements
+    #get sequence of contigs
     $seq_contig1 = readseq($contigsdir, $contig1);
     $seq_contig2 = readseq($contigsdir, $contig2);
 
-    #get the directory of sequence which connects the two path elements
+    #get the directory of sequence which connects the two contigs
     $overlapdir = getoverlapdir($dir, $contig1, $contigend1, $contig2, $contigend2);
     
     #read its sequence
@@ -75,8 +75,6 @@ for ( my $i = 0; $i < @path+0; $i++ )
     #merge consensus with connecting sequence 
     $consensus = do_it($consensus , $seq_overlap);
 
-    #my $bla = <>;
-    
     #merge connecting sequnece with next path element (contig)
     $consensus = do_it($consensus , $seq_contig2);
     
@@ -91,12 +89,15 @@ close $OUT;
 
 sub do_it
 {
+    #cut out first 1000 and last 1000 bases (saving memory)
     my $consensusendup = substr($_[0], length($_[0])-1000, 1000);
-    #$output = align( $consensusend, $seq_overlap );
     my $consensusenddown = substr($_[0], 0, 1000);
+    #align 4 times: beginning->reversed, not reversed and ending-> revesed, notreversed
     my $output = align( $consensusendup, $consensusenddown, $_[1] );
+    #find best alignment
     my $bestalign = find_bestalign();
     print STDERR "choosing $bestalign\n";
+    #find consensus of best alignment and put it back to the right end of the rest
     if ( $bestalign =~ /up/ )
     {
 	return substr($consensus, 0, length($consensus)-1000).find_consens($bestalign);
@@ -114,6 +115,8 @@ sub find_bestalign
     my $up_score_rev;
     my $down_score;
     my $down_score_rev;
+
+    #this function tests on which end and wether reversed or not the merging sequence fits best by reading the score value out of the alignment files
 
     open(my $FH, '<', 'needle_out_up_rev.fa') or die "Could not open file 'needle_out_up_rev.fa' $!";
     while ( <$FH> )
@@ -183,6 +186,7 @@ sub getoverlapdir
 
 sub readseq
 {
+    #parsing fasta and search for contig
     print "Reading $_[1] from $_[0]\n";
     my $seq_contig;
     my $contig_in = Fasta::Parser->new(
@@ -225,11 +229,13 @@ sub align
 
 sub find_consens
 {
+    #parse content of alignment file and find consens
     my %clustalseqs;
     my $id;
     open(my $FHCO, '<', $_[0]) or die "Could not open file $_[0] $!";
     while ( <$FHCO> )
     {
+	#skipping lines with # and emptylines
 	if ( $_ =~ /#/ || $_ =~ /^\n/ )
 	{
 	    next();
