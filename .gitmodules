@@ -4,3 +4,9 @@
 [submodule "util/SeqFilter"]
 	path = util/SeqFilter
 	url = https://github.com/BioInf-Wuerzburg/SeqFilter.git
+[submodule "util/Verbose"]
+	path = util/Verbose
+	url = git@wbbi105:software/modules/perl/Verbose
+[submodule "util/Cfg"]
+	path = util/Cfg
+	url = git@wbbi105:software/modules/perl/Cfg
