@@ -10,3 +10,6 @@
 [submodule "util/Cfg"]
 	path = util/Cfg
 	url = git@wbbi105:software/modules/perl/Cfg
+[submodule "util/PipeWrap"]
+	path = util/PipeWrap
+	url = git@wbbi105:software/modules/perl/PipeWrap
