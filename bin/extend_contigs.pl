@@ -534,6 +534,7 @@ sub store_sequence_and_create_folder
 =head1 AUTHOR
 
 Frank Foerster NAME S<frank.foerster@biozentrum.uni-wuerzburg.de>
+Maik Gündel NAME S<maik.guendel@stud-mail.uni-wuerzburg.de>
 
 =cut
 
