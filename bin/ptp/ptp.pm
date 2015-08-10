@@ -9,12 +9,12 @@ use FindBin;
 use lib "$FindBin::Bin/../../lib/";
 use lib "$FindBin::Bin";
 use File::Basename;
-use fir_wo_out;
+use find_path;
 
 my $dir = getcwd();
 my $basename = basename($dir);
 
-my @path = fir_wo_out::get_path();
+my @path = find_path::get_path();
 @path = @{$path[0]};
 
 print "using path:\n";
