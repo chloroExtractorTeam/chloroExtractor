@@ -243,7 +243,7 @@ while ( $nknoten >= $nngone + 1 )
     print"Pfad bis jetzt: @path\n";
 
     print "\nLetzte beiden: @last2 \n";
-    my $bla = <>;
+    #my $bla = <>;
 
     #wenn im kreis dann abbrechen
 
