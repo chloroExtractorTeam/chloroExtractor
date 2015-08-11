@@ -13,3 +13,12 @@
 [submodule "util/PipeWrap"]
 	path = util/PipeWrap
 	url = git@wbbi105:software/modules/perl/PipeWrap
+[submodule "util/Sam"]
+	path = util/Sam
+	url = git@132.187.22.105:software/modules/perl/Sam
+[submodule "util/Fasta"]
+	path = util/Fasta
+	url = git@132.187.22.105:software/modules/perl/Fasta
+[submodule "util/Fastq"]
+	path = util/Fastq
+	url = git@132.187.22.105:software/modules/perl/Fastq
