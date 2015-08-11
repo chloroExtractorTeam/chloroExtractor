@@ -28,3 +28,6 @@
 [submodule "util/Bowtie2"]
 	path = util/Bowtie2
 	url = git@132.187.22.105:software/modules/perl/Bowtie2
+[submodule "util/Kmer"]
+	path = util/Kmer
+	url = git@132.187.22.105:software/modules/perl/Kmer
