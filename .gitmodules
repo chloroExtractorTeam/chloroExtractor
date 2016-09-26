@@ -4,3 +4,30 @@
 [submodule "util/SeqFilter"]
 	path = util/SeqFilter
 	url = https://github.com/BioInf-Wuerzburg/SeqFilter.git
+[submodule "util/Verbose"]
+	path = util/Verbose
+	url = git@wbbi105:software/modules/perl/Verbose
+[submodule "util/Cfg"]
+	path = util/Cfg
+	url = git@wbbi105:software/modules/perl/Cfg
+[submodule "util/PipeWrap"]
+	path = util/PipeWrap
+	url = git@wbbi105:software/modules/perl/PipeWrap
+[submodule "util/Sam"]
+	path = util/Sam
+	url = git@132.187.22.105:software/modules/perl/Sam
+[submodule "util/Fasta"]
+	path = util/Fasta
+	url = git@132.187.22.105:software/modules/perl/Fasta
+[submodule "util/Fastq"]
+	path = util/Fastq
+	url = git@132.187.22.105:software/modules/perl/Fastq
+[submodule "util/Jellyfish"]
+	path = util/Jellyfish
+	url = git@132.187.22.105:software/modules/perl/Jellyfish
+[submodule "util/Bowtie2"]
+	path = util/Bowtie2
+	url = git@132.187.22.105:software/modules/perl/Bowtie2
+[submodule "util/Kmer"]
+	path = util/Kmer
+	url = git@132.187.22.105:software/modules/perl/Kmer
