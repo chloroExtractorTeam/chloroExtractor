@@ -30,4 +30,4 @@
 	url = https://github.com/BioInf-Wuerzburg/perl5lib-Bowtie2.git
 [submodule "util/Kmer"]
 	path = util/Kmer
-	url = git@132.187.22.105:software/modules/perl/Kmer
+	url = https://github.com/BioInf-Wuerzburg/perl5lib-Kmer.git
