@@ -6,7 +6,7 @@
 	url = https://github.com/BioInf-Wuerzburg/SeqFilter.git
 [submodule "util/Verbose"]
 	path = util/Verbose
-	url = git@wbbi105:software/modules/perl/Verbose
+	url = https://github.com/BioInf-Wuerzburg/perl5lib-Verbose.git
 [submodule "util/Cfg"]
 	path = util/Cfg
 	url = https://github.com/BioInf-Wuerzburg/perl5lib-Cfg.git
