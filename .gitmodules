@@ -12,7 +12,7 @@
 	url = git@wbbi105:software/modules/perl/Cfg
 [submodule "util/PipeWrap"]
 	path = util/PipeWrap
-	url = git@wbbi105:software/modules/perl/PipeWrap
+	url = https://github.com/BioInf-Wuerzburg/perl5lib-PipeWrap.git
 [submodule "util/Sam"]
 	path = util/Sam
 	url = https://github.com/BioInf-Wuerzburg/perl5lib-Sam.git
