@@ -18,7 +18,7 @@
 	url = https://github.com/BioInf-Wuerzburg/perl5lib-Sam.git
 [submodule "util/Fasta"]
 	path = util/Fasta
-	url = git@132.187.22.105:software/modules/perl/Fasta
+	url = https://github.com/BioInf-Wuerzburg/perl5lib-Fasta.git
 [submodule "util/Fastq"]
 	path = util/Fastq
 	url = https://github.com/BioInf-Wuerzburg/perl5lib-Fastq.git
