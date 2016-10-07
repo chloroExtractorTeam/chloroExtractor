@@ -21,7 +21,7 @@
 	url = git@132.187.22.105:software/modules/perl/Fasta
 [submodule "util/Fastq"]
 	path = util/Fastq
-	url = git@132.187.22.105:software/modules/perl/Fastq
+	url = https://github.com/BioInf-Wuerzburg/perl5lib-Fastq.git
 [submodule "util/Jellyfish"]
 	path = util/Jellyfish
 	url = https://github.com/BioInf-Wuerzburg/perl5lib-Jellyfish.git
