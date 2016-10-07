@@ -15,7 +15,7 @@
 	url = git@wbbi105:software/modules/perl/PipeWrap
 [submodule "util/Sam"]
 	path = util/Sam
-	url = git@132.187.22.105:software/modules/perl/Sam
+	url = https://github.com/BioInf-Wuerzburg/perl5lib-Sam.git
 [submodule "util/Fasta"]
 	path = util/Fasta
 	url = git@132.187.22.105:software/modules/perl/Fasta
