@@ -1,6 +1,0 @@
-Revision history for Perl extension deldir.
-
-0.01  Thu May 28 16:46:36 2015
-	- original version; created by h2xs 1.23 with options
-		-AX -n deldir
-
