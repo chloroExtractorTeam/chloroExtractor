@@ -385,19 +385,19 @@ if($khash){
 #		}
 #	}else{
 	
-		while(<$kfh>){
-			my ($k, $v) = split("\t", $_);
-			unless ($opt{'penalize-N'} && $k =~ tr/N//){
-			    $K{$k} = $v;
-			}
+	while(<$kfh>){
+	    my ($k, $v) = split("\t", $_);
+	    unless ($opt{'penalize-N'} && $k =~ tr/N//){
+		$K{$k} = $v;
+	    }
 			
-			my $km_pg_tell = tell($kfh);
+	    my $km_pg_tell = tell($kfh);
 			
-			if ($km_pg_tell >= $next_update){
-			    
-			    $next_update = $km_pg->update($km_pg_tell);
-			}
-		}
+	    if ($km_pg_tell >= $next_update){
+		
+		$next_update = $km_pg->update($km_pg_tell);
+	    }
+	}
 #	}
 	$km_pg->update($km_pg_count);
 				    
