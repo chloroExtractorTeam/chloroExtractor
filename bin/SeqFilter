@@ -482,7 +482,7 @@ Log::Log4perl->init( \q(
         log4perl.appender.Screen                = Log::Log4perl::Appender::Screen
         log4perl.appender.Screen.stderr         = 1
         log4perl.appender.Screen.layout         = PatternLayout
-			 log4perl.appender.Screen.layout.ConversionPattern = [%d{yy-MM-dd HH:mm:ss}] [CpE] %m%n
+			 log4perl.appender.Screen.layout.ConversionPattern = [%d{yy-MM-dd HH:mm:ss}] [SeqF] %m%n
 		     ));
 
 
@@ -555,23 +555,8 @@ my $file_size = $FP->can('file_size') ? $FP->file_size : -s $FP->fh;
 #	_fh => $FP->fh(),
 #);
 
-my $pg_count = -1;
-
-if (defined($opt_in)) {
-    open(my $in_fh, $opt_in) or die "Couldn't open file, $opt_in: $!";
-    my $wc_output = `wc -l $opt_in`;
-    chomp($wc_output);
-    $wc_output =~ /^\s*(\d+)(\D.*)?/ or die "Couldn't parse wc output: $wc_output";
-    
-    if ($FASTQ == 1){
-	$pg_count = $1/4;
-    }
-    else 
-    {
-	$pg_count = $1;
-    }
-    close $in_fh or die;
-}
+my $pg_count = -s $opt_in;
+my $pg_seq_count = 0;
 
 #$L->info('Count is '.$pg_count);
 
@@ -582,8 +567,8 @@ my $TPB = Term::ProgressBar->new({
     term_width => 100,
 				 });
 
-$TPB->max_update_rate(1);
-
+#$TPB->max_update_rate(1);
+my $next_update = 0;
 
 # output file
 my $ofh;
@@ -765,7 +750,14 @@ my %BCs; # base contents
 # loop through FASTQ
 LOOP: while (my $SEQ = $FP->next_seq()){
 	$total_count++;
-	$TPB->update();
+	
+	$pg_seq_count += length($SEQ->seq) + length($SEQ->id);
+	
+	if($pg_seq_count >= $next_update){
+
+	    $next_update = $TPB->update($pg_seq_count);
+	}
+
 	
 	my $ID = $SEQ->id;
 	my $length = length($SEQ->seq);
