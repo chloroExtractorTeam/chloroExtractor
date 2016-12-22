@@ -48,10 +48,16 @@ use Data::Dumper;
 use FindBin qw($RealBin $Script);
 use lib "$RealBin/../lib/";
 
+use File::Basename;
+use File::Copy;
+
+
+
+
 #--------------------#
 # Globals
 
-our $Version = 0.01;
+our $VERSION = 0.01;
 
 our $ID = 'fcg';
 
@@ -65,7 +71,7 @@ log4perl.appender.Screen.stderr         = 1
 log4perl.appender.Screen.layout         = PatternLayout
 log4perl.appender.Screen.layout.ConversionPattern = [%d{yy-MM-dd HH:mm:ss}] ['.$ID.'] %m%n
 ';
-
+Log::Log4perl->init( \$log_cfg );
 #------------------#
 # Get Options
 
@@ -104,7 +110,8 @@ if($opt{version}){
 
 my %cfg;
 
-#core 
+#core
+ my $core_cfg = "$RealBin/../".basename($Script, qw(.pl)).".cfg";
 
 if(-e $core_cfg){
     $opt{core_config} = File::Spec->rel2abs($core_cfg);
@@ -152,18 +159,26 @@ $L->debug(Dumper(\%opt));
 #------------------------#
 # MAIN
 
-$opt{out} ||= basename($opt{in}, qw(.fastg).".fa";
+$opt{out} ||= basename($opt{in}, qw(.fastg)).".fa";
 
 # Check infile Format
+		       
+open(FH, "<", $opt{in}) || die "Unable to load file: $opt{in}\n";
+my $first_line = <FH>;
 
-
-
-
+unless ($first_line =~ /^>\S+;/){                               
+    $L->logdie("InputFile is not a fastg Graph");
+}
+else {
+    $L->info("Start to process $opt{in}");
+}
 
 
 
 ## DO YOUR THING GRAPH!
 
+
+close FH;
 
 #--------------------------#
 # Methodes
