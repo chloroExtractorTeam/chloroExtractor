@@ -31,7 +31,7 @@ Display this help.
 =back
 
 =cut
-#----------------------#
+#--------------------------#
 # Modules
 
 use strict;
@@ -54,7 +54,7 @@ use File::Copy;
 
 
 
-#--------------------#
+#---------------------------#
 # Globals
 
 our $VERSION = 0.01;
@@ -72,7 +72,7 @@ log4perl.appender.Screen.layout         = PatternLayout
 log4perl.appender.Screen.layout.ConversionPattern = [%d{yy-MM-dd HH:mm:ss}] ['.$ID.'] %m%n
 ';
 Log::Log4perl->init( \$log_cfg );
-#------------------#
+#--------------------------#
 # Get Options
 
 # opt: multi-params need to be initiated with ARRAYREF!
@@ -101,7 +101,7 @@ $opt{help} && pod2usage(1);
 
 # version
 if($opt{version}){
-	print "$VERSION\n"; 
+	print "Version is $VERSION\n"; 
 	exit 0;
 }
 
@@ -156,7 +156,7 @@ $L->debug(Dumper(\%opt));
 
 
 
-#------------------------#
+#--------------------------#
 # MAIN
 
 $opt{out} ||= basename($opt{in}, qw(.fastg)).".fa";
@@ -184,6 +184,8 @@ close FH;
 # Methodes
 
 
+
+#--------------------------#
 =head1 AUTHOR
 
 Frank Förster S<frank.foerster@uni-wuerzburg.de>
