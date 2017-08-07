@@ -177,8 +177,8 @@ use Fastq::Parser;
 use Fastq::Seq;
 use Jellyfish;
 use Kmer;
-use Verbose::ProgressBar;
-
+#use Verbose::ProgressBar;
+use Term::ProgressBar;
 
 #------------------------------------------------------------------------------#
 # Globals
@@ -354,23 +354,53 @@ my $khash = $opt{perl_hash};
 
 if($khash){
 	$L->info("Loading kmer hash");
+
+	
+	my $next_update = 0;
+	my $km_pg_count = -s $opt{'kmer-hash'};
+        my $km_pg = Term::ProgressBar->new({
+            name => 'Loading kmer hash',
+            count => $km_pg_count,
+            ETA => 'linear',
+            term_width => 100,
+                                           });
+
+
 	my $kfh = $jf->dump([
 	    qw(-c -t),	                  # column, tab separated
 	    $opt_l ? ("-L", $opt_l) : (), # lower cutoff
 	    $opt_u ? ("-U", $opt_u) : (), # upper cutoff
 	    $opt{'kmer-hash'}             # hash
 			    ]);
-	if($opt{'penalize-N'}){
-		while(<$kfh>){
-			my ($k, $v) = split("\t", $_);
-			$K{$k} = $v	unless $k =~ tr/N//;
-		}
-	}else{
-		while(<$kfh>){
-			my ($k, $v) = split("\t", $_);
-			$K{$k} = $v;
-		}
+	
+	
+#	if($opt{'penalize-N'}){
+#		while(<$kfh>){
+#			my ($k, $v) = split("\t", $_);
+#			$K{$k} = $v	unless $k =~ tr/N//;
+#			my $km_pg_tell = tell($kfh);
+#			if($km_pg_tell >= $next_update){
+#			    my $next_update = $km_pg->update($km_pg_tell);
+#			}
+#		}
+#	}else{
+	
+	while(<$kfh>){
+	    my ($k, $v) = split("\t", $_);
+	    unless ($opt{'penalize-N'} && $k =~ tr/N//){
+		$K{$k} = $v;
+	    }
+			
+	    my $km_pg_tell = tell($kfh);
+			
+	    if ($km_pg_tell >= $next_update){
+		
+		$next_update = $km_pg->update($km_pg_tell);
+	    }
 	}
+#	}
+	$km_pg->update($km_pg_count);
+				    
 	$L->info(scalar keys %K," distinct kmers loaded");
 }
 
@@ -410,22 +440,39 @@ unless(@opt_mates){
 		my $fp1 = Fastq::Parser->new(file => $opt_reads[$FC]);
 		open (FQ1, '>', $out_file1) or $L->logcroak("$!");
 
+
+
 		my $pgc = 0;
-		my $pg = Verbose::ProgressBar->new(
-			size => $fp1->fh,
-			level => 2,
-			report_level => $opt{quiet} ? 0 : 2,
-		);
+		my $pg_count = -s $opt_reads[$FC];
+		my $count_pg = 0;
+		my $next_update = 0;
+		
+		
+		
+		my $pg = Term::ProgressBar->new({
+		        name => 'kmer-filter-reads_single',
+			count => $pg_count,
+			ETA => 'linear',
+			term_width => 100,
+			#report_level => $opt{quiet} ? 0 : 2,
+		});
+#		$pg->max_update_rate(2);
 
 		while(my $fq1 = $fp1->next_seq){
 			$rct++;
-			$pg->update unless $pgc++%10000;
+			$count_pg = $count_pg + length($fq1->string); 
+			
+			if($count_pg >= $next_update){
+			    
+			    $next_update = $pg->update($count_pg);
+			   
+			}
 
 			# skip reads shorter kmer
 			if (length($fq1->seq) <= $opt{'kmer-size'}){
 			    $L->debug("Skipping short seqs: 1:", length($fq1->seq));
 			    next;
-}
+			}
 			
 			my $c=0;
 			my @kmers = $km->cmerize($fq1->seq);
@@ -450,7 +497,7 @@ unless(@opt_mates){
 			}
 			
 		}
-		$pg->finish;
+		$pg->update($pg_count);
 		close FQ1;
 	}	
 }else{
@@ -464,18 +511,35 @@ unless(@opt_mates){
 		open (FQ2, '>', $out_file2) or $L->logcroak("$!");
 
 		my $pgc=0;
-		my $pg = Verbose::ProgressBar->new(
-			size => $fp1->fh,
-			level => 2,
-			report_level => $opt{quiet} ? 0 : 2
-		);
+		my $pg_count = -s $opt_reads[$FC];
+		my $count_pg = 0;
+		my $next_update = 0;
+
+		my $pg = Term::ProgressBar->new({
+		        name => 'kmer-filter-reads_paired',
+			count => $pg_count,
+			#level => 2,
+			#report_level => $opt{quiet} ? 0 : 2,
+			ETA => 'linear',
+			term_width => 100,
+						});
+
+#		$pg->max_update_rate(2);
 		
 		while(
 			(my $fq1 = $fp1->next_seq) &&
 			(my $fq2 = $fp2->next_seq)
 		){
 			$rct++;
-			$pg->update unless $pgc++%10000;
+
+			$count_pg = $count_pg + length($fq1->string); 
+			
+			if($count_pg >= $next_update){
+			    
+			    $next_update = $pg->update($count_pg);
+			   
+			}
+
 			
 			my $c1=0;
 			my $c2=0;
@@ -515,7 +579,7 @@ unless(@opt_mates){
 				}
 			}
 		}
-		$pg->finish;
+		$pg->update($pg_count);
 		close FQ1;
 		close FQ2;
 	}

@@ -15,4 +15,11 @@ print LOG $_ while <SPADES>;
 close SPADES;
 close LOG;
 
-qx(ln -s $pre/scaffolds.fasta $pre.fa);
+
+my $file_target = $pre."/scaffolds.fasta";
+my $link_name = $pre.".fa";
+my $symlink_exists = eval { symlink($file_target, $link_name); 1 };
+unless ($symlink_exists)
+{
+    die "Something went wrong during creation of the file link: $file_target --> $link_name\n";
+}

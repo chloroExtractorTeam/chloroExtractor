@@ -233,7 +233,8 @@ $L->info("Task: $task");
 @cmd = (
     "$RealBin/$task", 
     "-1" => "@{$opt{reads}}", 
-    "-2" => "@{$opt{mates}}", 
+    "-2" => "@{$opt{mates}}",
+    "-o" => $opt{out},
     "-r" => $opt{data_cds}, 
     $opt{config} ? ("-c" => $opt{config}) : (),
     $opt{debug} ? '--debug' : () 
