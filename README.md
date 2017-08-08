@@ -6,10 +6,11 @@ Table of contents
 1. Intoduction
 2. Installation
 3. Usage
+4. License
 
 
-Introduction
-------------
+1. Introduction
+---------------
 
 The chloroExtractor is a program which provides a pipeline for DNA extraction of chloroplast DNA from whole genom plant data.
 Too huge amounts of chloroplast DNA can be a problem at the assambly of whole genom data, one solution for this problem can be a core extraction befor sequencing, but this can be expensive.
@@ -17,8 +18,8 @@ The chloroExtractor takes your whole genom data and extract the chloroplast DNA,
 the chloroplast DNA and trys to assamble it. This is possible because of the preserfed nature of the chloroplast primer structure but also the secondary structure.
 
 
-Installation
-------------
+2. Installation
+---------------
 
 Just download the Archive and unpack it.
 
@@ -34,8 +35,8 @@ git submodule init
 git submodule clone --recursive
 ```
 
-Usage
------
+3. Usage
+--------
 
 To use the chloroExtractor, use the ptx executable in the bin/ folder
 
@@ -94,3 +95,9 @@ Options:
     -h|--help
         Display this help.
 ```
+
+
+4. License
+----------
+
+For License please refer to the LICENSE file
