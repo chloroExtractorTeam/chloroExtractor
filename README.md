@@ -12,10 +12,10 @@ Table of contents
 1. Introduction
 ---------------
 
-The chloroExtractor is a program which provides a pipeline for DNA extraction of chloroplast DNA from whole genom plant data.
+The chloroExtractor is a perl based program which provides a pipeline for DNA extraction of chloroplast DNA from whole genom plant data.
 Too huge amounts of chloroplast DNA can be a problem at the assambly of whole genom data, one solution for this problem can be a core extraction befor sequencing, but this can be expensive.
 The chloroExtractor takes your whole genom data and extract the chloroplast DNA, so you can have your diffrent DNAs sepperated easily by the chloroExractor. Furthermore the chloroExtractor takes
-the chloroplast DNA and trys to assamble it. This is possible because of the preserfed nature of the chloroplast primer structure but also the secondary structure.
+the chloroplast DNA and trys to assamble it. This is possible because of the preserfed nature of the chloroplast primary structure but also the secondary structure.
 
 
 2. Installation
@@ -94,6 +94,15 @@ Options:
 
     -h|--help
         Display this help.
+```
+
+All the Options can and should be handled with the configuration file ptx.cfg, which is located in the mainfolder. With this config file you can handle the options for each step and task individual.
+On default the chloroExtractor uses this config file, you can edit these one, or make your own one and uses the -c parameter to use it.
+
+```shell
+
+$ ./ptx -c ownptx.cfg -1 FQ_1 -2 FQ_2
+
 ```
 
 
