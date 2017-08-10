@@ -7,7 +7,8 @@ Table of contents
 2. Requirements
 3. Installation
 4. Usage
-5. License
+5. Data
+6. License
 
 
 1. Introduction
@@ -24,8 +25,10 @@ Through k-mer filtering the k-mers which contains the chloroplast sequences get 
 2. Requirements
 ---------------
 
-*Jellyfish
-*Spades
+*[Jellyfish](http://www.cbcb.umd.edu/software/jellyfish/ "Jellyfish K-mer counter")
+*[Spades](http://cab.spbu.ru/software/spades/ "SPAdes assamlber")
+*[Moose](http://search.cpan.org/~ether/Moose-2.2006/lib/Moose.pm "Moose Perl5-integration")
+
 
 3. Installation
 ---------------
@@ -118,8 +121,12 @@ $ ./ptx -c ownptx.cfg -1 FQ_1 -2 FQ_2
 
 ```
 
+5. Data
+-------
+The chloroExtractor uses unsortet Fastq files with paired end reads. Please make sure your reads are not sortet at all, otherwise there could be problems or even wrong results. 
 
-5. License
+
+6. License
 ----------
 
 For License please refer to the LICENSE file
