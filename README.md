@@ -12,8 +12,7 @@ Table of contents
 
 
 1. Introduction
----------------
-
+----------------
 The chloroExtractor is a perl based program which provides a pipeline for DNA extraction of chloroplast DNA from whole genom plant data.
 Too huge amounts of chloroplast DNA can be a problem at the assambly of whole genom data, one solution for this problem can be a core extraction befor sequencing, but this can be expensive.
 The chloroExtractor takes your whole genom data and extract the chloroplast DNA, so you can have your diffrent DNAs sepperated easily by the chloroExractor. Furthermore the chloroExtractor takes
@@ -23,16 +22,16 @@ Through k-mer filtering the k-mers which contains the chloroplast sequences get 
 
 
 2. Requirements
----------------
-
+----------------
 *[Jellyfish](http://www.cbcb.umd.edu/software/jellyfish/ "Jellyfish K-mer counter")
+
 *[Spades](http://cab.spbu.ru/software/spades/ "SPAdes assamlber")
+
 *[Moose](http://search.cpan.org/~ether/Moose-2.2006/lib/Moose.pm "Moose Perl5-integration")
 
 
 3. Installation
----------------
-
+----------------
 Just download the Archive and unpack it.
 
 OR
@@ -53,7 +52,6 @@ git submodule clone --recursive
 
 4. Usage
 --------
-
 To use the chloroExtractor, use the ptx executable in the bin/ folder
 
 
@@ -122,11 +120,10 @@ $ ./ptx -c ownptx.cfg -1 FQ_1 -2 FQ_2
 ```
 
 5. Data
--------
+--------
 The chloroExtractor uses unsortet Fastq files with paired end reads. Please make sure your reads are not sortet at all, otherwise there could be problems or even wrong results. 
 
 
 6. License
-----------
-
+-----------
 For License please refer to the LICENSE file
