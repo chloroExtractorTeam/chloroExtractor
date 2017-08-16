@@ -29,6 +29,9 @@ Through k-mer filtering the k-mers which contains the chloroplast sequences get 
 
 *[Moose](http://search.cpan.org/~ether/Moose-2.2006/lib/Moose.pm "Moose Perl5-integration")
 
+*[Log4Perl](http://search.cpan.org/~mschilli/Log-Log4perl-1.49/lib/Log/Log4perl.pm "Log4Perl Perl5-Integration")
+
+*[Term::ProgressBar](http://search.cpan.org/~manwar/Term-ProgressBar-2.21/lib/Term/ProgressBar.pm "Term::ProgressBar Perl5-Integration")
 
 3. Installation
 ----------------
