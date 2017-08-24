@@ -25,3 +25,6 @@
 [submodule "util/Kmer"]
 	path = util/Kmer
 	url = https://github.com/BioInf-Wuerzburg/perl5lib-Kmer.git
+[submodule "util/fastg-parser"]
+	path = util/fastg-parser
+	url = https://github.com/chloroExtractorTeam/fastg-parser.git
