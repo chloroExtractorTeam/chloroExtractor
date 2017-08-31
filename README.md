@@ -19,23 +19,15 @@ Through k-mer filtering the k-mers which contain the chloroplast sequences get e
  - [Term::ProgressBar](http://search.cpan.org/~manwar/Term-ProgressBar-2.21/lib/Term/ProgressBar.pm "Term::ProgressBar Perl5-Integration")
 
 ## Installation
-Just download the Archive and unpack it.
-
-OR
-
-Clone the directory form our github ->GITHUBLINK<-
+Install the requirements then clone the directory recursively
 ```shell
-git clone
+git clone --recursive https://github.com/chloroExtractorTeam/chloroExtractor
 ```
 
-make sure you uptade all the submodules  with:
-```shell
-cd chloroExtractor
+### Docker
 
-git submodule init
-
-git submodule clone --recursive
-```
+chloroExtractor is also available as a docker image.
+TODO @greatfireball add instructions
 
 ## Usage
 To use the chloroExtractor, use the ptx executable in the bin/ folder
