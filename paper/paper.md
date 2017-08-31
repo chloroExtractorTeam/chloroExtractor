@@ -32,7 +32,7 @@ bibliography: paper.bib
 # Summary
 
 This is an automated pipeline that extracts and reconstructs chloroplast genomes from whole genome shotgun data.
-It works by analyzing the k-mer distribution (determined with jellyfish, cite) of the raw sequencing reads.
+It works by analyzing the k-mer distribution (determined with jellyfish, [@marcais_fast_2011]) of the raw sequencing reads.
 Usually the coverage of the chloroplast genome is much higher than that of the nuclear genome.
 Using alignments to reference chloroplast sequences and the k-mer distribution candidate chloroplast reads are extracted and assembled.
 This targeted assembly is much faster and yields less contigs compared to an assembly of all reads.
