@@ -13,11 +13,13 @@ Table of contents
 
 1. Introduction
 ----------------
-The chloroExtractor is a perl based program which provides a pipeline for DNA extraction of chloroplast DNA from whole genom plant data.
-Too huge amounts of chloroplast DNA can be a problem at the assambly of whole genom data, one solution for this problem can be a core extraction befor sequencing, but this can be expensive.
-The chloroExtractor takes your whole genom data and extract the chloroplast DNA, so you can have your diffrent DNAs sepperated easily by the chloroExractor. Furthermore the chloroExtractor takes
-the chloroplast DNA and trys to assamble it. This is possible because of the preserfed nature of the chloroplast primary but also the secondary structure.
-Through k-mer filtering the k-mers which contains the chloroplast sequences get extracted and can then be used to assamble the chloroplast on a guided assamlby with several other chloroplasts. 
+The chloroExtractor is a perl based program which provides a pipeline for DNA extraction of chloroplast DNA from whole genome plant data.
+Too huge amounts of chloroplast DNA can cast problems for the assembly of whole genome data.
+One solution for this problem can be a core extraction before sequencing, but this can be expensive.
+The chloroExtractor takes your whole genome data and extracts the chloroplast DNA, so you can have your different DNA separated easily by the chloroExractor.
+Furthermore the chloroExtractor takes the chloroplast DNA and tries to assemble it.
+This is possible because of the preserved nature of the chloroplasts primary and secondary structure.
+Through k-mer filtering the k-mers which contain the chloroplast sequences get extracted and can then be used to assemble the chloroplast on a guided assembly with several other chloroplasts.
 
 
 
