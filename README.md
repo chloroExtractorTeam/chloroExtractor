@@ -1,60 +1,35 @@
-chloroExtractor
-===============
+# chloroExtractor
 
-Table of contents
------------------
-1. Intoduction
-2. Requirements
-3. Installation
-4. Usage
-5. Data
-6. License
-
-
-1. Introduction
-----------------
-The chloroExtractor is a perl based program which provides a pipeline for DNA extraction of chloroplast DNA from whole genom plant data.
-Too huge amounts of chloroplast DNA can be a problem at the assambly of whole genom data, one solution for this problem can be a core extraction befor sequencing, but this can be expensive.
-The chloroExtractor takes your whole genom data and extract the chloroplast DNA, so you can have your diffrent DNAs sepperated easily by the chloroExractor. Furthermore the chloroExtractor takes
-the chloroplast DNA and trys to assamble it. This is possible because of the preserfed nature of the chloroplast primary but also the secondary structure.
-Through k-mer filtering the k-mers which contains the chloroplast sequences get extracted and can then be used to assamble the chloroplast on a guided assamlby with several other chloroplasts. 
+## Introduction
+The chloroExtractor is a perl based program which provides a pipeline for DNA extraction of chloroplast DNA from whole genome plant data.
+Too huge amounts of chloroplast DNA can cast problems for the assembly of whole genome data.
+One solution for this problem can be a core extraction before sequencing, but this can be expensive.
+The chloroExtractor takes your whole genome data and extracts the chloroplast DNA, so you can have your different DNA separated easily by the chloroExractor.
+Furthermore the chloroExtractor takes the chloroplast DNA and tries to assemble it.
+This is possible because of the preserved nature of the chloroplasts primary and secondary structure.
+Through k-mer filtering the k-mers which contain the chloroplast sequences get extracted and can then be used to assemble the chloroplast on a guided assembly with several other chloroplasts.
 
 
 
-2. Requirements
-----------------
-*[Jellyfish](http://www.cbcb.umd.edu/software/jellyfish/ "Jellyfish K-mer counter")
+## Requirements
+ - [Jellyfish](http://www.cbcb.umd.edu/software/jellyfish/ "Jellyfish K-mer counter")
+ - [Spades](http://cab.spbu.ru/software/spades/ "SPAdes assamlber")
+ - [Moose](http://search.cpan.org/~ether/Moose-2.2006/lib/Moose.pm "Moose Perl5-integration")
+ - [Log4Perl](http://search.cpan.org/~mschilli/Log-Log4perl-1.49/lib/Log/Log4perl.pm "Log4Perl Perl5-Integration")
+ - [Term::ProgressBar](http://search.cpan.org/~manwar/Term-ProgressBar-2.21/lib/Term/ProgressBar.pm "Term::ProgressBar Perl5-Integration")
 
-*[Spades](http://cab.spbu.ru/software/spades/ "SPAdes assamlber")
-
-*[Moose](http://search.cpan.org/~ether/Moose-2.2006/lib/Moose.pm "Moose Perl5-integration")
-
-*[Log4Perl](http://search.cpan.org/~mschilli/Log-Log4perl-1.49/lib/Log/Log4perl.pm "Log4Perl Perl5-Integration")
-
-*[Term::ProgressBar](http://search.cpan.org/~manwar/Term-ProgressBar-2.21/lib/Term/ProgressBar.pm "Term::ProgressBar Perl5-Integration")
-
-3. Installation
-----------------
-Just download the Archive and unpack it.
-
-OR
-
-Clone the directory form our github ->GITHUBLINK<-
+## Installation
+Install the requirements then clone the directory recursively
 ```shell
-git clone
+git clone --recursive https://github.com/chloroExtractorTeam/chloroExtractor
 ```
 
-make sure you uptade all the submodules  with:
-```shell
-cd chloroExtractor
+### Docker
 
-git submodule init
+chloroExtractor is also available as a docker image.
+TODO @greatfireball add instructions
 
-git submodule clone --recursive
-```
-
-4. Usage
---------
+## Usage
 To use the chloroExtractor, use the ptx executable in the bin/ folder
 
 
@@ -122,11 +97,9 @@ $ ./ptx -c ownptx.cfg -1 FQ_1 -2 FQ_2
 
 ```
 
-5. Data
---------
+## Data
 The chloroExtractor uses unsortet Fastq files with paired end reads. Please make sure your reads are not sortet at all, otherwise there could be problems or even wrong results. 
 
 
-6. License
------------
+## License
 For License please refer to the LICENSE file
