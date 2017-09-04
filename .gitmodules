@@ -28,3 +28,6 @@
 [submodule "util/fastg-parser"]
 	path = util/fastg-parser
 	url = https://github.com/chloroExtractorTeam/fastg-parser.git
+[submodule "test/chloroExtractor-testsuite"]
+	path = test/chloroExtractor-testsuite
+	url = https://github.com/chloroExtractorTeam/chloroExtractor-testsuite.git
