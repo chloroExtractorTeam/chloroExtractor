@@ -1,4 +1,6 @@
-language: bash
+language: perl
+perl:
+    - "5.20"
 sudo:
   false
 addons:
@@ -18,7 +20,8 @@ addons:
     - jellyfish
     - python
 before_install:
-    - git clone https://github.com/sstephenson/bats.git $HOME/bats
+    #- git clone https://github.com/sstephenson/bats.git $HOME/bats
+    - git clone -b feature/test https://github.com/chloroExtractorTeam/bats.git $HOME/bats
     - export PATH=$TRAVIS_BUILD_DIR:/tmp/SPAdes-3.10.1-Linux/:$HOME/bats/bin:$PATH
 install:
     - perl -v
