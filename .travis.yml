@@ -19,9 +19,9 @@ addons:
     - ghostscript
     - jellyfish
     - python
-    - bats
 before_install:
-    - export PATH=$TRAVIS_BUILD_DIR:/tmp/SPAdes-3.10.1-Linux/:$PATH
+    - git clone https://github.com/sstephenson/bats.git $HOME/bats
+    - export PATH=$TRAVIS_BUILD_DIR:/tmp/SPAdes-3.10.1-Linux/:$HOME/bats/bin:$PATH
 install:
     - perl -v
     - cpanm Term::ProgressBar Graph Log::Log4perl Moose File::Which IPC::Run
