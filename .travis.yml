@@ -29,5 +29,5 @@ install:
     - wget -O /tmp/SPAdes-3.10.1-Linux.tar.gz http://cab.spbu.ru/files/release3.10.1/SPAdes-3.10.1-Linux.tar.gz && cd /tmp/ && tar -xzf SPAdes-3.10.1-Linux.tar.gz
 script:
     - cd $TRAVIS_BUILD_DIR
-    - bats --tap test/chloroExtractor-testsuite/cmd_based/001_running_ptx.bats
-    - bats --tap test/chloroExtractor-testsuite/cmd_based/002_running_seperate_scripts.bats
+    - /bin/bash -c "$HOME/bats/bin/bats --tap test/chloroExtractor-testsuite/cmd_based/001_running_ptx.bats"
+    - /bin/bash -c "$HOME/bats/bin/bats --tap test/chloroExtractor-testsuite/cmd_based/002_running_seperate_scripts.bats"
