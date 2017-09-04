@@ -25,7 +25,5 @@ install:
     - cpanm Term::ProgressBar Graph Log::Log4perl Moose File::Which IPC::Run
     - wget -O /tmp/SPAdes-3.10.1-Linux.tar.gz http://cab.spbu.ru/files/release3.10.1/SPAdes-3.10.1-Linux.tar.gz && cd /tmp/ && tar -xzf SPAdes-3.10.1-Linux.tar.gz
 script:
-    - ls $TRAVIS_BUILD_DIR
     - cd $TRAVIS_BUILD_DIR
-    - pwd 
     - bin/ptx --version
