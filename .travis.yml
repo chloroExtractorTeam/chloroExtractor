@@ -21,8 +21,6 @@ addons:
     - python
 install:
     - perl -v
-    - cpanm .
-script: 
-    - perl Makefile.PL
-    - make 
-    - make test
+    - wget -O /tmp/SPAdes-3.10.1-Linux.tar.gz http://cab.spbu.ru/files/release3.10.1/SPAdes-3.10.1-Linux.tar.gz && cd /tmp/ && tar -xzf SPAdes-3.10.1-Linux.tar.gz
+script:
+    - bin/ptx --version
