@@ -1,18 +1,12 @@
 language: perl
 perl:
-  - "5.16"
   - "5.20"
 sudo:
   false
-addons:
-  apt:
-    packages:
-    - liblog-log4perl-perl
-    - libmoose-perl
 install:
     - perl -v
     - cpanm .
 script: 
     - perl Makefile.PL
     - make 
-- make test
+    - make test
