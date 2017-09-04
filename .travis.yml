@@ -8,6 +8,17 @@ addons:
     packages:
     - liblog-log4perl-perl
     - libmoose-perl
+    - libipc-run-perl
+    - libterm-progressbar-perl
+    - libgraph-perl
+    - bowtie2
+    - ncbi-blast+
+    - samtools
+    - bedtools
+    - r-base
+    - ghostscript
+    - jellyfish
+    - python
 install:
     - perl -v
     - cpanm .
