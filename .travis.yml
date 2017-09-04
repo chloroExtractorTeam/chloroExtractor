@@ -19,6 +19,7 @@ addons:
     - ghostscript
     - jellyfish
     - python
+    - bats
 install:
     - perl -v
     - cpanm Term::ProgressBar Graph Log::Log4perl Moose File::Which IPC::Run
