@@ -12,11 +12,25 @@ Through k-mer filtering the k-mers which contain the chloroplast sequences get e
 
 
 ## Requirements
+### Required Software
  - [Jellyfish](http://www.cbcb.umd.edu/software/jellyfish/ "Jellyfish K-mer counter")
  - [Spades](http://cab.spbu.ru/software/spades/ "SPAdes assamlber")
+ - [bowtie2]()
+ - [NCBI-Blast+]()
+ - [Samtools]()
+ - [Bedtools]()
+ - [GNU R]()
+ - [Ghostscript]()
+ - [Python]()
+ - [Perl]()
+ - For running the testsuite: [bats](https://github.com/sstephenson/bats "Bats: Bash Automated Testing System")
+### Required Perl modules
  - [Moose](http://search.cpan.org/~ether/Moose-2.2006/lib/Moose.pm "Moose Perl5-integration")
- - [Log4Perl](http://search.cpan.org/~mschilli/Log-Log4perl-1.49/lib/Log/Log4perl.pm "Log4Perl Perl5-Integration")
+ - [Log::Log4Perl](http://search.cpan.org/~mschilli/Log-Log4perl-1.49/lib/Log/Log4perl.pm "Log4Perl Perl5-Integration")
  - [Term::ProgressBar](http://search.cpan.org/~manwar/Term-ProgressBar-2.21/lib/Term/ProgressBar.pm "Term::ProgressBar Perl5-Integration")
+ - [Graph]()
+ - [IPC::Run]()
+ - [File::Which]()
 
 ## Installation
 Install the requirements then clone the directory recursively
