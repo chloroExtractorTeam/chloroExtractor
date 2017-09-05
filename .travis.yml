@@ -1,10 +1,12 @@
 language: perl
 perl:
+    - "5.8"
     - "5.10"
     - "5.12"
     - "5.14"
     - "5.18"
     - "5.20"
+    - "5.22"
 sudo:
   false
 addons:
@@ -27,8 +29,11 @@ addons:
     - python
 before_install:
     - export PATH=$TRAVIS_BUILD_DIR:/tmp/SPAdes-3.10.1-Linux/:$PATH
+    - git clone git://github.com/haarg/perl-travis-helper
+    - source perl-travis-helper/init
+    - build-perl
+    - perl -V
 install:
-    - perl -v
     - cpanm Term::ProgressBar Graph Log::Log4perl Moose File::Which IPC::Run Test::Script::Run Devel::Cover
     - wget -O /tmp/SPAdes-3.10.1-Linux.tar.gz http://cab.spbu.ru/files/release3.10.1/SPAdes-3.10.1-Linux.tar.gz && cd /tmp/ && tar -xzf SPAdes-3.10.1-Linux.tar.gz
 script:
