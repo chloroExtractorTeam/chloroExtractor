@@ -19,6 +19,7 @@ addons:
     - libgraph-perl
     - libtest-script-run-perl
     - libdevel-cover-perl
+    - libarchive-extract-perl
     - bowtie2
     - ncbi-blast+
     - samtools
@@ -34,7 +35,7 @@ before_install:
     - build-perl
     - perl -V
 install:
-    - cpanm Term::ProgressBar Graph Log::Log4perl Moose File::Which IPC::Run Test::Script::Run Devel::Cover
+    - cpanm Term::ProgressBar Graph Log::Log4perl Moose File::Which IPC::Run Test::Script::Run Devel::Cover Archive::Extract
     - wget -O /tmp/SPAdes-3.10.1-Linux.tar.gz http://cab.spbu.ru/files/release3.10.1/SPAdes-3.10.1-Linux.tar.gz && cd /tmp/ && tar -xzf SPAdes-3.10.1-Linux.tar.gz
 script:
     - cd $TRAVIS_BUILD_DIR
@@ -42,3 +43,6 @@ script:
     - cover
 after_success:
     - cover -report coveralls
+matrix:
+    allow_failures:
+       - perl: "5.8"
