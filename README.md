@@ -1,5 +1,8 @@
 # chloroExtractor
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.883594.svg)](https://doi.org/10.5281/zenodo.883594)
+[![Build Status](https://www.travis-ci.org/chloroExtractorTeam/chloroExtractor.svg)](https://www.travis-ci.org/chloroExtractorTeam/chloroExtractor)
+
 ## Introduction
 The chloroExtractor is a perl based program which provides a pipeline for DNA extraction of chloroplast DNA from whole genome plant data.
 Too huge amounts of chloroplast DNA can cast problems for the assembly of whole genome data.
