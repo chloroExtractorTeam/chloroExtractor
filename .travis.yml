@@ -29,7 +29,7 @@ addons:
 #    - jellyfish
     - python
 before_install:
-    - export PATH=$TRAVIS_BUILD_DIR:/tmp/SPAdes-3.10.1-Linux/:/tmp/jellyfish/bin:$PATH
+    - export PATH=$TRAVIS_BUILD_DIR:/tmp/SPAdes-3.10.1-Linux/bin:/tmp/jellyfish/bin:$PATH
     - wget -O /tmp/jellyfish-2.2.6.tar.gz https://github.com/gmarcais/Jellyfish/releases/download/v2.2.6/jellyfish-2.2.6.tar.gz && cd /tmp/ && tar xzf jellyfish-2.2.6.tar.gz && cd jellyfish-2.2.6 && ./configure --prefix=/tmp/jellyfish && make -j 4 && make install && which jellyfish
     - git clone git://github.com/haarg/perl-travis-helper
     - source perl-travis-helper/init
