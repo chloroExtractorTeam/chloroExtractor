@@ -26,7 +26,6 @@ Through k-mer filtering the k-mers which contain the chloroplast sequences get e
  - [Ghostscript]()
  - [Python]()
  - [Perl]()
- - For running the testsuite: [bats](https://github.com/sstephenson/bats "Bats: Bash Automated Testing System")
 ### Required Perl modules
  - [Moose](http://search.cpan.org/~ether/Moose-2.2006/lib/Moose.pm "Moose Perl5-integration")
  - [Log::Log4Perl](http://search.cpan.org/~mschilli/Log-Log4perl-1.49/lib/Log/Log4perl.pm "Log4Perl Perl5-Integration")
