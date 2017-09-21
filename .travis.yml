@@ -41,7 +41,7 @@ install:
 script:
     - cd $TRAVIS_BUILD_DIR
     - sed -i 's/threads => 8/threads => 2/' ptx.cfg
-    - travis_wait 60 PERL5OPT=-MDevel::Cover=-coverage,statement,branch,condition,path,subroutine prove -lrv test/chloroExtractor-testsuite/cmd_based/*.t
+    - travis_wait 60 "PERL5OPT=-MDevel::Cover=-coverage,statement,branch,condition,path,subroutine prove -lrv test/chloroExtractor-testsuite/cmd_based/*.t"
     - cover
 after_success:
     - cover -report coveralls
