@@ -43,6 +43,7 @@ script:
     - sed -i 's/threads => 8/threads => 2/' ptx.cfg
     - export PERL5OPT=-MDevel::Cover=-coverage,statement,branch,condition,path,subroutine
     - travis_wait 60 prove -lrv test/chloroExtractor-testsuite/cmd_based/*.t
+    - export PERL5OPT=""
     - cover
 after_success:
     - cover -report coveralls
