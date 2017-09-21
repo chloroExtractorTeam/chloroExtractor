@@ -41,6 +41,9 @@ git clone --recursive https://github.com/chloroExtractorTeam/chloroExtractor
 ```
 
 ### Docker
+[![Docker Automated buil](https://img.shields.io/docker/automated/chloroextractorteam/chloroextractor.svg?style=plastic)](https://hub.docker.com/r/chloroextractorteam/chloroextractor/)
+[![Docker Build Status](https://img.shields.io/docker/build/chloroextractorteam/chloroextractor.svg?style=plastic)](https://hub.docker.com/r/chloroextractorteam/chloroextractor/)
+
 
 chloroExtractor is also available as a docker image.
 TODO @greatfireball add instructions
