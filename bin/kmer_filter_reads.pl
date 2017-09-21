@@ -497,7 +497,7 @@ unless(@opt_mates){
 			}
 			
 		}
-		$pg->update($pg_count);
+		$pg->update($pg_count) if($count_pg > $next_update);
 		close FQ1 or $L->logcroak("$!");
 	}	
 }else{
@@ -579,7 +579,8 @@ unless(@opt_mates){
 				}
 			}
 		}
-		$pg->update($pg_count);
+		$pg->update($pg_count) if($count_pg > $next_update);
+
 		close FQ1 or $L->logcroak("$!");
 		close FQ2 or $L->logcroak("$!");
 	}
