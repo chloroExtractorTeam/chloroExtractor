@@ -56,12 +56,16 @@ docker run -v /location-of-input-data:/data --rm chloroextractorteam/chloroextra
 ## Usage
 To use the chloroExtractor, use the ptx executable in the bin/ folder
 
-
 ```shell
-
-$ ./ptx --help
+./ptx --help
 
 ```
+or use the docker container:
+
+``` script
+docker run -v /location-of-input-data:/data --rm chloroextractorteam/chloroextractor --help
+```
+It returns a list of all mandatory parameters and optional setting.
 
 ```shell
 $ ./ptx [<OPTIONS>] -1 <FQ_1> -2 <FQ_2> -o <ID>
@@ -111,6 +115,7 @@ Options:
     -h|--help
         Display this help.
 ```
+
 
 All the Options can and should be handled with the configuration file ptx.cfg, which is located in the mainfolder. With this config file you can handle the options for each step and task individual.
 On default the chloroExtractor uses this config file, you can edit these one, or make your own one and uses the -c parameter to use it.
