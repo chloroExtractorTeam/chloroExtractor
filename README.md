@@ -44,9 +44,14 @@ git clone --recursive https://github.com/chloroExtractorTeam/chloroExtractor
 [![Docker Automated build](https://img.shields.io/docker/automated/chloroextractorteam/chloroextractor.svg?style=plastic)](https://hub.docker.com/r/chloroextractorteam/chloroextractor/)
 [![Docker Build Status](https://img.shields.io/docker/build/chloroextractorteam/chloroextractor.svg?style=plastic)](https://hub.docker.com/r/chloroextractorteam/chloroextractor/)
 
+Our chloroExtractor is also available as a docker image.
+Running chloroExtractor using that image requires the installation of docker and the permission to execute the `docker` commands.
+The data are mapped into the container as a volumne under `/data`.
 
-chloroExtractor is also available as a docker image.
-TODO @greatfireball add instructions
+```shell
+docker pull chloroextractorteam/chloroextractor
+docker run -v /location-of-input-data:/data --rm chloroextractorteam/chloroextractor -1 first_read.fq -2 second_read.fa [other options]
+```
 
 ## Usage
 To use the chloroExtractor, use the ptx executable in the bin/ folder
