@@ -40,6 +40,7 @@ install:
     - wget -O /tmp/SPAdes-3.10.1-Linux.tar.gz http://cab.spbu.ru/files/release3.10.1/SPAdes-3.10.1-Linux.tar.gz && cd /tmp/ && tar -xzf SPAdes-3.10.1-Linux.tar.gz
 script:
     - cd $TRAVIS_BUILD_DIR
+    - sed -i '/threads => 8/threads => 2/' ptx.cfg
     - PERL5OPT=-MDevel::Cover=-coverage,statement,branch,condition,path,subroutine prove -lrv test/chloroExtractor-testsuite/cmd_based/*.t
     - cover
 after_success:
