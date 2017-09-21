@@ -125,10 +125,8 @@ On default the chloroExtractor uses this config file, you can edit these one, or
 $ ./ptx -c ownptx.cfg -1 FQ_1 -2 FQ_2
 
 ```
-
-## Data
-The chloroExtractor uses unsortet Fastq files with paired end reads. Please make sure your reads are not sortet at all, otherwise there could be problems or even wrong results. 
-
+## Input data
+The chloroExtractor uses unsortet Fastq files with paired end reads. Please make sure your reads are not sortet at all, otherwise there could be problems or even wrong results.
 
 ## License
 For License please refer to the LICENSE file
