@@ -19,12 +19,15 @@ authors:
  - name: Clemens Weiß
    affiliation: 5
  - name: Thomas Hackl
+   orcid: 0000-0002-0022-320X
    affiliation: 6
  - name: Frank Förster
    affiliation: 7
 affiliations:
  - name: Department of Animal Ecology and Tropical Biology (Zoology III), University of Würzburg, Germany
    index: 1
+ - name: Department of Civil and Environmental Engineering, Massachusetts Institute of Technology
+   index: 6
 date: 31 August 2017
 bibliography: paper.bib
 ---
