@@ -3,7 +3,7 @@
 As a demonstration of ChloroExtractors capabilities we assemble the spinach (*Spinacia oleracea*) chloroplast from whole genome shotgun sequencing data.
 We use the dataset [SRR4447192](https://trace.ncbi.nlm.nih.gov/Traces/sra/?run=SRR4447192) at SRA which consists of 301 bp paired Illumina reads.
 The raw reads were originally used to perform genome assembly of *Spinacia oleracea* to identify genomic SSRs.
-This demo can be executed in ~15min on any current desktop workstation or laptop with at least .
+This demo can be executed in ~15min on any current desktop workstation or laptop with at least 8 GB of storage.
 I expect that ChloroExtractor and all its requirements are installed, otherwise please refer to the [README](README).
 
 ## Download the Data
