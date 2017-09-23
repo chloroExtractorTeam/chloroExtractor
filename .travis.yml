@@ -1,0 +1,52 @@
+language: perl
+perl:
+    - "5.8"
+    - "5.10"
+    - "5.12"
+    - "5.14"
+    - "5.18"
+    - "5.20"
+    - "5.22"
+sudo:
+  false
+addons:
+  apt:
+    packages:
+    - liblog-log4perl-perl
+    - libmoose-perl
+    - libipc-run-perl
+    - libterm-progressbar-perl
+    - libgraph-perl
+    - libtest-script-run-perl
+    - libdevel-cover-perl
+    - libarchive-extract-perl
+    - bowtie2
+    - ncbi-blast+
+    - samtools
+    - bedtools
+    - r-base
+    - ghostscript
+#    - jellyfish
+    - python
+before_install:
+    - export PATH=$TRAVIS_BUILD_DIR:/tmp/SPAdes-3.10.1-Linux/bin:/tmp/jellyfish/bin:$PATH
+    - wget -O /tmp/jellyfish-2.2.6.tar.gz https://github.com/gmarcais/Jellyfish/releases/download/v2.2.6/jellyfish-2.2.6.tar.gz && cd /tmp/ && tar xzf jellyfish-2.2.6.tar.gz && cd jellyfish-2.2.6 && ./configure --prefix=/tmp/jellyfish && make -j 4 && make install && which jellyfish
+    - git clone git://github.com/haarg/perl-travis-helper
+    - source perl-travis-helper/init
+    - build-perl
+    - perl -V
+install:
+    - cpanm Term::ProgressBar Graph Log::Log4perl Moose File::Which IPC::Run Test::Script::Run Devel::Cover Archive::Extract Devel::Cover::Report::Coveralls
+    - wget -O /tmp/SPAdes-3.10.1-Linux.tar.gz http://cab.spbu.ru/files/release3.10.1/SPAdes-3.10.1-Linux.tar.gz && cd /tmp/ && tar -xzf SPAdes-3.10.1-Linux.tar.gz
+script:
+    - cd $TRAVIS_BUILD_DIR
+    - sed -i 's/threads => 8/threads => 2/' ptx.cfg
+    - export PERL5OPT=-MDevel::Cover=-coverage,statement,branch,condition,path,subroutine
+    - travis_wait 60 prove -lrv test/chloroExtractor-testsuite/cmd_based/*.t
+    - export PERL5OPT=""
+    - cover
+after_success:
+    - cover -report coveralls
+matrix:
+    allow_failures:
+       - perl: "5.8"
