@@ -24,8 +24,8 @@ Through k-mer filtering the k-mers which contain the chloroplast sequences get e
  - [Bedtools](http://bedtools.readthedocs.io/en/latest/ "bedtools: a powerful toolset for genome arithmetic")
  - [GNU R](https://www.r-project.org/ "The R Project for Statistical Computing")
  - [Ghostscript](https://www.ghostscript.com/ "Ghostscript--an interpreter for the PostScript language and for PDF")
- - [Python](https://www.python.org/)
- - [Perl](https://www.perl.org/)
+ - [Python](https://www.python.org/ "www.python.org")
+ - [Perl](https://www.perl.org/ "www.perl.org")
 ### Required Perl modules
  - [Moose](http://search.cpan.org/~ether/Moose-2.2006/lib/Moose.pm "Moose Perl5-integration")
  - [Log::Log4Perl](http://search.cpan.org/~mschilli/Log-Log4perl-1.49/lib/Log/Log4perl.pm "Log4Perl Perl5-Integration")
