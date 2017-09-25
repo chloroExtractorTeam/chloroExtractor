@@ -16,7 +16,7 @@ authors:
    affiliation: 4
  - name: Mike
    affiliation: 5
- - name: Clemens Weiß
+ - name: Clemens L. Weiß
    affiliation: 6
  - name: Thomas Hackl
    orcid: 0000-0002-0022-320X
@@ -32,6 +32,8 @@ affiliations:
    index: 3
  - name: Centre for Experimental Molecular Medicine, University Clinics Würzburg, Germany
    index: 4
+ - name: Research Group for Ancient Genomics and Evolution, Department of Molecular Biology, Max Planck Institute for Developmental Biology, Tübingen, Germany
+   index: 6
  - name: Department of Civil and Environmental Engineering, Massachusetts Institute of Technology
    index: 7
 date: 31 August 2017
