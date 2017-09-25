@@ -30,9 +30,9 @@ Through k-mer filtering the k-mers which contain the chloroplast sequences get e
  - [Moose](http://search.cpan.org/~ether/Moose-2.2006/lib/Moose.pm "Moose Perl5-integration")
  - [Log::Log4Perl](http://search.cpan.org/~mschilli/Log-Log4perl-1.49/lib/Log/Log4perl.pm "Log4Perl Perl5-Integration")
  - [Term::ProgressBar](http://search.cpan.org/~manwar/Term-ProgressBar-2.21/lib/Term/ProgressBar.pm "Term::ProgressBar Perl5-Integration")
- - [Graph]()
- - [IPC::Run]()
- - [File::Which]()
+ - [Graph](http://search.cpan.org/dist/Graph/lib/Graph.pod "Graph - graph data structures and algorithms")
+ - [IPC::Run](http://search.cpan.org/~toddr/IPC-Run-0.96/lib/IPC/Run.pm "IPC::Run - system() and background procs w/ piping, redirs, ptys (Unix, Win32)")
+ - [File::Which](http://search.cpan.org/~plicease/File-Which-1.22/lib/File/Which.pm "File::Which - Perl implementation of the which utility as an API")
 
 ## Installation
 Install the requirements then clone the directory recursively
