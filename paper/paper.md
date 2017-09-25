@@ -22,7 +22,8 @@ authors:
    orcid: 0000-0002-0022-320X
    affiliation: 7
  - name: Frank Förster
-   affiliation: 8
+   orcid: 0000-0003-4166-5423
+   affiliation: 2,3,8
 affiliations:
  - name: Department of Animal Ecology and Tropical Biology (Zoology III), University of Würzburg, Germany
    index: 1
@@ -36,6 +37,8 @@ affiliations:
    index: 6
  - name: Department of Civil and Environmental Engineering, Massachusetts Institute of Technology
    index: 7
+ - name: Fraunhofer Institute for Molecular Biology and Applied Ecology IME, Applied Ecology and Bioresources, Gießen, Germany
+   index: 8
 date: 31 August 2017
 bibliography: paper.bib
 ---
