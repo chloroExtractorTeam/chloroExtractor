@@ -11,25 +11,29 @@ authors:
  - name: Simon Pfaff
    affiliation: 2
  - name: Niklas Terhoeven
-   affiliation: 2
+   affiliation: 2,3
  - name: Musga Qureischi
-   affiliation: 3
- - name: Mike
    affiliation: 4
- - name: Clemens Weiß
+ - name: Mike
    affiliation: 5
+ - name: Clemens Weiß
+   affiliation: 6
  - name: Thomas Hackl
    orcid: 0000-0002-0022-320X
-   affiliation: 6
- - name: Frank Förster
    affiliation: 7
+ - name: Frank Förster
+   affiliation: 8
 affiliations:
  - name: Department of Animal Ecology and Tropical Biology (Zoology III), University of Würzburg, Germany
    index: 1
- - name: Centre for Experimental Molecular Medicine, University Clinics Würzburg, Germany
+ - name: Center for Computational and Theoretical Biology, University of Würzburg
+   index: 2
+ - name: Department of Bioinformatics, University of Würzburg
    index: 3
+ - name: Centre for Experimental Molecular Medicine, University Clinics Würzburg, Germany
+   index: 4
  - name: Department of Civil and Environmental Engineering, Massachusetts Institute of Technology
-   index: 6
+   index: 7
 date: 31 August 2017
 bibliography: paper.bib
 ---
