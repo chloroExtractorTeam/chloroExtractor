@@ -44,9 +44,9 @@ script:
     - export PERL5OPT=-MDevel::Cover=-coverage,statement,branch,condition,path,subroutine
     - travis_wait 60 prove -lrv test/chloroExtractor-testsuite/cmd_based/*.t
     - export PERL5OPT=""
-    - cover
+    - cover -ignore_re=lib
 after_success:
-    - cover -report coveralls
+    - cover -ignore_re=lib -report coveralls
 matrix:
     allow_failures:
        - perl: "5.8"
