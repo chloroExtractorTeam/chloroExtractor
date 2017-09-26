@@ -166,7 +166,9 @@ docker run -v /tmp/chloroExtractor-testrun:/data --rm chloroextractorteam/chloro
 [...]
 ```
 
-Both runs result in a final chloroplast assembly in the file `fcg.fa`
+Both runs result in a final chloroplast assembly in the file `fcg.fa`.
+
+Another more detailed example is available at our [demo](DEMO.md).
 
 ## License
 For License please refer to the LICENSE file
