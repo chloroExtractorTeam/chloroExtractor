@@ -10,9 +10,9 @@
       "affiliation": "Department of Animal Ecology and Tropical Biology (Zoology III), University of Würzburg, Germany"
     },
     {
-      "@id": "",
+      "@id": "https://orcid.org/0000-0001-8505-9439",
       "@type": "Person",
-      "email": "",
+      "email": "simon.pfaff@stud-mail.uni-wuerzburg.de",
       "name": "Simon Pfaff",
       "affiliation": "Department of Bioinformatics, University of Würzburg, Germany"
     },
