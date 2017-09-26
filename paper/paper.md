@@ -7,9 +7,9 @@ tags:
 authors:
  - name: Markus J Ankenbrand
    orcid: 0000-0002-6620-807X
-   affiliation: 1
+   affiliation: 1,a
  - name: Simon Pfaff
-   affiliation: 2
+   affiliation: 2,a
  - name: Niklas Terhoeven
    affiliation: 2,3
  - name: Musga Qureischi
@@ -39,6 +39,8 @@ affiliations:
    index: 7
  - name: Fraunhofer Institute for Molecular Biology and Applied Ecology IME, Applied Ecology and Bioresources, Gießen, Germany
    index: 8
+ - name: These authors contributed equally to this work
+   index: a
 date: 27 September 2017
 bibliography: paper.bib
 ---
