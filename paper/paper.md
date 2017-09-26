@@ -9,9 +9,10 @@ authors:
    orcid: 0000-0002-6620-807X
    affiliation: 1
  - name: Simon Pfaff
-   affiliation: 2
- - name: Niklas Terhoeven
+   orcid: 0000-0001-8505-9439 
    affiliation: 2,3
+ - name: Niklas Terhoeven
+   affiliation: 3
  - name: Musga Qureischi
    affiliation: 4
  - name: Mike
