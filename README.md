@@ -47,6 +47,10 @@ git clone --recursive https://github.com/chloroExtractorTeam/chloroExtractor
 Our chloroExtractor is also available as a docker image.
 Running chloroExtractor using that image requires the installation of docker and the permission to execute the `docker` commands.
 The data are mapped into the container as a volumne under `/data`.
+Our chloroExtractor will be ran with `/data` as working directory.
+Therefore, the output files will be stored inside the directory which was mapped into the container.
+In case you are not using a user mapping, chloroExtractor will run with root priveleges and all created files will belong the `root` user.
+For further information about docker and its security implications please visit their [website](https://docker.com).
 
 ```shell
 docker pull chloroextractorteam/chloroextractor
