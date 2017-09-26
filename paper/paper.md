@@ -62,7 +62,7 @@ Such assemblies, can be used to remove chloroplast reads before a genomic assemb
 Moreover, chloroplast genomes are useful in phylogenetic reconstruction [@huang_2016] or barcoding applications [@Coissac_2016].
 A similar tool, aiming the assembly of whole chloroplast genomes is the Python program org.ASM [https://git.metabarcoding.org/org-asm/org-asm], but it is not production ready, yet.
 Also plasmid SPAdes [@plasmidspades_2016] could possibly be used for this purpose although it is not intended for it.
-In the future, we plan to use our chloroExtractor to screen NCBI's Sequence Read Archive [@sra2008] for chloroplast genomes in public sequencing datasets that are not yet available in chloroplast databases, eg. chloroDB [@chlordb2006] to broaden our knowledge about chloroplasts.
+In the future, we plan to use our chloroExtractor to screen NCBI's Sequence Read Archive [@sra2011] for chloroplast genomes in public sequencing datasets that are not yet available in chloroplast databases, eg. chloroDB [@chlordb2006] to broaden our knowledge about chloroplasts.
 
 ![Schematic workflow of chloroExtractor.](workflow.png)
 
