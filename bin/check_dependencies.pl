@@ -94,6 +94,44 @@ foreach my $program (keys %programs2check)
     $programs2check{$program}{path} = $path;
 }
 
+# assuming all dependencies fullfilled!
+my $missing_dependencies = 0;
+
+foreach my $module (sort keys %modules2check)
+{
+    my $msg = "Loading module '$module': ";
+    if ($modules2check{$module}{error})
+    {
+	$msg .= "Failure with error: '".$modules2check{$module}{errormsg}."'";
+	$missing_dependencies++;
+    } else {
+	$msg .= "Success";
+    }
+
+    print $msg, "\n";
+}
+
+foreach my $prog (sort keys %programs2check)
+{
+    my $msg = "Searching for program '$prog': ";
+    unless ($programs2check{$prog}{error})
+    {
+	$msg .= "Success with location at: '".$programs2check{$prog}{path}."'";
+    } else {
+	$msg .= "Failure (maybe put installation folder into PATH)";
+	$missing_dependencies++;
+    }
+
+    print $msg, "\n";
+}
+
+if ($missing_dependencies)
+{
+    die "Still $missing_dependencies missing dependencies (see above)! Please install dependencies and run chloroExtractor again!\n";
+} else {
+    print "All dependencies fulfilled!\n";
+}
+
 =head1 NAME
 
 check_dependencies.pl
