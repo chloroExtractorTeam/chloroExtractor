@@ -63,7 +63,7 @@ my %programs2check = (
 
 foreach my $module (keys %modules2check)
 {
-    eval { require $module };
+    eval "require $module;";
 
     # assuming no error
     my ($error, $msg) = (0, "");
