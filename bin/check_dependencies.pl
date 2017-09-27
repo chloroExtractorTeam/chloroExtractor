@@ -2,7 +2,38 @@
 use strict;
 use warnings;
 
-use File::Which;
+eval { require File::Which; };
+
+my $problems_with_file_which = $@;
+
+my $missing_which = ! -e "which";
+
+if ($problems_with_file_which && $missing_which)
+{
+    die "Module 'File::Which' or the little program 'which' are required for determination of executable files. Please install it\n";
+}
+
+unless ($missing_which)
+{
+    warn "Helper program 'which' was found and will be used instead of perl module 'File::Which'\n";
+}
+
+sub dep_which
+{
+    my ($prog) = @_;
+    my $val = undef;
+
+    unless ($problems_with_file_which)
+    {
+	$val = File::Which::which($prog);
+    } else {
+	my $cmd = "which $prog";
+	$val = qx($cmd);
+	chomp($val);
+    }
+
+    return $val;
+}
 
 my %modules2check = (
 
@@ -30,7 +61,7 @@ foreach my $module (keys %modules2check)
 
 foreach my $program (keys %programs2check)
 {
-    my $path = which($program);
+    my $path = dep_which($program);
 
     # assuming no error
     my $error = 0;
