@@ -95,7 +95,7 @@ foreach my $program (keys %programs2check)
 }
 
 # assuming all dependencies fullfilled!
-my $missing_dependencies = 0;
+my %missing_dependencies = ( module => [], program => [] );
 
 foreach my $module (sort keys %modules2check)
 {
@@ -103,7 +103,7 @@ foreach my $module (sort keys %modules2check)
     if ($modules2check{$module}{error})
     {
 	$msg .= "Failure with error: '".$modules2check{$module}{errormsg}."'";
-	$missing_dependencies++;
+	push(@{$missing_dependencies{module}}, $module);
     } else {
 	$msg .= "Success";
     }
@@ -119,15 +119,34 @@ foreach my $prog (sort keys %programs2check)
 	$msg .= "Success with location at: '".$programs2check{$prog}{path}."'";
     } else {
 	$msg .= "Failure (maybe put installation folder into PATH)";
-	$missing_dependencies++;
+	push(@{$missing_dependencies{program}}, $prog);
     }
 
     print $msg, "\n";
 }
 
-if ($missing_dependencies)
+my $dependency_list = "";
+my $num_missing_dependencies = 0;
+
+if (@{$missing_dependencies{module}})
 {
-    die "Still $missing_dependencies missing dependencies (see above)! Please install dependencies and run chloroExtractor again!\n";
+    $dependency_list = "module(s): ".join(", ", @{$missing_dependencies{module}});
+    $num_missing_dependencies += @{$missing_dependencies{module}};
+}
+
+if (@{$missing_dependencies{program}})
+{
+    if ($dependency_list)
+    {
+	$dependency_list .= " and ";
+    }
+    $dependency_list = "program(s): ".join(", ", @{$missing_dependencies{program}});
+    $num_missing_dependencies += @{$missing_dependencies{program}};
+}
+
+if ($num_missing_dependencies)
+{
+    die("Still $num_missing_dependencies missing dependencies ($dependency_list)! Please install dependencies and run chloroExtractor again!\n");
 } else {
     print "All dependencies fulfilled!\n";
 }
