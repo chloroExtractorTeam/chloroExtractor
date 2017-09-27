@@ -37,6 +37,13 @@ sub dep_which
 
 my %modules2check = (
 
+    'Moose' => {},
+    'Log::Log4Perl' => {},
+    'Term::ProgressBar' => {},
+    'Graph' => {},
+    'IPC::Run' => {},
+    'File::Which' => {}
+
     );
 
 my %programs2check = (
