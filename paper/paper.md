@@ -65,7 +65,7 @@ A similar tool, aiming the assembly of whole chloroplast genomes is the Python p
 Also plasmid SPAdes [@plasmidspades_2016] could possibly be used for this purpose although it is not intended for it.
 In the future, we plan to use our chloroExtractor to screen NCBI's Sequence Read Archive [@sra2011] for chloroplast genomes in public sequencing datasets that are not yet available in chloroplast databases, eg. chloroDB [@chlordb2006] to broaden our knowledge about chloroplasts.
 
-![Schematic workflow of chloroExtractor.](workflow.png)
+![Schematic workflow of chloroExtractor.](workflow.png){ width=70% }
 
 # Acknowledgements
 
