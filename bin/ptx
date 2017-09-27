@@ -237,7 +237,12 @@ for($opt{reads}, $opt{mates}){
 
 
 # prepare folder structure
-prep_dir($opt{dir} || 'ptx', $opt{redo});
+# check if a directory is given, otherwise use ptx as its name
+unless (exists $opt{dir} && defined $opt{dir})
+{
+    $opt{dir} = 'ptx';
+}
+prep_dir($opt{dir}, $opt{redo});
 
 if($opt{dir}){
     chdir($opt{dir}) || $L->logcroak("'$opt{dir}' ",$!);
