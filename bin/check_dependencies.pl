@@ -48,6 +48,17 @@ my %modules2check = (
 
 my %programs2check = (
 
+    'jellyfish' => {},
+    'bowtie2'   => {},
+    'R'         => {},
+    'bedtools'  => {},
+    'samtools'  => {},
+    'gs'        => {},
+    'spades.py' => {},
+    'perl'      => {},
+    'python'    => {},
+    'tblastx'   => {}
+
     );
 
 foreach my $module (keys %modules2check)
