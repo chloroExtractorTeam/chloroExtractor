@@ -13,17 +13,18 @@ authors:
  - name: Niklas Terhoeven
    affiliation: 2,3
  - name: Musga Qureischi
-   affiliation: 4
- - name: Mike
-   affiliation: 5
+   affiliation: 3,4
+ - name: Maik Gündel
+   orcid: 0000-0002-0502-4576
+   affiliation: 3
  - name: Clemens L. Weiß
-   affiliation: 6
+   affiliation: 5
  - name: Thomas Hackl
    orcid: 0000-0002-0022-320X
-   affiliation: 7
+   affiliation: 6
  - name: Frank Förster
    orcid: 0000-0003-4166-5423
-   affiliation: 2,3,8
+   affiliation: 2,3,7
 affiliations:
  - name: Department of Animal Ecology and Tropical Biology (Zoology III), University of Würzburg, Germany
    index: 1
@@ -34,11 +35,11 @@ affiliations:
  - name: Centre for Experimental Molecular Medicine, University Clinics Würzburg, Germany
    index: 4
  - name: Research Group for Ancient Genomics and Evolution, Department of Molecular Biology, Max Planck Institute for Developmental Biology, Tübingen, Germany
-   index: 6
+   index: 5
  - name: Department of Civil and Environmental Engineering, Massachusetts Institute of Technology
-   index: 7
+   index: 6
  - name: Fraunhofer Institute for Molecular Biology and Applied Ecology IME, Applied Ecology and Bioresources, Gießen, Germany
-   index: 8
+   index: 7
  - name: These authors contributed equally to this work
    index: a
 date: 27 September 2017
