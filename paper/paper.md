@@ -14,8 +14,9 @@ authors:
    affiliation: 2,3
  - name: Musga Qureischi
    affiliation: 4
- - name: Mike
-   affiliation: 5
+ - name: Maik Gündel
+   orcid: 0000-0002-0502-4576
+   affiliation: 3
  - name: Clemens L. Weiß
    affiliation: 6
  - name: Thomas Hackl
