@@ -72,7 +72,7 @@ docker run -v /location-of-input-data:/data --rm chloroextractorteam/chloroextra
 It returns a list of all mandatory parameters and optional setting.
 
 ```shell
-$ ./ptx [<OPTIONS>] -1 <FQ_1> -2 <FQ_2> -o <ID>
+$ ./ptx [<OPTIONS>] -1 <FQ_1> -2 <FQ_2> -d <OUTPUT-DIRECTORY>
 
 Options:
     -1|--reads
@@ -84,9 +84,6 @@ Options:
     -d|--dir [ptx]
         Path to a working directory. Will be created. If exists, needs to be
         empty.
-
-    -o|--out
-        Output file basename, e.g. species id.
 
     --create-config
         Create a config file with default settings for user customization.
