@@ -71,6 +71,7 @@ foreach my $module (keys %modules2check)
     if ($@)
     {
 	($error, $msg) = (1, $@);
+	chomp($msg);
     }
 
     $modules2check{$module}{error} = $error;
