@@ -6,7 +6,7 @@ eval { require File::Which; };
 
 my $problems_with_file_which = $@;
 
-my $missing_which = ! -e "which";
+my $missing_which = ! -x "which";
 
 if ($problems_with_file_which && $missing_which)
 {
