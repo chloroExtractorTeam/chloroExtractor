@@ -13,7 +13,7 @@ authors:
  - name: Niklas Terhoeven
    affiliation: 2,3
  - name: Musga Qureischi
-   affiliation: 4
+   affiliation: 3,4
  - name: Maik Gündel
    orcid: 0000-0002-0502-4576
    affiliation: 3
