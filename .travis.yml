@@ -38,14 +38,17 @@ before_install:
 install:
     - cpanm Term::ProgressBar Graph Log::Log4perl Moose File::Which IPC::Run Test::Script::Run Devel::Cover Archive::Extract Devel::Cover::Report::Coveralls
     - wget -O /tmp/SPAdes-3.10.1-Linux.tar.gz http://cab.spbu.ru/files/release3.10.1/SPAdes-3.10.1-Linux.tar.gz && cd /tmp/ && tar -xzf SPAdes-3.10.1-Linux.tar.gz
-script:
     - cd $TRAVIS_BUILD_DIR
     - sed -i 's/threads => 8/threads => 2/' ptx.cfg
     - export PERL5OPT=-MDevel::Cover=-coverage,statement,branch,condition,path,subroutine
-    - travis_wait 60 prove -lrv test/chloroExtractor-testsuite/cmd_based/*.t
+    - mkdir ptx
+script:
+    - travis_wait 60 prove -lrv test/chloroExtractor-testsuite/cmd_based/003*.t
+    - cd ptx && prove -lrv ../test/chloroExtractor-testsuite/cmd_based/001*.t
+    - prove -lrv ../test/chloroExtractor-testsuite/cmd_based/002*.t
+after_success:
     - export PERL5OPT=""
     - cover -ignore_re=lib
-after_success:
     - cover -ignore_re=lib -report coveralls
 matrix:
     allow_failures:
