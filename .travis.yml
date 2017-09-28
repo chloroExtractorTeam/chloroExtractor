@@ -42,10 +42,14 @@ script:
     - cd $TRAVIS_BUILD_DIR
     - sed -i 's/threads => 8/threads => 2/' ptx.cfg
     - export PERL5OPT=-MDevel::Cover=-coverage,statement,branch,condition,path,subroutine
-    - travis_wait 60 prove -lrv test/chloroExtractor-testsuite/cmd_based/*.t
+    - prove -lrv test/chloroExtractor-testsuite/cmd_based/001*.t
+    - prove -lrv test/chloroExtractor-testsuite/cmd_based/002*.t
+    - mkdir ptx
+    - cp -R cover_db ptx/
+    - travis_wait 60 prove -lrv test/chloroExtractor-testsuite/cmd_based/003*.t
 after_success:
-    - cp -R ptx/cover_db/ ./cover_db/
     - export PERL5OPT=""
+    - cd ptx
     - cover -ignore_re=lib
     - cover -ignore_re=lib -report coveralls
 matrix:
