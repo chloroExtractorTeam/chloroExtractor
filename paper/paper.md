@@ -52,7 +52,7 @@ This is an automated pipeline that extracts and reconstructs chloroplast genomes
 It is capable to assemble the incidental sequenced chloropast DNA, which is present in almost all plant sequencing projects, due to the extraction of whole cellular DNA.
 It works by analyzing the k-mer distribution (determined with Jellyfish, [@marcais_fast_2011]) of the raw sequencing reads.
 Usually the coverage of the chloroplast genome is much higher than that of the nuclear genome.
-Using alignments to reference chloroplast sequences and the k-mer distribution candidate chloroplast reads are extracted from the complete set.
+Using alignments to reference chloroplast sequences and the k-mer distribution candidate chloroplast reads are extracted from the complete set (Figure 1).
 Afterwards, the targeted assembly of those sequences is much faster and yields less contigs compared to an assembly of all reads.
 Assemblers usually fail to assemble chloroplast genomes as a single contig due to their structure, consisting of two single copy regions and an inverted repeat.
 The size of the inverted repeat is in most cases multiple kilobasepairs in size, therefore it can not be resolved using short reads only.
