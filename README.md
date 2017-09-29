@@ -2,6 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.883594.svg)](https://doi.org/10.5281/zenodo.883594)
 [![Build Status](https://www.travis-ci.org/chloroExtractorTeam/chloroExtractor.svg)](https://www.travis-ci.org/chloroExtractorTeam/chloroExtractor)
+[![Coverage Status](https://coveralls.io/repos/github/chloroExtractorTeam/chloroExtractor/badge.svg)](https://coveralls.io/github/chloroExtractorTeam/chloroExtractor)
 
 ## Introduction
 The chloroExtractor is a perl based program which provides a pipeline for DNA extraction of chloroplast DNA from whole genome plant data.
@@ -166,6 +167,9 @@ docker run -v /tmp/chloroExtractor-testrun:/data --rm chloroextractorteam/chloro
 Both runs result in a final chloroplast assembly in the file `fcg.fa`.
 
 Another more detailed example is available at our [demo](DEMO.md).
+
+## Changelog
+Version 1.0.0 is archived as [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.998262.svg)](https://doi.org/10.5281/zenodo.998262) and used for submission to [The Journal of Open Source Software](http://joss.theoj.org/)
 
 ## License
 For License please refer to the LICENSE file
