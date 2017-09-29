@@ -1,0 +1,72 @@
+{
+  "@context": "https://raw.githubusercontent.com/codemeta/codemeta/master/codemeta.jsonld",
+  "@type": "Code",
+  "author": [
+    {
+      "@id": "https://orcid.org/0000-0002-6620-807X",
+      "@type": "Person",
+      "email": "markus.ankenbrand@uni-wuerzburg.de",
+      "name": "Markus J. Ankenbrand",
+      "affiliation": "Department of Animal Ecology and Tropical Biology (Zoology III), University of Würzburg, Germany"
+    },
+    {
+      "@id": "https://orcid.org/0000-0001-8505-9439",
+      "@type": "Person",
+      "email": "simon.pfaff@stud-mail.uni-wuerzburg.de",
+      "name": "Simon Pfaff",
+      "affiliation": "Center for Computational and Theoretical Biology, University of Würzburg"
+    },
+    {
+      "@id": "",
+      "@type": "Person",
+      "email": "",
+      "name": "Niklas Terhoeven",
+      "affiliation": "Center for Computational and Theoretical Biology, University of Würzburg"
+    },
+    {
+      "@id": "https://orcid.org/0000-0001-9661-8494",
+      "@type": "Person",
+      "email": "qureischi_m@ukw.de",
+      "name": "Musga Qureischi",
+      "affiliation": "Centre for Experimental Molecular Medicine, University Clinics Würzburg, Germany"
+    },
+    {
+      "@id": "https://orcid.org/0000-0002-0022-320X",
+      "@type": "Person",
+      "email": "",
+      "name": "Maik Gündel",
+      "affiliation": ""
+    },
+    {
+      "@id": "",
+      "@type": "Person",
+      "email": "",
+      "name": "Clemens L. Weiss",
+      "affiliation": "Research Group for Ancient Genomics and Evolution, Department of Molecular Biology, Max Planck Institute for Developmental Biology, Tübingen, Germany"
+    },
+    {
+      "@id": "https://orcid.org/0000-0002-0022-320X",
+      "@type": "Person",
+      "email": "thackl@mit.edu",
+      "name": "Thomas Hackl",
+      "affiliation": "Department of Civil and Environmental Engineering, Massachusetts Institute of Technology"
+    },
+    {
+      "@id": "https://orcid.org/0000-0003-4166-5423",
+      "@type": "Person",
+      "email": "frank.foerster@ime.fraunhofer.de",
+      "name": "Frank Förster",
+      "affiliation": "Fraunhofer Institute for Molecular Biology and Applied Ecology IME, Applied Ecology and Bioresources, Gießen, Germany"
+    }
+  ],
+  "identifier": "https://doi.org/10.5281/zenodo.998262",
+  "codeRepository": "https://github.com/chloroExtractorTeam/chloroExtractor",
+  "datePublished": "2017-09-28",
+  "dateModified": "2017-09-28",
+  "dateCreated": "2017-09-28",
+  "description": "The chloroExtractor is a perl based program which provides a pipeline for DNA extraction of chloroplast DNA from whole genome plant data.",
+  "keywords": "chloroplast, genome, assembly, k-mer",
+  "license": "MIT",
+  "title": "chloroExtractor",
+  "version": "v1.0.0"
+}

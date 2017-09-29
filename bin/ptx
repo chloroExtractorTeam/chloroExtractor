@@ -10,7 +10,7 @@ plastid assembly pipeline
 
 =head1 SYNOPSIS
 
-  $ ./ptx [<OPTIONS>] -1 <FQ_1> -2 <FQ_2> -o <ID> 
+  $ ./ptx [<OPTIONS>] -1 <FQ_1> -2 <FQ_2> -d <OUTPUT-DIRECTORY>
 
 =head1 OPTIONS
 
@@ -28,10 +28,6 @@ Input reads file, second of pair
 
 Path to a working directory. Will be created. If exists, needs to be
 empty.
-
-=item -o|--out
-
-Output file basename, e.g. species id.
 
 =item --create-config
 
@@ -116,7 +112,7 @@ use PipeWrap;
 ##----------------------------------------------------------------------------##
 # Globals
 
-our $VERSION = 0.01;
+use version 0.77; our $VERSION = version->declare("v1.0.0");
 
 # get a logger
 my $L = Log::Log4perl::get_logger();
@@ -135,7 +131,6 @@ my %opt = (skip => [], config => [], core_config => undef);
 
 GetOptions( # use %opt (Cfg) as defaults
 	    \%opt, qw(
-                out|o=s
                 dir|d=s
 		threads|t=i
 		continue:s
@@ -237,7 +232,12 @@ for($opt{reads}, $opt{mates}){
 
 
 # prepare folder structure
-prep_dir($opt{dir} || 'ptx', $opt{redo});
+# check if a directory is given, otherwise use ptx as its name
+unless (exists $opt{dir} && defined $opt{dir})
+{
+    $opt{dir} = 'ptx';
+}
+prep_dir($opt{dir}, $opt{redo});
 
 if($opt{dir}){
     chdir($opt{dir}) || $L->logcroak("'$opt{dir}' ",$!);

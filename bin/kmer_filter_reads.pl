@@ -274,7 +274,7 @@ if (@{$opt{config}}){
 # create template for user cfg
 if(defined $opt{create_config}){
 	pod2usage(-msg => 'To many arguments', -exitval=>1) if @ARGV > 1;
-	my $user_cfg = Cfg->Copy($core_cfg, $opt{create_config}) or $L->logdie("Creatring config failed: $!");
+	my $user_cfg = Cfg->Copy($core_cfg, $opt{create_config}) or $L->logcroak("Creatring config failed: $!");
 	$L->info("Created config file: $user_cfg");
 	exit 0;
 }
@@ -331,7 +331,7 @@ my $opt_m = $opt{'max-reads'};
 
 $L->warn("--lower($opt_l) > --upper($opt_u), are you sure that's what you want?") if $opt_u && $opt_l > $opt_u;
 
-$L->logdie("Multiple input files currently unimplemented") if(@opt_reads>1);
+$L->logcroak("Multiple input files currently unimplemented") if(@opt_reads>1);
 my $out_file1 = $opt{out} ? $opt{out}."_1.fq" : basename($opt_reads[0], @fq_suffixes).".fil.fq";
 my $out_file2 = $opt{out} ? $opt{out}."_2.fq" : basename($opt_mates[0], @fq_suffixes).".fil.fq";
 
@@ -349,7 +349,7 @@ my %H = (); # histogram
 ##------------------------------------------------------------------------##	
 
 my %K = ();
-$L->logdie("--no-perl-hash currently not implemented!") unless $opt{perl_hash};
+$L->logcroak("--no-perl-hash currently not implemented!") unless $opt{perl_hash};
 my $khash = $opt{perl_hash};
 
 if($khash){
@@ -497,8 +497,8 @@ unless(@opt_mates){
 			}
 			
 		}
-		$pg->update($pg_count);
-		close FQ1;
+		$pg->update($pg_count) if($count_pg > $next_update);
+		close FQ1 or $L->logcroak("$!");
 	}	
 }else{
 	$L->info("Filtering: paired end mode");
@@ -579,18 +579,19 @@ unless(@opt_mates){
 				}
 			}
 		}
-		$pg->update($pg_count);
-		close FQ1;
-		close FQ2;
+		$pg->update($pg_count) if($count_pg > $next_update);
+
+		close FQ1 or $L->logcroak("$!");
+		close FQ2 or $L->logcroak("$!");
 	}
 }
 
 $L->info("Kept $rc of $rct (",sprintf("%0.1f%%", $rc/$rct*100),") reads/pairs");
 
 if($opt{histogram}){
-	open(HIST, ">$opt{histogram}") or $L->logdie("Can't open file $opt{histogram}!");
+	open(HIST, ">$opt{histogram}") or $L->logcroak("Can't open file $opt{histogram}!");
 	print HIST "$_\t$H{$_}\n" foreach(sort {$a <=> $b} keys %H);
-	close HIST or $L->logdie("$!");
+	close HIST or $L->logcroak("$!");
 }
 
 
