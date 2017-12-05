@@ -7,15 +7,15 @@ tags:
 authors:
  - name: Markus J Ankenbrand
    orcid: 0000-0002-6620-807X
-   affiliation: 1,a
+   affiliation: "1, a"
  - name: Simon Pfaff
    orcid: 0000-0001-8505-9439 
-   affiliation: 2,a
+   affiliation: "2, a"
  - name: Niklas Terhoeven
-   affiliation: 2,3
+   affiliation: "2, 3"
  - name: Musga Qureischi
    orcid: 0000-0001-9661-8494
-   affiliation: 3,4
+   affiliation: "3, 4"
  - name: Maik Gündel
    orcid: 0000-0002-0502-4576
    affiliation: 3
@@ -26,7 +26,7 @@ authors:
    affiliation: 6
  - name: Frank Förster
    orcid: 0000-0003-4166-5423
-   affiliation: 2,3,7
+   affiliation: "2, 3, 7"
 affiliations:
  - name: Department of Animal Ecology and Tropical Biology (Zoology III), University of Würzburg, Germany
    index: 1
