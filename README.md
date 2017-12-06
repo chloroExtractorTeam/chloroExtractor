@@ -138,13 +138,13 @@ The chloroExtractor uses unsortet Fastq files with paired end reads. Please make
 ## Example
 An example data set can be downloaded from zenodo. As example we download the dataset into a folder and run chloroExtractor with the input files.
 
-For preparation, a folder will be created and an example dataset will be downloaded.
-If you try this example for yourself, either create exactly this folder or replace `/tmp/chloroExtractor-testrun` in all commands with the folder that contains the data on your machine.
+For preparation, a folder will be created and an example dataset will be downloaded:
 
 ```shell
-# create a folder for the testrun
-mkdir -p /tmp/chloroExtractor-testrun
-cd /tmp/chloroExtractor-testrun
+# create a folder for the testrun, adjust this to your needs or use the current folder DATAFOLDER=$(pwd)
+DATAFOLDER=/tmp/chloroExtractor-testrun
+mkdir -p $DATAFOLDER
+cd $DATAFOLDER
 
 # download the example set and extract the sequencing reads
 wget 'https://zenodo.org/record/884449/files/SRR5216995_1M.tar.bz2' -O - | tar xjf -
@@ -164,7 +164,8 @@ or using the docker container:
 ```shell
 # other possibility is docker container based chloroExtractor (assuming that the user is allowed to run docker)
 docker pull chloroextractorteam/chloroextractor # ensure the latest version from docker hub
-docker run -v /tmp/chloroExtractor-testrun:/data --rm chloroextractorteam/chloroextractor -1 SRR5216995_1M_1.fastq -2 SRR5216995_1M_2.fastq
+# this binds the DATAFOLDER from above into the docker container you can also use the path directly instead of the variable
+docker run -v ${DATAFOLDER}:/data --rm chloroextractorteam/chloroextractor -1 SRR5216995_1M_1.fastq -2 SRR5216995_1M_2.fastq
 [17-09-21 13:52:30] [PipeWrap] Running ptx from the beginning, no previous runs detected.
 [17-09-21 13:52:30] [PipeWrap] Running 'jf0': jellyfish count -t 8 -m 31 -s 500M -C -o jf0.jf /data/SRR5216995_1M_1.fastq /data/SRR5216995_1M_2.fastq
 [...]
