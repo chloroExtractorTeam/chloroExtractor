@@ -139,7 +139,7 @@ The chloroExtractor uses unsortet Fastq files with paired end reads. Please make
 An example data set can be downloaded from zenodo. As example we download the dataset into a folder and run chloroExtractor with the input files.
 
 For preparation, a folder will be created and an example dataset will be downloaded.
-If you try this example for your self, either create exactly this folder as well or replace `/tmp/chloroExtractor-testrun` in all commands with the folder that contains the data on your machine.
+If you try this example for yourself, either create exactly this folder as well or replace `/tmp/chloroExtractor-testrun` in all commands with the folder that contains the data on your machine.
 
 ```shell
 # create a folder for the testrun
