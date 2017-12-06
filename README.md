@@ -143,8 +143,8 @@ For preparation, a folder will be created and an example dataset will be downloa
 ```shell
 # create a folder for the testrun, adjust this to your needs or use the current folder DATAFOLDER=$(pwd)
 DATAFOLDER=/tmp/chloroExtractor-testrun
-mkdir -p $DATAFOLDER
-cd $DATAFOLDER
+mkdir -p ${DATAFOLDER}
+cd ${DATAFOLDER}
 
 # download the example set and extract the sequencing reads
 wget 'https://zenodo.org/record/884449/files/SRR5216995_1M.tar.bz2' -O - | tar xjf -
