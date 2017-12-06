@@ -16,24 +16,27 @@ Through k-mer filtering the k-mers which contain the chloroplast sequences get e
 
 
 ## Requirements
+The version numbers given in parentheses are tested and known to work in this combination.
+If you do a local install you can try to use other versions of some programs or modules but they are not guaranteed to work.
+The docker container we provide will always contain a working combination of programs and modules.
 ### Required Software
- - [Jellyfish](http://www.cbcb.umd.edu/software/jellyfish/ "Jellyfish K-mer counter")
- - [Spades](http://cab.spbu.ru/software/spades/ "SPAdes assamlber")
- - [bowtie2](http://bowtie-bio.sourceforge.net/bowtie2/index.shtml "Bowtie2 Fast and sensitive read alignment")
- - [NCBI-Blast+](https://blast.ncbi.nlm.nih.gov/Blast.cgi?PAGE_TYPE=BlastDocs&DOC_TYPE=Download "BLAST (Basic Local Alignment Search Tool)")
- - [Samtools](http://www.htslib.org/ "Samtools Reading/writing/editing/indexing/viewing SAM/BAM/CRAM format")
- - [Bedtools](http://bedtools.readthedocs.io/en/latest/ "bedtools: a powerful toolset for genome arithmetic")
- - [GNU R](https://www.r-project.org/ "The R Project for Statistical Computing")
- - [Ghostscript](https://www.ghostscript.com/ "Ghostscript--an interpreter for the PostScript language and for PDF")
- - [Python](https://www.python.org/ "www.python.org")
- - [Perl](https://www.perl.org/ "www.perl.org")
+ - [Jellyfish](http://www.cbcb.umd.edu/software/jellyfish/ "Jellyfish K-mer counter") (2.2.4)
+ - [Spades](http://cab.spbu.ru/software/spades/ "SPAdes assamlber") (v3.10.1)
+ - [bowtie2](http://bowtie-bio.sourceforge.net/bowtie2/index.shtml "Bowtie2 Fast and sensitive read alignment") (2.2.6)
+ - [NCBI-Blast+](https://blast.ncbi.nlm.nih.gov/Blast.cgi?PAGE_TYPE=BlastDocs&DOC_TYPE=Download "BLAST (Basic Local Alignment Search Tool)") (2.2.31+)
+ - [Samtools](http://www.htslib.org/ "Samtools Reading/writing/editing/indexing/viewing SAM/BAM/CRAM format") (0.1.19-96b5f2294a)
+ - [Bedtools](http://bedtools.readthedocs.io/en/latest/ "bedtools: a powerful toolset for genome arithmetic") (v2.25.0)
+ - [GNU R](https://www.r-project.org/ "The R Project for Statistical Computing") (3.2.3)
+ - [Ghostscript](https://www.ghostscript.com/ "Ghostscript--an interpreter for the PostScript language and for PDF") (9.18)
+ - [Python](https://www.python.org/ "www.python.org") (2.7.12)
+ - [Perl](https://www.perl.org/ "www.perl.org") (v5.22.1)
 ### Required Perl modules
- - [Moose](http://search.cpan.org/~ether/Moose-2.2006/lib/Moose.pm "Moose Perl5-integration")
- - [Log::Log4Perl](http://search.cpan.org/~mschilli/Log-Log4perl-1.49/lib/Log/Log4perl.pm "Log4Perl Perl5-Integration")
- - [Term::ProgressBar](http://search.cpan.org/~manwar/Term-ProgressBar-2.21/lib/Term/ProgressBar.pm "Term::ProgressBar Perl5-Integration")
- - [Graph](http://search.cpan.org/dist/Graph/lib/Graph.pod "Graph - graph data structures and algorithms")
- - [IPC::Run](http://search.cpan.org/~toddr/IPC-Run-0.96/lib/IPC/Run.pm "IPC::Run - system() and background procs w/ piping, redirs, ptys (Unix, Win32)")
- - [File::Which](http://search.cpan.org/~plicease/File-Which-1.22/lib/File/Which.pm "File::Which - Perl implementation of the which utility as an API")
+ - [Moose](http://search.cpan.org/~ether/Moose-2.2006/lib/Moose.pm "Moose Perl5-integration") (2.1604)
+ - [Log::Log4Perl](http://search.cpan.org/~mschilli/Log-Log4perl-1.49/lib/Log/Log4perl.pm "Log4Perl Perl5-Integration") (1.44)
+ - [Term::ProgressBar](http://search.cpan.org/~manwar/Term-ProgressBar-2.21/lib/Term/ProgressBar.pm "Term::ProgressBar Perl5-Integration") (2.17)
+ - [Graph](http://search.cpan.org/dist/Graph/lib/Graph.pod "Graph - graph data structures and algorithms") (0.96)
+ - [IPC::Run](http://search.cpan.org/~toddr/IPC-Run-0.96/lib/IPC/Run.pm "IPC::Run - system() and background procs w/ piping, redirs, ptys (Unix, Win32)") (0.94)
+ - [File::Which](http://search.cpan.org/~plicease/File-Which-1.22/lib/File/Which.pm "File::Which - Perl implementation of the which utility as an API") (1.19)
 
 ## Installation
 Install the requirements then clone the directory recursively
