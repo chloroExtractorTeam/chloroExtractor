@@ -75,3 +75,16 @@ MJA was supported by a grant of the German Excellence Initiative to the Graduate
 
 # References
 
+# Citations
+[Ghostscript](https://www.ghostscript.com/)
+[Phyton](https://www.python.org/)
+[Perl](https://www.perl.org/)
+
+Perl Moduls
+[Moose](http://search.cpan.org/~ether/Moose-2.2009/lib/Moose.pm)
+[Log::Log4Perl](http://search.cpan.org/~mschilli/Log-Log4perl-1.49/lib/Log/Log4perl.pm)
+[Graph](http://search.cpan.org/dist/Graph/lib/Graph.pod)
+[Term::ProgressBar](http://search.cpan.org/~manwar/Term-ProgressBar-2.21/lib/Term/ProgressBar.pm)
+[IPC::Run](http://search.cpan.org/~toddr/IPC-Run-0.96/lib/IPC/Run.pm)
+[File::Which](http://search.cpan.org/~plicease/File-Which-1.22/lib/File/Which.pm)
+
