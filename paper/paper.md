@@ -80,7 +80,7 @@ MJA was supported by a grant of the German Excellence Initiative to the Graduate
 [Phyton](https://www.python.org/)
 [Perl](https://www.perl.org/)
 
-Perl Moduls
+Perl Modules
 [Moose](http://search.cpan.org/~ether/Moose-2.2009/lib/Moose.pm)
 [Log::Log4Perl](http://search.cpan.org/~mschilli/Log-Log4perl-1.49/lib/Log/Log4perl.pm)
 [Graph](http://search.cpan.org/dist/Graph/lib/Graph.pod)
