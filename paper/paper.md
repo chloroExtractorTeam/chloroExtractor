@@ -60,7 +60,7 @@ Assemblers usually fail to assemble chloroplast genomes as a single contig due t
 The size of the inverted repeat is in most cases multiple kilobasepairs in size, therefore it can not be resolved using short reads only.
 However SPAdes [@Spades_2013] returns the assembly graph where the typical chloroplast structure can be recognized and reconstructed using the knowledge of its structure.
 Using our demo set, one can achieve a single contig assembly of the chloroplast of *Spinacia oleracea* .
-If the assembly process does not finish with a single chloroplast sequence all remaining sequences are BLASTed [@blast+] against a database of reference chloroplasts to retain all partial sequences of interest.
+If the assembly process does not finish with a single chloroplast sequence all remaining sequences are BLASTed [@blastPlus] against a database of reference chloroplasts to retain all partial sequences of interest.
 The final chloroplast sequence can be further annotated with tools like DOGMA [@dogma2004], cpGAVAS [@Liu2012] and VERDANT [@Mckain2017].
 Such assemblies, can be used to remove chloroplast reads before a genomic assembly of the remaining nuclear DNA.
 Moreover, chloroplast genomes are useful in phylogenetic reconstruction [@huang_2016] or barcoding applications [@Coissac_2016].
