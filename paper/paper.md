@@ -51,15 +51,16 @@ bibliography: paper.bib
 # Summary
 
 This is an automated pipeline that extracts and reconstructs chloroplast genomes from whole genome shotgun data.
-It is capable to assemble the incidental sequenced chloropast DNA, which is present in almost all plant sequencing projects, due to the extraction of whole cellular DNA.
-It works by analyzing the k-mer distribution (determined with Jellyfish, [@marcais_fast_2011]) of the raw sequencing reads.
+It is capable to assemble the incidentally sequenced chloropast DNA, which is present in almost all plant sequencing projects, due to the extraction of whole cellular DNA.
+It works by analyzing the k-mer distribution (determined with Jellyfish, [@marcais_fast_2011], peak detection with R [@GnuR]) of the raw sequencing reads.
 Usually the coverage of the chloroplast genome is much higher than that of the nuclear genome.
-Using alignments to reference chloroplast sequences and the k-mer distribution candidate chloroplast reads are extracted from the complete set (Figure 1).
+Using mapping to reference chloroplast sequences (using bowtie2 [@bowtie2], samtools [@Samtools], and bedtools [@Bedtools]) and the k-mer distribution candidate chloroplast reads are extracted from the complete set (Figure 1).
 Afterwards, the targeted assembly of those sequences is much faster and yields less contigs compared to an assembly of all reads.
 Assemblers usually fail to assemble chloroplast genomes as a single contig due to their structure, consisting of two single copy regions and an inverted repeat.
 The size of the inverted repeat is in most cases multiple kilobasepairs in size, therefore it can not be resolved using short reads only.
 However SPAdes [@Spades_2013] returns the assembly graph where the typical chloroplast structure can be recognized and reconstructed using the knowledge of its structure.
 Using our demo set, one can achieve a single contig assembly of the chloroplast of *Spinacia oleracea* .
+If the assembly process does not finish with a single chloroplast sequence all remaining sequences are BLASTed [@blastPlus] against a database of reference chloroplasts to retain all partial sequences of interest.
 The final chloroplast sequence can be further annotated with tools like DOGMA [@dogma2004], cpGAVAS [@Liu2012] and VERDANT [@Mckain2017].
 Such assemblies, can be used to remove chloroplast reads before a genomic assembly of the remaining nuclear DNA.
 Moreover, chloroplast genomes are useful in phylogenetic reconstruction [@huang_2016] or barcoding applications [@Coissac_2016].
@@ -68,6 +69,9 @@ Also plasmid SPAdes [@plasmidspades_2016] could possibly be used for this purpos
 In the future, we plan to use our chloroExtractor to screen NCBI's Sequence Read Archive [@sra2011] for chloroplast genomes in public sequencing datasets that are not yet available in chloroplast databases, eg. chloroDB [@chlordb2006] to broaden our knowledge about chloroplasts.
 
 ![Schematic workflow of chloroExtractor.](workflow.png){ width=70% }
+
+In addition to the components cited above the chloroExtractor uses [Ghostscript](https://www.ghostscript.com/), [Phyton](https://www.python.org/), and [Perl](https://www.perl.org/).
+Further the following Perl modules are used: [Moose](http://search.cpan.org/~ether/Moose-2.2009/lib/Moose.pm), [Log::Log4Perl](http://search.cpan.org/~mschilli/Log-Log4perl-1.49/lib/Log/Log4perl.pm), [Graph](http://search.cpan.org/dist/Graph/lib/Graph.pod), [Term::ProgressBar](http://search.cpan.org/~manwar/Term-ProgressBar-2.21/lib/Term/ProgressBar.pm), [IPC::Run](http://search.cpan.org/~toddr/IPC-Run-0.96/lib/IPC/Run.pm), and [File::Which](http://search.cpan.org/~plicease/File-Which-1.22/lib/File/Which.pm).
 
 # Acknowledgements
 
