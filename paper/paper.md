@@ -75,7 +75,7 @@ Further the following Perl modules are used: [Moose](http://search.cpan.org/~eth
 
 # Acknowledgements
 
-MJA was supported by a grant of the German Excellence Initiative to the Graduate School of Life Sciences, University of Würzburg.
+MJA was supported by a grant of the German Excellence Initiative to the Graduate School of Life Sciences, University of Würzburg. We thank Daniel Amsel for his help testing and solving the Mac-based issues with our docker container.
 
 # References
 
