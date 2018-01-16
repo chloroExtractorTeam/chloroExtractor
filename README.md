@@ -176,9 +176,11 @@ Both runs result in a final chloroplast assembly in the file `fcg.fa`.
 Another more detailed example is available at our [demo](DEMO.md).
 
 ## Changelog
-Version 1.0.0 is archived as [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.998262.svg)](https://doi.org/10.5281/zenodo.998262) and used for submission to [The Journal of Open Source Software](http://joss.theoj.org/)
+Version 1.0.2 is archived as [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1148955.svg)](https://doi.org/10.5281/zenodo.1148955) and was created after review process in [The Journal of Open Source Software](http://joss.theoj.org/), we added Daniel Amsel to the acknowledgement section.
 
 Version 1.0.1 is archived as [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1147434.svg)](https://doi.org/10.5281/zenodo.1147434) and was created after review process in [The Journal of Open Source Software](http://joss.theoj.org/)
+
+Version 1.0.0 is archived as [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.998262.svg)](https://doi.org/10.5281/zenodo.998262) and used for submission to [The Journal of Open Source Software](http://joss.theoj.org/)
 
 ## License
 For License please refer to the LICENSE file
