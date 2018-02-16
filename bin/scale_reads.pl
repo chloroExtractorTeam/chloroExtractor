@@ -327,7 +327,7 @@ my %refs;
 
 my $c;
 my $tlen_sum; 
-my $seqwithtlen;
+my $seqwithtlen = 0;
 
 
 while(my $aln = $sp->next_aln()){
@@ -389,7 +389,8 @@ $closest_ref = (sort{$refs{$b} <=> $refs{$a}}keys %refs)[0];
 print "coverage\t", $current_cov, "\n";
 print "genome_size\t", $genome_size, "\n";
 print "target_coverage\t", $opt{target_coverage}, "\n";
-print "insert_size\t", int($tlen_sum/$seqwithtlen), "\n";
+if ($seqwithtlen > 0){ print "insert_size\t", int($tlen_sum/$seqwithtlen), "\n";}
+else {print "insert_size\tNA\n";}
 print "closest_ref\t", $closest_ref || 'NA', "\n";
 
 
