@@ -44,6 +44,7 @@ install:
     - mkdir ptx
 script:
     - travis_wait 60 prove -lrv test/chloroExtractor-testsuite/cmd_based/003*.t
+    - ln -s test/chloroExtractor-testsuite/cmd_based/divide_by_zero_bug_testset.tar.gz && prove test/chloroExtractor-testsuite/cmd_based/004*.t
     - cd ptx && prove -lrv ../test/chloroExtractor-testsuite/cmd_based/001*.t
     - prove -lrv ../test/chloroExtractor-testsuite/cmd_based/002*.t
 after_success:
