@@ -49,6 +49,13 @@ git clone --recursive https://github.com/chloroExtractorTeam/chloroExtractor
 [![Docker Build Status](https://img.shields.io/docker/build/chloroextractorteam/chloroextractor.svg?style=plastic)](https://hub.docker.com/r/chloroextractorteam/chloroextractor/)
 
 Our chloroExtractor is also available as a docker image.
+
+The docker image for the current release is [![](https://images.microbadger.com/badges/version/chloroextractorteam/chloroextractor:v1.0.5.svg)](https://microbadger.com/images/chloroextractorteam/chloroextractor:v1.0.5 "Get your own version badge on microbadger.com") [![](https://images.microbadger.com/badges/image/chloroextractorteam/chloroextractor:v1.0.5.svg)](https://microbadger.com/images/chloroextractorteam/chloroextractor:v1.0.5 "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/commit/chloroextractorteam/chloroextractor:v1.0.5.svg)](https://microbadger.com/images/chloroextractorteam/chloroextractor:v1.0.5 "Get your own commit badge on microbadger.com").
+
+We also provide rolling releases for docker images for our master and develop branch:
+* [![](https://images.microbadger.com/badges/version/chloroextractorteam/chloroextractor:master.svg)](https://microbadger.com/images/chloroextractorteam/chloroextractor:master "Get your own version badge on microbadger.com") [![](https://images.microbadger.com/badges/image/chloroextractorteam/chloroextractor:master.svg)](https://microbadger.com/images/chloroextractorteam/chloroextractor:master "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/commit/chloroextractorteam/chloroextractor:master.svg)](https://microbadger.com/images/chloroextractorteam/chloroextractor:master "Get your own commit badge on microbadger.com")
+* [![](https://images.microbadger.com/badges/version/chloroextractorteam/chloroextractor:develop.svg)](https://microbadger.com/images/chloroextractorteam/chloroextractor:develop "Get your own version badge on microbadger.com") [![](https://images.microbadger.com/badges/image/chloroextractorteam/chloroextractor:develop.svg)](https://microbadger.com/images/chloroextractorteam/chloroextractor:develop "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/commit/chloroextractorteam/chloroextractor:develop.svg)](https://microbadger.com/images/chloroextractorteam/chloroextractor:develop "Get your own commit badge on microbadger.com")
+
 Running chloroExtractor using that image requires the installation of docker and the permission to execute the `docker` commands.
 Additionally, the docker container needs to be able to allocate enough memory (5GB are sufficient for the demo dataset).
 In ubuntu memory for docker is usually not limited but on Mac OS X it is, refer to [this guide](https://stackoverflow.com/questions/32834082/how-to-increase-docker-machine-memory-mac/39720010#39720010) to increase the memory.
@@ -176,15 +183,27 @@ Both runs result in a final chloroplast assembly in the file `fcg.fa`.
 Another more detailed example is available at our [demo](DEMO.md).
 
 ## Changelog
-Version 1.0.4 is archived as [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1288679.svg)](https://doi.org/10.5281/zenodo.1288679). It updates the fastg-parser to version v0.6.0 and therefore fixes #101 and add citation information.
+### Version v1.0.5 2018-07-11
+Archived as [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1309206.svg)](https://doi.org/10.5281/zenodo.1309206).
+It updates the fastg-parser to version v0.6.3, therefore it finally solves the bug caused by SPAdes' fastg files (Fix #101).
+Moreover, added some documentation about docker images and changed format of our changelog section.
 
-Version 1.0.3 is archived as [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1179297.svg)](https://doi.org/10.5281/zenodo.1179297). It includes a test set and a patch for the divede by zero bug.
+### Version v1.0.4 2018-06-14
+Archived as [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1288679.svg)](https://doi.org/10.5281/zenodo.1288679).
+It updates the fastg-parser to version v0.6.0 and therefore fixes #101 and add citation information.
 
-Version 1.0.2 is archived as [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1148955.svg)](https://doi.org/10.5281/zenodo.1148955) and was created after review process in [The Journal of Open Source Software](http://joss.theoj.org/), we added Daniel Amsel to the acknowledgement section.
+### Version v1.0.3 2018-02-20
+Archived as [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1179297.svg)](https://doi.org/10.5281/zenodo.1179297).
+It includes a test set and a patch for the divede by zero bug.
 
-Version 1.0.1 is archived as [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1147434.svg)](https://doi.org/10.5281/zenodo.1147434) and was created after review process in [The Journal of Open Source Software](http://joss.theoj.org/)
+### Version v1.0.2 2018-01-16
+Archived as [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1148955.svg)](https://doi.org/10.5281/zenodo.1148955) and was created after review process in [The Journal of Open Source Software](http://joss.theoj.org/), we added Daniel Amsel to the acknowledgement section.
 
-Version 1.0.0 is archived as [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.998262.svg)](https://doi.org/10.5281/zenodo.998262) and used for submission to [The Journal of Open Source Software](http://joss.theoj.org/)
+### Version v1.0.1 2018-01-15
+Archived as [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1147434.svg)](https://doi.org/10.5281/zenodo.1147434) and was created after review process in [The Journal of Open Source Software](http://joss.theoj.org/)
+
+### Version v1.0.0 2018-01-15
+Archived as [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.998262.svg)](https://doi.org/10.5281/zenodo.998262) and used for submission to [The Journal of Open Source Software](http://joss.theoj.org/)
 
 ## Howto cite
 The software chloroExtractor was published in JOSS as [![DOI](http://joss.theoj.org/papers/10.21105/joss.00464/status.svg)](https://doi.org/10.21105/joss.00464).
