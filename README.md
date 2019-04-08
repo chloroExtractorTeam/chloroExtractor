@@ -188,7 +188,6 @@ Target coverage is reduced to 50 (instead of 200).
 Testset was updated to avoid strange ARRAY(0x...) messages.
 
 ### Version v1.0.5 2018-07-11
-Archived as [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1309206.svg)](https://doi.org/10.5281/zenodo.1309206).
 It updates the fastg-parser to version v0.6.3, therefore it finally solves the bug caused by SPAdes' fastg files (Fix #101).
 Moreover, added some documentation about docker images and changed format of our changelog section.
 
