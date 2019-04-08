@@ -59,14 +59,14 @@
       "affiliation": "Fraunhofer Institute for Molecular Biology and Applied Ecology IME, Applied Ecology and Bioresources, Gießen, Germany"
     }
   ],
-  "identifier": "https://doi.org/10.5281/zenodo.998262",
+  "identifier": "https://doi.org/10.5281/zenodo.883594",
   "codeRepository": "https://github.com/chloroExtractorTeam/chloroExtractor",
   "datePublished": "2017-09-28",
-  "dateModified": "2017-09-28",
+  "dateModified": "2019-04-08",
   "dateCreated": "2017-09-28",
   "description": "The chloroExtractor is a perl based program which provides a pipeline for DNA extraction of chloroplast DNA from whole genome plant data.",
   "keywords": "chloroplast, genome, assembly, k-mer",
   "license": "MIT",
   "title": "chloroExtractor",
-  "version": "v1.0.0"
+  "version": "v1.0.6"
 }

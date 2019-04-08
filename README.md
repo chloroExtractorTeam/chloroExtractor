@@ -50,7 +50,7 @@ git clone --recursive https://github.com/chloroExtractorTeam/chloroExtractor
 
 Our chloroExtractor is also available as a docker image.
 
-The docker image for the current release is [![](https://images.microbadger.com/badges/version/chloroextractorteam/chloroextractor:v1.0.5.svg)](https://microbadger.com/images/chloroextractorteam/chloroextractor:v1.0.5 "Get your own version badge on microbadger.com") [![](https://images.microbadger.com/badges/image/chloroextractorteam/chloroextractor:v1.0.5.svg)](https://microbadger.com/images/chloroextractorteam/chloroextractor:v1.0.5 "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/commit/chloroextractorteam/chloroextractor:v1.0.5.svg)](https://microbadger.com/images/chloroextractorteam/chloroextractor:v1.0.5 "Get your own commit badge on microbadger.com").
+The docker image for the current release is [![](https://images.microbadger.com/badges/version/chloroextractorteam/chloroextractor:v1.0.6.svg)](https://microbadger.com/images/chloroextractorteam/chloroextractor:v1.0.6 "Get your own version badge on microbadger.com") [![](https://images.microbadger.com/badges/image/chloroextractorteam/chloroextractor:v1.0.6.svg)](https://microbadger.com/images/chloroextractorteam/chloroextractor:v1.0.6 "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/commit/chloroextractorteam/chloroextractor:v1.0.6.svg)](https://microbadger.com/images/chloroextractorteam/chloroextractor:v1.0.6 "Get your own commit badge on microbadger.com").
 
 We also provide rolling releases for docker images for our master and develop branch:
 * [![](https://images.microbadger.com/badges/version/chloroextractorteam/chloroextractor:master.svg)](https://microbadger.com/images/chloroextractorteam/chloroextractor:master "Get your own version badge on microbadger.com") [![](https://images.microbadger.com/badges/image/chloroextractorteam/chloroextractor:master.svg)](https://microbadger.com/images/chloroextractorteam/chloroextractor:master "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/commit/chloroextractorteam/chloroextractor:master.svg)](https://microbadger.com/images/chloroextractorteam/chloroextractor:master "Get your own commit badge on microbadger.com")
@@ -183,8 +183,11 @@ Both runs result in a final chloroplast assembly in the file `fcg.fa`.
 Another more detailed example is available at our [demo](DEMO.md).
 
 ## Changelog
+### Version v1.0.6 2019-04-08
+Target coverage is reduced to 50 (instead of 200).
+Testset was updated to avoid strange ARRAY(0x...) messages.
+
 ### Version v1.0.5 2018-07-11
-Archived as [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1309206.svg)](https://doi.org/10.5281/zenodo.1309206).
 It updates the fastg-parser to version v0.6.3, therefore it finally solves the bug caused by SPAdes' fastg files (Fix #101).
 Moreover, added some documentation about docker images and changed format of our changelog section.
 
