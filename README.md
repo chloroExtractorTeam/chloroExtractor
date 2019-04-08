@@ -183,6 +183,10 @@ Both runs result in a final chloroplast assembly in the file `fcg.fa`.
 Another more detailed example is available at our [demo](DEMO.md).
 
 ## Changelog
+### Version v1.0.6 2019-04-08
+Target coverage is reduced to 50 (instead of 200).
+Testset was updated to avoid strange ARRAY(0x...) messages.
+
 ### Version v1.0.5 2018-07-11
 Archived as [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1309206.svg)](https://doi.org/10.5281/zenodo.1309206).
 It updates the fastg-parser to version v0.6.3, therefore it finally solves the bug caused by SPAdes' fastg files (Fix #101).
