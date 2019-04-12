@@ -183,6 +183,10 @@ Both runs result in a final chloroplast assembly in the file `fcg.fa`.
 Another more detailed example is available at our [demo](DEMO.md).
 
 ## Changelog
+### Version v1.0.7 2019-04-12
+Solved a progress bar issue, which sometimes occured (Fix #128)
+Update to `kmer_filter_reads.pl` version 0.05
+
 ### Version v1.0.6 2019-04-08
 Target coverage is reduced to 50 (instead of 200).
 Testset was updated to avoid strange ARRAY(0x...) messages.
