@@ -357,7 +357,12 @@ if($khash){
 
 	
 	my $next_update = 0;
-	my $km_pg_count = -s $opt{'kmer-hash'};
+
+	# get the number of kmers inside the kmer-hash
+	my @stats = $jf->stats([$opt{'kmer-hash'}]);
+	chomp(@stats);
+	my %stats = @stats;
+	my $km_pg_count = $stats{'Total:'};
         my $km_pg = Term::ProgressBar->new({
             name => 'Loading kmer hash',
             count => $km_pg_count,
@@ -385,21 +390,21 @@ if($khash){
 #		}
 #	}else{
 	
+	my $km_pg_num = 0;
 	while(<$kfh>){
 	    my ($k, $v) = split("\t", $_);
 	    unless ($opt{'penalize-N'} && $k =~ tr/N//){
 		$K{$k} = $v;
 	    }
 			
-	    my $km_pg_tell = tell($kfh);
+	    $km_pg_num++;
 			
-	    if ($km_pg_tell >= $next_update){
-		
-		$next_update = $km_pg->update($km_pg_tell);
+	    if ($km_pg_num > $next_update){
+		eval { $next_update = $km_pg->update($km_pg_num); };
 	    }
 	}
 #	}
-	$km_pg->update($km_pg_count);
+	eval { $km_pg->update($km_pg_count) if ($km_pg_count > $next_update); };
 				    
 	$L->info(scalar keys %K," distinct kmers loaded");
 }
@@ -463,9 +468,7 @@ unless(@opt_mates){
 			$count_pg = $count_pg + length($fq1->string); 
 			
 			if($count_pg >= $next_update){
-			    
-			    $next_update = $pg->update($count_pg);
-			   
+			    eval { $next_update = $pg->update($count_pg); };
 			}
 
 			# skip reads shorter kmer
@@ -497,7 +500,7 @@ unless(@opt_mates){
 			}
 			
 		}
-		$pg->update($pg_count) if($count_pg > $next_update);
+		eval { $pg->update($pg_count) if($count_pg > $next_update); };
 		close FQ1 or $L->logcroak("$!");
 	}	
 }else{
@@ -535,9 +538,7 @@ unless(@opt_mates){
 			$count_pg = $count_pg + length($fq1->string); 
 			
 			if($count_pg >= $next_update){
-			    
-			    $next_update = $pg->update($count_pg);
-			   
+			    eval { $next_update = $pg->update($count_pg); };
 			}
 
 			
@@ -579,7 +580,7 @@ unless(@opt_mates){
 				}
 			}
 		}
-		$pg->update($pg_count) if($count_pg > $next_update);
+		eval { $pg->update($pg_count) if($count_pg > $next_update); };
 
 		close FQ1 or $L->logcroak("$!");
 		close FQ2 or $L->logcroak("$!");
