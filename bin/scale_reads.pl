@@ -363,7 +363,7 @@ if ($opt{ref_cov_hist}){
 
 
 if($c < $opt{max_reads}){
-    $L->warn("Failed to align minimum amount of reads ($opt{max_reads}) to reference clusters");	
+    $L->warn("Failed to align minimum amount of reads to reference clusters (required: $opt{max_reads}, aligned: $c)");	
     $L->info("You might need to increase the amount of input data");
     $L->info("Also make sure, your library contains plastid reads at all");
 
