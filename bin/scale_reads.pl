@@ -133,7 +133,7 @@ use Bowtie2;
 #-----------------------------------------------------------------------------#
 # Globals
 
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 
 our $ID = 'scr';
 
@@ -363,11 +363,13 @@ if ($opt{ref_cov_hist}){
 
 
 if($c < $opt{max_reads}){
-    $L->warn("Failed to align minimum amount of reads ($opt{max_reads}) to reference clusters");	
+    $L->warn("Failed to align minimum amount of reads to reference clusters (required: $opt{max_reads}, aligned: $c)");	
     $L->info("You might need to increase the amount of input data");
     $L->info("Also make sure, your library contains plastid reads at all");
 
-    exit 1;
+    $L->info("Nevertheless, the kmer coverage will be used as further threshold.");
+} else {
+    $L->info("Result of aligning reads to reference clusters (required: $opt{max_reads}, aligned: $c)");	
 }
 
 ($current_cov, $genome_size) = estimate_kmer_coverage($c);
@@ -379,6 +381,8 @@ if(! $current_cov || $current_cov < $opt{target_coverage}){
     $L->info("If values are very low, make sure your library contains plastid reads");
 
     exit 1;
+} else {
+    $L->info("Detected plastid coverage: ${current_cov}X ($opt{target_coverage}X required)");	
 }
 
 # TODO: check size
