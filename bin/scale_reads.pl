@@ -367,7 +367,7 @@ if($c < $opt{max_reads}){
     $L->info("You might need to increase the amount of input data");
     $L->info("Also make sure, your library contains plastid reads at all");
 
-    exit 1;
+    $L->info("Nevertheless, the kmer coverage will be used as further threshold.");
 }
 
 ($current_cov, $genome_size) = estimate_kmer_coverage($c);
