@@ -183,6 +183,12 @@ Both runs result in a final chloroplast assembly in the file `fcg.fa`.
 Another more detailed example is available at our [demo](DEMO.md).
 
 ## Changelog
+### Version v1.0.9 2019-05-01
+The strange behavior of fcg is fixed now (Fix #135)
+
+### Version v1.0.8 2019-04-16
+Avoiding read coverage as hard filter. Using kmer coverage instead, but printing warning message.
+
 ### Version v1.0.7 2019-04-12
 Solved a progress bar issue, which sometimes occured (Fix #128)
 Update to `kmer_filter_reads.pl` version 0.05

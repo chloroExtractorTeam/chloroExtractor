@@ -112,7 +112,7 @@ use PipeWrap;
 ##----------------------------------------------------------------------------##
 # Globals
 
-use version 0.77; our $VERSION = version->declare("v1.0.8");
+use version 0.77; our $VERSION = version->declare("v1.0.9");
 
 # get a logger
 my $L = Log::Log4perl::get_logger();
